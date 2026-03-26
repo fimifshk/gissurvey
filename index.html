@@ -287,7 +287,7 @@ input,select,textarea,button{font-family:inherit}
     <div class="instr"><div class="instr-n">1</div><div class="instr-t">Projekti juaj → <code>SQL Editor</code> (menyja e majtë) → <code>New query</code></div></div>
     <div class="instr"><div class="instr-n">2</div><div class="instr-t">Kopjoni SQL-in poshtë → ngjiteni → klikoni <code>RUN</code> (ose Ctrl+Enter)</div></div>
     <div style="position:relative;margin:12px 0">
-      <div class="sql-box" id="sqlbox">-- GIS Survey Pro — Schema v2 (ekzekutoni NJË HERË)
+      <div class="sql-box" id="sqlbox">-- GIS Survey Pro — Schema (ekzekutoni NJË HERË)
 -- ═══════════════════════════════════════════════
 
 create table if not exists public.profiles (
@@ -357,14 +357,13 @@ create policy "del_admin" on public.survey_records
 -- Auto-create profile pas regjistrimit
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path=public as $$
-declare _r text;
 begin
-  _r := coalesce(new.raw_user_meta_data->>'role','field');
-  if _r not in ('supervisor','field','viewer') then _r := 'field'; end if;
   insert into public.profiles(id,email,full_name,role)
-  values(new.id, new.email,
+  values(
+    new.id, new.email,
     coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email,'@',1)),
-    _r) on conflict(id) do nothing;
+    coalesce(new.raw_user_meta_data->>'role','field')
+  ) on conflict(id) do nothing;
   return new;
 end;$$;
 
@@ -726,29 +725,12 @@ create trigger on_auth_user_created
   <div id="role-body"></div></div>
 </div>
 
-<script>
-/* Funksionet e konfigurimit — ekzekutohen menjëherë pa pritur SDK */
-var curSS=0;
-function goSS(n){
-  [0,1,2].forEach(function(i){
-    var s=document.getElementById('ss'+i);if(s)s.classList.toggle('hidden',i!==n);
-    var p=document.getElementById('sp'+i);if(p)p.className='step-pip'+(i<n?' done':i===n?' act':'');
-  });curSS=n;window.scrollTo({top:0,behavior:'smooth'});
-}
-function copySql(){
-  var el=document.getElementById('sqlbox');if(!el)return;var txt=el.textContent||el.innerText;
-  var ok=function(){var b=document.querySelector('[onclick="copySql()"]');if(b){var o=b.innerHTML;b.textContent='✓ Kopjuar!';setTimeout(function(){b.innerHTML=o},2000);}};
-  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(ok).catch(function(){ok();});}
-  else{var ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);ok();}
-}
-</script>
 <div class="toastwrap" id="toasts"></div>
 
 <!-- ═══════════════════════════════════
-     SUPABASE (loaded inline — no CDN race)
+     SCRIPTS
 ═══════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
 <script>
 /* ═══════════════════════════════════════
    GLOBALS
@@ -785,7 +767,22 @@ function boot(){
 /* ═══════════════════════════════════════
    SETUP WIZARD
 ═══════════════════════════════════════ */
-/* goSS & copySql — të definuara në early script */
+var curSS=0;
+function goSS(n){
+  [0,1,2].forEach(function(i){
+    document.getElementById('ss'+i).classList.toggle('hidden',i!==n);
+    var p=document.getElementById('sp'+i);
+    p.className='step-pip'+(i<n?' done':i===n?' act':'');
+  });
+  curSS=n;
+}
+function copySql(){
+  var txt=document.getElementById('sqlbox').textContent;
+  navigator.clipboard.writeText(txt).then(function(){toast('ok','SQL u kopjua!');}).catch(function(){
+    // fallback
+    var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+    toast('ok','SQL u kopjua!');
+  });
 }
 async function saveConfig(){
   var u=document.getElementById('cfg-url').value.trim();
@@ -796,7 +793,6 @@ async function saveConfig(){
   if(!u.includes('supabase.co')){ae.className='alert warn';ae.textContent='URL duhet të jetë nga supabase.co — kontrolloni formatin';}
   var btn=document.getElementById('cfg-btn');btn.disabled=true;btn.textContent='Duke testuar...';
   try{
-    if(typeof supabase==='undefined'){ae.className='alert err';ae.textContent='SDK nuk u ngarkua — rifrisho faqen!';btn.disabled=false;btn.textContent='Lidhu me Supabase';return;}
     var client=supabase.createClient(u,k);
     // test with a real query
     var{error}=await client.from('profiles').select('id').limit(1);
@@ -1014,12 +1010,12 @@ function renderPh(){
     var d=document.createElement('div');d.className='pthumb';
     d.innerHTML='<img src="'+p.data+'"><button class="pdel" onclick="event.stopPropagation();rmPh('+i+')">✕</button>';g.appendChild(d);
   });
-  if(photos.length<(MAX_PHOTOS||10)){
+  if(photos.length<MAX_PHOTOS){
     var a=document.createElement('div');a.className='padd';
-    a.innerHTML='<span style="font-size:18px">+</span><br><span style="font-size:9px;opacity:.5">'+((MAX_PHOTOS||10)-photos.length)+' të mbetura</span>';
+    a.innerHTML='<span style="font-size:18px">+</span><br><span style="font-size:9px;opacity:.5">'+(MAX_PHOTOS-photos.length)+' të mbetura</span>';
     a.onclick=function(){document.getElementById('phinp').click()};g.appendChild(a);
   }
-  var pc=document.getElementById('pcnt');if(pc)pc.textContent=photos.length+'/'+(MAX_PHOTOS||10);
+  var pc=document.getElementById('pcnt');if(pc)pc.textContent=photos.length+'/'+MAX_PHOTOS;
 }
 function rmPh(i){photos.splice(i,1);renderPh()}
 
@@ -1033,11 +1029,11 @@ function openCam(){
     .catch(function(e){toast('warn','Kamera: '+e.message);closeCam()});
 }
 function snapPh(){
-  if(photos.length>=(MAX_PHOTOS||10)){toast('warn','Maksimumi '+(MAX_PHOTOS||10)+' foto');closeCam();return;}
+  if(photos.length>=MAX_PHOTOS){toast('warn','Maksimumi '+MAX_PHOTOS+' foto');closeCam();return;}
   var v2=document.getElementById('cam-vid'),c=document.getElementById('cam-cnv');
   c.width=v2.videoWidth||640;c.height=v2.videoHeight||480;c.getContext('2d').drawImage(v2,0,0);
   photos.push({name:'cam_'+Date.now()+'.jpg',data:c.toDataURL('image/jpeg',.85)});
-  renderPh();closeCam();toast('ok','Foto e bërë! ('+photos.length+'/'+(MAX_PHOTOS||10)+')');
+  renderPh();closeCam();toast('ok','Foto e bërë! ('+photos.length+'/'+MAX_PHOTOS+')');
 }
 function closeCam(){
   document.getElementById('cam-m').classList.add('hidden');
@@ -1109,8 +1105,8 @@ async function uploadPhotos(recordId){
       var blob=new Blob([arr],{type:mime});var ext=mime.split('/')[1]||'jpg';
       var path=CU.id+'/rec_'+recordId+'_'+i+'.'+ext;
       var{error}=await SB.storage.from('survey-photos').upload(path,blob,{upsert:true,contentType:mime});
-      if(error)log('warn','Foto '+i+' dështoi: '+error.message);else ok++;
-    }catch(e){log('warn','Upload err: '+e.message)}
+      if(error)log('warn','Foto '+i+': '+error.message);else ok++;
+    }catch(e){log('warn','Upload: '+e.message)}
   }
   return ok;
 }
@@ -1636,16 +1632,20 @@ function offEvents(){
   window.addEventListener('offline',function(){document.getElementById('cdot').className='cdot off';document.getElementById('clbl').textContent='offline';toast('warn','Offline');log('warn','Offline')});
 }
 renderPh();
-// Boot app — SDK është ngarkuar synchronously
-window.addEventListener('DOMContentLoaded',function(){});
+// ── BOOT ──
 if(typeof supabase!=='undefined'){
   log('info','Supabase SDK gati');boot();
 }else{
-  log('err','SDK nuk u ngarkua');
-  setTimeout(function(){
-    if(typeof supabase!=='undefined'){log('ok','SDK retry OK');boot();}
-    else{log('err','SDK dështoi plotësisht — kontrolloni internet/adblocker');}
-  },3000);
+  document.addEventListener('DOMContentLoaded',function(){
+    if(typeof supabase!=='undefined'){boot();}
+    else{
+      var s=document.createElement('script');
+      s.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js';
+      s.onload=function(){log('ok','Supabase fallback OK');boot();};
+      s.onerror=function(){log('err','SDK dështoi — kontrolloni internet');};
+      document.head.appendChild(s);
+    }
+  });
 }
 </script>
 </body>
