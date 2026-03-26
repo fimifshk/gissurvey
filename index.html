@@ -2,1939 +2,1665 @@
 <html lang="sq">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GIS Survey — Sistem i Plotë</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GIS Survey Pro</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ===== TOKENS ===== */
-:root {
-  --bg:       #080c14;
-  --surface:  #0e1420;
-  --surface2: #141b2d;
-  --surface3: #1a2238;
-  --border:   #1f2d4a;
-  --border2:  #2a3d5e;
-  --accent:   #00e5c3;
-  --accent2:  #3a9bff;
-  --accent3:  #a259ff;
-  --warn:     #ffb347;
-  --danger:   #ff5a6e;
-  --success:  #00e5c3;
-  --text:     #dde4f0;
-  --muted:    #5a6d8a;
-  --muted2:   #3a4d65;
-  --r:        8px;
-  --mono:     'JetBrains Mono', monospace;
-  --sans:     'Syne', sans-serif;
+:root{
+  --bg:#07090f;--s1:#0d1119;--s2:#121820;--s3:#18202e;--s4:#1e2838;
+  --b1:#1c2740;--b2:#253352;--b3:#2e4068;
+  --acc:#05d9a0;--acc2:#2d8bff;--acc3:#9b5fff;
+  --warn:#ffaa2e;--err:#ff4d6d;--txt:#dce6f5;--txt2:#8da0bb;--txt3:#3d5275;
+  --r:9px;--mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; overflow: hidden; }
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--txt);font-size:14px;overflow:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+input,select,textarea,button{font-family:inherit}
 
-/* ===== AUTH SCREEN ===== */
-#auth-screen {
-  position: fixed; inset: 0; background: var(--bg); z-index: 9999;
-  display: flex; align-items: center; justify-content: center;
-}
-.auth-card {
-  width: 420px; max-width: 95vw;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-  padding: 40px 36px; position: relative; overflow: hidden;
-}
-.auth-card::before {
-  content: ''; position: absolute; top: -60px; right: -60px;
-  width: 200px; height: 200px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,229,195,0.08) 0%, transparent 70%);
-  pointer-events: none;
-}
-.auth-logo { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 0.15em; margin-bottom: 28px; }
-.auth-logo span { color: var(--muted); }
-.auth-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
-.auth-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; font-family: var(--mono); }
-.auth-tabs { display: flex; gap: 0; margin-bottom: 24px; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
-.auth-tab { flex: 1; padding: 9px; text-align: center; font-size: 12px; font-family: var(--mono); color: var(--muted); cursor: pointer; transition: all 0.2s; }
-.auth-tab.active { background: var(--accent); color: #001a14; font-weight: 500; }
-.auth-field { margin-bottom: 14px; }
-.auth-field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; font-family: var(--mono); letter-spacing: 0.06em; }
-.auth-field input, .auth-field select {
-  width: 100%; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r); color: var(--text); font-family: var(--sans); font-size: 14px; outline: none;
-  transition: border-color 0.2s;
-}
-.auth-field input:focus, .auth-field select:focus { border-color: var(--accent); }
-.auth-field select option { background: var(--surface2); }
-.auth-btn { width: 100%; padding: 12px; background: var(--accent); color: #001a14; border: none; border-radius: var(--r); font-family: var(--mono); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; letter-spacing: 0.04em; }
-.auth-btn:hover { background: #00c9ab; }
-.auth-err { background: rgba(255,90,110,0.1); border: 1px solid rgba(255,90,110,0.3); border-radius: var(--r); padding: 10px 12px; font-size: 12px; color: var(--danger); font-family: var(--mono); margin-bottom: 14px; display: none; }
+/* UTILITY */
+.hidden{display:none!important}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:10px;font-family:var(--mono);font-weight:500}
+.badge.ok{background:rgba(5,217,160,.12);color:var(--acc);border:1px solid rgba(5,217,160,.25)}
+.badge.info{background:rgba(45,139,255,.12);color:var(--acc2);border:1px solid rgba(45,139,255,.25)}
+.badge.warn{background:rgba(255,170,46,.12);color:var(--warn);border:1px solid rgba(255,170,46,.25)}
+.badge.err{background:rgba(255,77,109,.12);color:var(--err);border:1px solid rgba(255,77,109,.25)}
+.badge.purple{background:rgba(155,95,255,.12);color:var(--acc3);border:1px solid rgba(155,95,255,.25)}
 
-/* ===== CONFIG SCREEN ===== */
-#config-screen {
-  position: fixed; inset: 0; background: var(--bg); z-index: 9998;
-  display: flex; align-items: center; justify-content: center;
-}
-.config-card { width: 520px; max-width: 95vw; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; }
-.config-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
-.config-sub { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-bottom: 24px; }
-.config-step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px; padding: 14px; background: var(--surface2); border-radius: var(--r); border: 1px solid var(--border); }
-.config-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #001a14; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; font-family: var(--mono); }
-.config-step-text { font-size: 12px; color: var(--muted); line-height: 1.6; font-family: var(--mono); }
-.config-step-text code { background: var(--surface3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--accent); font-size: 11px; }
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:var(--r);font-size:12px;font-family:var(--mono);cursor:pointer;border:1px solid var(--b2);background:var(--s3);color:var(--txt);transition:all .15s;white-space:nowrap;font-weight:500}
+.btn:hover:not(:disabled){border-color:var(--b3);background:var(--s4)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.pri{background:var(--acc);color:#021a10;border-color:var(--acc)}
+.btn.pri:hover:not(:disabled){background:#04c490}
+.btn.sec{border-color:var(--acc2);color:var(--acc2)}
+.btn.danger{border-color:var(--err);color:var(--err)}
+.btn.sm{padding:6px 11px;font-size:11px}
+.btn.xs{padding:4px 8px;font-size:10px}
+.btn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;flex-shrink:0}
 
-/* ===== APP LAYOUT ===== */
-#app { display: none; height: 100vh; display: none; flex-direction: column; }
-#app.visible { display: flex; }
+.ifield{margin-bottom:12px}
+.ifield label{display:block;font-size:11px;color:var(--txt2);margin-bottom:5px;font-family:var(--mono);letter-spacing:.05em}
+.ifield input,.ifield select,.ifield textarea{width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:13px;outline:none;transition:border-color .2s}
+.ifield input:focus,.ifield select:focus,.ifield textarea:focus{border-color:var(--acc)}
+.ifield select option{background:var(--s2)}
+.ifield textarea{resize:vertical;min-height:68px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.three{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
+.brow{display:flex;gap:7px;flex-wrap:wrap}
+.mono-val{font-family:var(--mono);font-size:12px;color:var(--acc);background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);padding:9px 12px;min-height:38px}
+.sec-hd{font-size:10px;font-family:var(--mono);color:var(--txt3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.sec-hd::before{content:'';width:3px;height:11px;background:var(--acc);border-radius:2px;flex-shrink:0}
 
-/* TOPBAR */
-.topbar {
-  height: 52px; background: var(--surface); border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; padding: 0 16px; gap: 12px; flex-shrink: 0;
-}
-.logo { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 0.1em; }
-.logo span { color: var(--muted); }
-.topbar-nav { display: flex; gap: 2px; margin-left: 8px; }
-.nav-btn {
-  padding: 6px 14px; border-radius: 6px; font-size: 12px; font-family: var(--mono);
-  color: var(--muted); cursor: pointer; transition: all 0.15s; border: none; background: transparent;
-  display: flex; align-items: center; gap: 6px;
-}
-.nav-btn:hover { color: var(--text); background: var(--surface2); }
-.nav-btn.active { color: var(--accent); background: rgba(0,229,195,0.08); }
-.nav-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
-.topbar-sep { flex: 1; }
-.user-chip {
-  display: flex; align-items: center; gap: 8px;
-  padding: 5px 12px 5px 8px; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 20px; cursor: pointer; transition: border-color 0.2s;
-}
-.user-chip:hover { border-color: var(--border2); }
-.user-avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; }
-.user-info { font-size: 11px; }
-.user-name { color: var(--text); font-weight: 500; }
-.user-role { color: var(--muted); font-family: var(--mono); font-size: 10px; }
-.conn-indicator { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
-.conn-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: blink 2s infinite; }
-.conn-dot.off { background: var(--warn); animation: none; }
-@keyframes blink { 0%,100%{opacity:1}50%{opacity:0.3} }
+/* ── CONFIG / AUTH SCREENS ── */
+.overlay{position:fixed;inset:0;background:var(--bg);z-index:9990;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.card{width:480px;max-width:100%;background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:36px 32px}
+.card-logo{font-family:var(--mono);font-size:11px;color:var(--acc);letter-spacing:.15em;margin-bottom:20px}
+.card-logo span{color:var(--txt3)}
+.card-title{font-size:22px;font-weight:700;margin-bottom:5px}
+.card-sub{font-size:12px;color:var(--txt2);margin-bottom:24px;font-family:var(--mono)}
+.step-bar{display:flex;gap:5px;margin-bottom:24px}
+.step-pip{flex:1;height:3px;border-radius:2px;background:var(--b1);transition:background .3s}
+.step-pip.done{background:var(--acc)}
+.step-pip.act{background:var(--acc2)}
+.instr{display:flex;gap:11px;padding:13px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);margin-bottom:8px}
+.instr-n{width:24px;height:24px;border-radius:50%;background:var(--acc);color:#021a10;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--mono);flex-shrink:0}
+.instr-t{font-size:12px;color:var(--txt2);line-height:1.7;font-family:var(--mono)}
+.instr-t a{color:var(--acc2);text-decoration:none}
+.instr-t code{background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:1px 6px;color:var(--acc);font-size:11px}
+.sql-box{position:relative;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);padding:12px;font-family:var(--mono);font-size:10px;color:#6db8f5;max-height:180px;overflow-y:auto;margin-bottom:10px;white-space:pre;line-height:1.55}
+.alert{border-radius:var(--r);padding:11px 14px;font-size:12px;font-family:var(--mono);margin-bottom:14px;line-height:1.5}
+.alert.err{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.3);color:var(--err)}
+.alert.ok{background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);color:var(--acc)}
+.alert.warn{background:rgba(255,170,46,.1);border:1px solid rgba(255,170,46,.3);color:var(--warn)}
+.auth-tabs{display:flex;border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+.atab{flex:1;padding:9px;text-align:center;font-size:12px;font-family:var(--mono);color:var(--txt2);cursor:pointer;transition:.2s}
+.atab.act{background:var(--acc);color:#021a10;font-weight:600}
+.auth-main{width:100%;padding:13px;background:var(--acc);color:#021a10;border:none;border-radius:var(--r);font-family:var(--mono);font-size:13px;font-weight:600;cursor:pointer;transition:.2s;letter-spacing:.03em}
+.auth-main:hover{background:#04c490}
+.auth-main:disabled{opacity:.5;cursor:not-allowed}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.rc{padding:10px 12px;border:1px solid var(--b1);border-radius:var(--r);cursor:pointer;transition:.15s}
+.rc:hover{border-color:var(--b2)}
+.rc.sel{border-color:var(--acc);background:rgba(5,217,160,.06)}
+.rc-name{font-size:12px;font-weight:600;margin-bottom:2px}
+.rc-desc{font-size:10px;color:var(--txt2);font-family:var(--mono);line-height:1.4}
 
-/* PAGES */
-.pages { flex: 1; overflow: hidden; position: relative; }
-.page { position: absolute; inset: 0; display: none; overflow: hidden; }
-.page.active { display: flex; }
+/* ── APP SHELL ── */
+#app{display:none;flex-direction:column;height:100vh}
+#app.on{display:flex}
+.topbar{height:52px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;z-index:100}
+.logo{font-family:var(--mono);font-size:13px;color:var(--acc);letter-spacing:.1em;margin-right:4px}
+.logo span{color:var(--txt3)}
+.nav{display:flex;gap:2px}
+.nb{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:7px;font-size:12px;font-family:var(--mono);color:var(--txt2);cursor:pointer;border:none;background:transparent;transition:.15s}
+.nb:hover{color:var(--txt);background:var(--s2)}
+.nb.on{color:var(--acc);background:rgba(5,217,160,.08)}
+.nb svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2}
+.ts{flex:1}
+.cdot{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:pu 2s infinite}
+.cdot.off{background:var(--warn);animation:none}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.3}}
+.uchip{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 7px;background:var(--s2);border:1px solid var(--b1);border-radius:22px;cursor:pointer;transition:.2s}
+.uchip:hover{border-color:var(--b2)}
+.ava{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--mono);flex-shrink:0}
+.uname{font-size:12px;font-weight:600}
+.urole{font-size:10px;color:var(--txt2);font-family:var(--mono)}
+.pages{flex:1;overflow:hidden;position:relative}
+.page{position:absolute;inset:0;display:none;overflow:hidden}
+.page.on{display:flex}
 
-/* ===== SURVEY PAGE ===== */
-.survey-layout { display: grid; grid-template-columns: 380px 1fr; width: 100%; height: 100%; }
-.survey-panel { background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
-.panel-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.ptab { flex: 1; padding: 11px 6px; text-align: center; font-size: 10px; font-family: var(--mono); color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; letter-spacing: 0.05em; }
-.ptab.active { color: var(--accent); border-bottom-color: var(--accent); }
-.ptab-content { display: none; }
-.ptab-content.active { display: block; }
+/* ── SURVEY LAYOUT ── */
+.svl{display:grid;grid-template-columns:375px 1fr;width:100%;height:100%}
+.svp{background:var(--s1);border-right:1px solid var(--b1);overflow-y:auto;display:flex;flex-direction:column}
+.ptabs{display:flex;border-bottom:1px solid var(--b1);flex-shrink:0}
+.ptab{flex:1;padding:10px 4px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--txt3);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;letter-spacing:.06em}
+.ptab.on{color:var(--acc);border-bottom-color:var(--acc)}
+.ptc{display:none}
+.ptc.on{display:block}
+.section{padding:13px 15px;border-bottom:1px solid var(--b1)}
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.pthumb{aspect-ratio:1;border-radius:6px;overflow:hidden;border:1px solid var(--b1);position:relative;background:var(--bg)}
+.pthumb img{width:100%;height:100%;object-fit:cover}
+.pdel{position:absolute;top:2px;right:2px;width:18px;height:18px;background:rgba(0,0,0,.75);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;color:#fff;border:none;opacity:0;transition:.2s}
+.pthumb:hover .pdel{opacity:1}
+.padd{aspect-ratio:1;border-radius:6px;border:1px dashed var(--b2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt3);font-size:20px;background:var(--bg);transition:.2s}
+.padd:hover{border-color:var(--acc);color:var(--acc)}
+.mapw{position:relative;flex:1}
+#map{width:100%;height:100%}
+.mfab{position:absolute;z-index:800;top:11px;right:11px;display:flex;flex-direction:column;gap:5px}
+.fab{width:35px;height:35px;background:var(--s1);border:1px solid var(--b1);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt);transition:.15s}
+.fab:hover{border-color:var(--acc);color:var(--acc)}
+.fab.on{background:var(--acc);color:#021a10;border-color:var(--acc)}
+.fab svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2}
+.lrow{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--b1);border-radius:var(--r);margin-bottom:5px;background:var(--bg);cursor:pointer;transition:.15s}
+.lrow:hover,.lrow.on{border-color:var(--acc)}
+.ldot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.lnm{flex:1;font-size:12px}
+.ltog{position:relative;width:30px;height:17px;flex-shrink:0}
+.ltog input{opacity:0;width:0;height:0}
+.tsl{position:absolute;inset:0;background:var(--b2);border-radius:9px;cursor:pointer;transition:.2s}
+.tsl::before{content:'';position:absolute;width:13px;height:13px;left:2px;top:2px;background:var(--txt3);border-radius:50%;transition:.2s}
+.ltog input:checked+.tsl{background:var(--acc)}
+.ltog input:checked+.tsl::before{transform:translateX(13px);background:#021a10}
+.dzone{border:1.5px dashed var(--b2);border-radius:var(--r);padding:18px;text-align:center;color:var(--txt3);font-size:12px;font-family:var(--mono);cursor:pointer;transition:.2s;line-height:1.7}
+.dzone:hover,.dzone.ov{border-color:var(--acc2);color:var(--acc2)}
+.dzone svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.5;display:block;margin:0 auto 7px}
+.pbar{height:3px;background:var(--b1);border-radius:2px;overflow:hidden;margin-top:8px}
+.pbf{height:100%;background:var(--acc);transition:width .4s;border-radius:2px}
 
-.section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-.sec-label { font-size: 10px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-.sec-label::before { content:''; width: 3px; height: 10px; background: var(--accent); border-radius: 2px; }
+/* ── DEBUG PANEL ── */
+.dbg{background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);font-family:var(--mono);font-size:10.5px;max-height:120px;overflow-y:auto;padding:8px 10px}
+.dl{margin-bottom:2px;padding:1px 0}
+.dl.ok{color:var(--acc)}
+.dl.err{color:var(--err)}
+.dl.info{color:var(--acc2)}
+.dl.warn{color:var(--warn)}
 
-.field { margin-bottom: 10px; }
-.field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; font-family: var(--mono); }
-.field input, .field select, .field textarea {
-  width: 100%; padding: 8px 11px; background: var(--bg); border: 1px solid var(--border);
-  border-radius: var(--r); color: var(--text); font-family: var(--sans); font-size: 13px;
-  outline: none; transition: border-color 0.2s;
-}
-.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
-.field textarea { resize: vertical; min-height: 64px; }
-.field select option { background: var(--surface2); }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.three-col { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; align-items: end; }
+/* ── RECORDS ── */
+.rpage{flex-direction:column;background:var(--bg);width:100%}
+.ph{padding:18px 22px 14px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--s1)}
+.ph-title{font-size:17px;font-weight:700}
+.ph-sub{font-size:11px;color:var(--txt2);font-family:var(--mono);margin-top:1px}
+.fbar{padding:10px 22px;border-bottom:1px solid var(--b1);display:flex;gap:7px;align-items:center;flex-wrap:wrap;background:var(--s1);flex-shrink:0}
+.fbar input,.fbar select{padding:7px 9px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none;transition:.2s}
+.fbar input:focus,.fbar select:focus{border-color:var(--acc)}
+.fbar input[type=text]{width:180px}
+.tw{flex:1;overflow:auto;padding:14px 22px}
+.rt{width:100%;border-collapse:collapse;font-size:12px}
+.rt th{text-align:left;padding:10px 11px;font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--b1);white-space:nowrap;position:sticky;top:0;background:var(--bg);z-index:1}
+.rt td{padding:9px 11px;border-bottom:1px solid var(--b1);vertical-align:middle}
+.rt tr:hover td{background:var(--s1)}
+.utag{display:flex;align-items:center;gap:6px}
+.mava{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:var(--mono);flex-shrink:0}
+.ibtn{width:28px;height:28px;border-radius:6px;border:1px solid var(--b1);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt3);transition:.15s}
+.ibtn:hover{border-color:var(--acc);color:var(--acc)}
+.ibtn.red:hover{border-color:var(--err);color:var(--err)}
+.ibtn svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2}
+.empty{text-align:center;padding:50px 20px;color:var(--txt3);font-family:var(--mono);font-size:12px}
 
-.coord-box { font-family: var(--mono); font-size: 12px; color: var(--accent); background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 11px; }
+/* ── USERS ── */
+.upage{flex-direction:column;background:var(--bg);width:100%}
+.ugrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:18px 22px;overflow-y:auto;flex:1}
+.ucard{background:var(--s1);border:1px solid var(--b1);border-radius:13px;padding:18px;transition:.2s}
+.ucard:hover{border-color:var(--b2)}
+.uc-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.uc-ava{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;font-family:var(--mono);flex-shrink:0}
+.uc-name{font-size:15px;font-weight:600}
+.uc-email{font-size:11px;color:var(--txt2);font-family:var(--mono);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:13px}
+.uc-s{background:var(--s2);border-radius:7px;padding:8px 9px}
+.uc-sl{font-size:9px;color:var(--txt3);font-family:var(--mono);margin-bottom:3px;text-transform:uppercase}
+.uc-sv{font-size:17px;font-weight:700;color:var(--acc)}
 
-/* BUTTONS */
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--r); font-size: 12px; font-family: var(--mono); cursor: pointer; border: 1px solid var(--border2); background: var(--surface2); color: var(--text); transition: all 0.15s; white-space: nowrap; }
-.btn:hover { border-color: var(--accent); color: var(--accent); }
-.btn.primary { background: var(--accent); color: #001a14; border-color: var(--accent); font-weight: 500; }
-.btn.primary:hover { background: #00c9ab; }
-.btn.danger { border-color: var(--danger); color: var(--danger); }
-.btn.warn { border-color: var(--warn); color: var(--warn); }
-.btn.sm { padding: 6px 10px; font-size: 11px; }
-.btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
-.btn svg, .nav-btn svg { flex-shrink: 0; }
-.btn svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; }
+/* ── REPORTS ── */
+.rppage{flex-direction:column;background:var(--bg);width:100%}
+.rpbody{flex:1;overflow-y:auto;padding:18px 22px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px}
+.kpi{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:17px 18px}
+.kpi-l{font-size:11px;color:var(--txt2);font-family:var(--mono);margin-bottom:6px;letter-spacing:.04em}
+.kpi-v{font-size:28px;font-weight:700;line-height:1}
+.kpi-s{font-size:11px;color:var(--txt3);font-family:var(--mono);margin-top:4px}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.cc{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:18px}
+.cc-t{font-size:13px;font-weight:600;margin-bottom:14px}
+.cc-w{position:relative;height:200px}
+.rpc{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:18px;margin-bottom:14px}
+.rpc-t{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+#rmap{height:270px;border-radius:8px;overflow:hidden}
 
-/* PHOTO */
-.photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-.photo-thumb { aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); position: relative; background: var(--bg); }
-.photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.photo-thumb .del { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; background: rgba(0,0,0,0.75); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; color: #fff; border: none; opacity: 0; transition: 0.2s; }
-.photo-thumb:hover .del { opacity: 1; }
-.photo-add { aspect-ratio: 1; border-radius: 6px; border: 1px dashed var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); font-size: 20px; background: var(--bg); transition: 0.2s; }
-.photo-add:hover { border-color: var(--accent); color: var(--accent); }
+/* ── MODALS ── */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px}
+.mbg.hidden{display:none}
+.modal{background:var(--s1);border:1px solid var(--b1);border-radius:15px;padding:24px;width:480px;max-width:100%;max-height:88vh;overflow-y:auto}
+.modal.sm{width:360px}
+.mhd{font-size:16px;font-weight:600;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.mcl{cursor:pointer;color:var(--txt3);font-size:20px;line-height:1;transition:.15s}
+.mcl:hover{color:var(--txt)}
+.drow{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--b1)}
+.dk{font-size:11px;color:var(--txt3);font-family:var(--mono);min-width:120px;padding-top:1px}
+.dv{font-size:12px;flex:1;word-break:break-all;font-family:var(--mono)}
+#cam-vid{width:100%;border-radius:8px;border:1px solid var(--b1);background:#000;aspect-ratio:4/3;object-fit:cover;display:block}
 
-/* MAP */
-.map-wrap { position: relative; flex: 1; }
-#map { width: 100%; height: 100%; }
-.map-fab { position: absolute; z-index: 800; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 6px; }
-.fab { width: 36px; height: 36px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text); transition: 0.15s; }
-.fab:hover { border-color: var(--accent); color: var(--accent); }
-.fab.on { background: var(--accent); color: #001a14; border-color: var(--accent); }
-.fab svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; }
+/* ── TOASTS ── */
+.toastwrap{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:7px}
+.toast{padding:11px 16px;background:var(--s2);border:1px solid var(--b1);border-radius:10px;font-size:12px;font-family:var(--mono);display:flex;align-items:center;gap:8px;animation:tin .3s ease;max-width:320px;border-left-width:3px}
+.toast.ok{border-left-color:var(--acc)}.toast.err{border-left-color:var(--err)}
+.toast.info{border-left-color:var(--acc2)}.toast.warn{border-left-color:var(--warn)}
+@keyframes tin{from{transform:translateX(16px);opacity:0}to{transform:translateX(0);opacity:1}}
 
-/* LAYER ITEMS */
-.layer-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 5px; background: var(--bg); cursor: pointer; transition: border-color 0.15s; }
-.layer-row:hover { border-color: var(--border2); }
-.layer-row.active { border-color: var(--accent); }
-.ldot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-.lname { flex: 1; font-size: 12px; }
-.lbadge { font-size: 9px; font-family: var(--mono); padding: 2px 7px; border-radius: 4px; background: rgba(0,229,195,0.1); color: var(--accent); border: 1px solid rgba(0,229,195,0.2); }
-.toggle { position: relative; width: 30px; height: 17px; flex-shrink: 0; }
-.toggle input { opacity: 0; width: 0; height: 0; }
-.tslider { position: absolute; inset: 0; background: var(--border2); border-radius: 9px; cursor: pointer; transition: 0.2s; }
-.tslider::before { content:''; position: absolute; width: 13px; height: 13px; left: 2px; top: 2px; background: var(--muted); border-radius: 50%; transition: 0.2s; }
-.toggle input:checked + .tslider { background: var(--accent); }
-.toggle input:checked + .tslider::before { transform: translateX(13px); background: #001a14; }
+/* LEAFLET */
+.leaflet-container{background:#0a0e18}
+.leaflet-control-zoom a{background:var(--s1)!important;color:var(--txt)!important;border:1px solid var(--b1)!important}
+.leaflet-control-zoom a:hover{color:var(--acc)!important}
+.leaflet-popup-content-wrapper{background:var(--s1);border:1px solid var(--b1);color:var(--txt);border-radius:10px}
+.leaflet-popup-tip{background:var(--s1)}
 
-/* DRAG ZONE */
-.drag-zone { border: 1.5px dashed var(--border2); border-radius: var(--r); padding: 18px; text-align: center; color: var(--muted); font-size: 12px; font-family: var(--mono); cursor: pointer; transition: 0.2s; }
-.drag-zone:hover, .drag-zone.over { border-color: var(--accent2); color: var(--accent2); background: rgba(58,155,255,0.04); }
-.drag-zone svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; margin-bottom: 6px; display: block; margin-left: auto; margin-right: auto; }
-
-/* LOG */
-.log-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 10px; font-family: var(--mono); font-size: 11px; max-height: 100px; overflow-y: auto; }
-.log-box .line { margin-bottom: 2px; }
-.log-box .line.ok { color: var(--accent); }
-.log-box .line.err { color: var(--danger); }
-.log-box .line.info { color: var(--accent2); }
-.log-box .line.warn { color: var(--warn); }
-
-/* BADGE */
-.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-family: var(--mono); }
-.badge.ok { background: rgba(0,229,195,0.1); color: var(--accent); border: 1px solid rgba(0,229,195,0.2); }
-.badge.err { background: rgba(255,90,110,0.1); color: var(--danger); border: 1px solid rgba(255,90,110,0.2); }
-.badge.info { background: rgba(58,155,255,0.1); color: var(--accent2); border: 1px solid rgba(58,155,255,0.2); }
-.badge.warn { background: rgba(255,179,71,0.1); color: var(--warn); border: 1px solid rgba(255,179,71,0.2); }
-.badge.purple { background: rgba(162,89,255,0.1); color: var(--accent3); border: 1px solid rgba(162,89,255,0.2); }
-
-/* PROGRESS */
-.pbar-wrap { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 8px; }
-.pbar-fill { height: 100%; background: var(--accent); transition: width 0.4s; border-radius: 2px; }
-
-/* ===== RECORDS PAGE ===== */
-.records-page { flex-direction: column; background: var(--bg); }
-.page-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; flex-shrink: 0; background: var(--surface); }
-.page-title { font-size: 18px; font-weight: 700; }
-.page-subtitle { font-size: 12px; color: var(--muted); font-family: var(--mono); }
-.filter-bar { padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: var(--surface); flex-shrink: 0; }
-.filter-bar input, .filter-bar select { padding: 7px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); color: var(--text); font-family: var(--mono); font-size: 12px; outline: none; transition: 0.2s; }
-.filter-bar input:focus, .filter-bar select:focus { border-color: var(--accent); }
-.filter-bar input { width: 200px; }
-
-.records-table-wrap { flex: 1; overflow: auto; padding: 16px 24px; }
-.rtable { width: 100%; border-collapse: collapse; font-size: 12px; }
-.rtable th { text-align: left; padding: 10px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--border); white-space: nowrap; }
-.rtable td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-.rtable tr:hover td { background: var(--surface); }
-.rtable td:first-child { font-family: var(--mono); color: var(--muted); font-size: 11px; }
-.user-tag { display: inline-flex; align-items: center; gap: 5px; }
-.mini-avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; }
-.rec-actions { display: flex; gap: 4px; }
-.icon-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); transition: 0.15s; }
-.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
-.icon-btn svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; }
-.empty-state { text-align: center; padding: 60px 20px; color: var(--muted); font-family: var(--mono); font-size: 12px; }
-
-/* ===== USERS PAGE ===== */
-.users-page { flex-direction: column; background: var(--bg); }
-.users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; padding: 20px 24px; overflow-y: auto; }
-.user-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: border-color 0.2s; }
-.user-card:hover { border-color: var(--border2); }
-.uc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-.uc-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; }
-.uc-name { font-size: 15px; font-weight: 500; }
-.uc-email { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 1px; }
-.uc-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-.uc-stat { background: var(--surface2); border-radius: 6px; padding: 8px 10px; }
-.uc-stat-label { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-bottom: 2px; }
-.uc-stat-val { font-size: 18px; font-weight: 700; color: var(--accent); }
-.uc-actions { display: flex; gap: 6px; }
-
-/* ===== REPORTS PAGE ===== */
-.reports-page { flex-direction: column; background: var(--bg); }
-.reports-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
-.stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
-.stat-card-label { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-bottom: 6px; }
-.stat-card-val { font-size: 28px; font-weight: 700; line-height: 1; }
-.stat-card-delta { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 4px; }
-.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-.chart-title { font-size: 13px; font-weight: 500; margin-bottom: 16px; }
-.chart-wrap { position: relative; height: 220px; }
-.report-table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
-.report-table-title { font-size: 13px; font-weight: 500; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
-
-/* MODAL */
-.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; display: flex; align-items: center; justify-content: center; }
-.modal-bg.hidden { display: none; }
-.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; width: 480px; max-width: 95vw; max-height: 85vh; overflow-y: auto; }
-.modal-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-.modal-close { cursor: pointer; color: var(--muted); font-size: 18px; }
-.modal-close:hover { color: var(--text); }
-
-/* CAMERA */
-#cam-video { width: 100%; border-radius: 8px; border: 1px solid var(--border); background: #000; aspect-ratio: 4/3; object-fit: cover; display: block; }
-
-/* RECORD DETAIL */
-.detail-row { display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-.detail-key { font-size: 11px; color: var(--muted); font-family: var(--mono); min-width: 120px; }
-.detail-val { font-size: 13px; flex: 1; }
-
-/* TOAST */
-.toast-wrap { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-.toast { padding: 12px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; font-size: 12px; font-family: var(--mono); display: flex; align-items: center; gap: 8px; animation: toaston 0.3s ease; max-width: 320px; }
-.toast.ok { border-left: 3px solid var(--accent); }
-.toast.err { border-left: 3px solid var(--danger); }
-.toast.info { border-left: 3px solid var(--accent2); }
-@keyframes toaston { from{transform:translateX(20px);opacity:0} to{transform:translateX(0);opacity:1} }
-
-/* LEAFLET overrides */
-.leaflet-container { background: #0d1520; }
-.leaflet-control-zoom a { background: var(--surface) !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
-.leaflet-control-zoom a:hover { color: var(--accent) !important; }
-.leaflet-popup-content-wrapper { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 10px; }
-.leaflet-popup-tip { background: var(--surface); }
-
-/* role colors */
-.role-admin { color: #ff5a6e; } .bg-admin { background: rgba(255,90,110,0.15); }
-.role-supervisor { color: #ffb347; } .bg-supervisor { background: rgba(255,179,71,0.15); }
-.role-field { color: #00e5c3; } .bg-field { background: rgba(0,229,195,0.15); }
-.role-viewer { color: #a259ff; } .bg-viewer { background: rgba(162,89,255,0.15); }
+/* ROLE COLORS */
+.c-admin{color:#ff4d6d}.bg-admin{background:rgba(255,77,109,.12)}
+.c-supervisor{color:#ffaa2e}.bg-supervisor{background:rgba(255,170,46,.12)}
+.c-field{color:#05d9a0}.bg-field{background:rgba(5,217,160,.12)}
+.c-viewer{color:#9b5fff}.bg-viewer{background:rgba(155,95,255,.12)}
 
 @media(max-width:768px){
-  .survey-layout { grid-template-columns: 1fr; }
-  .stat-cards { grid-template-columns: 1fr 1fr; }
-  .charts-grid { grid-template-columns: 1fr; }
+  .svl{grid-template-columns:1fr;grid-template-rows:1fr 280px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .cgrid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- ===== CONFIG SCREEN ===== -->
-<div id="config-screen">
-<div class="config-card">
-  <div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:16px">◈ GIS_SURVEY / KONFIGURIMI FILLESTAR</div>
-  <div class="config-title">Konfiguro Supabase</div>
-  <div class="config-sub">Vendosni kredencialet tuaja të Supabase për të aktivizuar autentikimin dhe bazën e të dhënave</div>
+<!-- ═══════════════════════════════════
+     CONFIG SCREEN  
+═══════════════════════════════════ -->
+<div id="scr-config" class="overlay">
+<div style="width:580px;max-width:100%">
+  <div class="card-logo" style="font-family:var(--mono);font-size:11px;color:var(--acc);letter-spacing:.15em;margin-bottom:20px">◈ GIS_SURVEY_PRO <span style="color:var(--txt3)">/ KONFIGURIMI</span></div>
 
-  <div class="config-step">
-    <div class="config-num">1</div>
-    <div class="config-step-text">
-      Shkoni te <a href="https://supabase.com" target="_blank" style="color:var(--accent)">supabase.com</a> → krijoni projekt të ri → <code>Settings → API</code>
-    </div>
-  </div>
-  <div class="config-step">
-    <div class="config-num">2</div>
-    <div class="config-step-text">
-      Ekzekutoni SQL-in në <code>SQL Editor</code> (klikoni "Shfaq SQL" më poshtë)
-    </div>
-  </div>
-  <div class="config-step">
-    <div class="config-num">3</div>
-    <div class="config-step-text">
-      Vendosni <code>Project URL</code> dhe <code>anon key</code> më poshtë
-    </div>
+  <div class="step-bar" id="spips">
+    <div class="step-pip act" id="sp0"></div>
+    <div class="step-pip" id="sp1"></div>
+    <div class="step-pip" id="sp2"></div>
   </div>
 
-  <div id="sql-block" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px;font-family:var(--mono);font-size:10px;color:var(--accent2);margin-bottom:14px;max-height:160px;overflow-y:auto;white-space:pre">-- Run this in Supabase SQL Editor:
-create table if not exists profiles (
-  id uuid references auth.users on delete cascade primary key,
-  email text, full_name text, role text default 'field',
+  <!-- HAPI 0 -->
+  <div id="ss0" class="card">
+    <div class="card-title">Krijoni projektin Supabase</div>
+    <div class="card-sub">Hapi 1 / 3 — llogari & projekt falas</div>
+    <div class="instr"><div class="instr-n">1</div><div class="instr-t">Shkoni te <a href="https://supabase.com" target="_blank">supabase.com</a> → <code>Start your project</code> → krijoni llogari me GitHub ose email</div></div>
+    <div class="instr"><div class="instr-n">2</div><div class="instr-t"><code>New project</code> → emri: <code>gis-survey-al</code> → rajoni: <code>EU West (Frankfurt)</code> → <code>Create project</code></div></div>
+    <div class="instr"><div class="instr-n">3</div><div class="instr-t">Prisni ~2 min derisa projekti inicializohet, pastaj klikoni <b>Vazhdo</b></div></div>
+    <div class="brow" style="margin-top:18px">
+      <a href="https://supabase.com" target="_blank" class="btn sec">Hap Supabase →</a>
+      <button class="btn pri" onclick="goSS(1)">Projekti u krijua →</button>
+    </div>
+  </div>
+
+  <!-- HAPI 1 -->
+  <div id="ss1" class="card hidden">
+    <div class="card-title">Krijoni tabelat (SQL)</div>
+    <div class="card-sub">Hapi 2 / 3 — një herë e vetme</div>
+    <div class="instr"><div class="instr-n">1</div><div class="instr-t">Projekti juaj → <code>SQL Editor</code> (menyja e majtë) → <code>New query</code></div></div>
+    <div class="instr"><div class="instr-n">2</div><div class="instr-t">Kopjoni SQL-in poshtë → ngjiteni → klikoni <code>RUN</code> (ose Ctrl+Enter)</div></div>
+    <div style="position:relative;margin:12px 0">
+      <div class="sql-box" id="sqlbox">-- GIS Survey Pro — Schema v2 (ekzekutoni NJË HERË)
+-- ═══════════════════════════════════════════════
+
+create table if not exists public.profiles (
+  id         uuid references auth.users on delete cascade primary key,
+  email      text,
+  full_name  text,
+  role       text not null default 'field'
+               check (role in ('admin','supervisor','field','viewer')),
   created_at timestamptz default now()
 );
-create table if not exists survey_records (
-  id bigserial primary key,
-  user_id uuid references profiles(id),
-  user_email text, user_name text,
-  date date, time time, lat float8, lng float8, accuracy float4,
-  qellim text, notes text, photo_count int default 0,
-  synced boolean default true,
-  created_at timestamptz default now()
+
+create table if not exists public.survey_records (
+  id          bigserial primary key,
+  user_id     uuid references public.profiles(id) on delete set null,
+  user_email  text,
+  user_name   text,
+  user_role   text default 'field',
+  rec_date    date,
+  rec_time    time,
+  lat         double precision,
+  lng         double precision,
+  accuracy    real default 0,
+  qellim      text,
+  notes       text,
+  photo_count integer default 0,
+  synced      boolean default true,
+  created_at  timestamptz default now()
 );
-alter table profiles enable row level security;
-alter table survey_records enable row level security;
-create policy "users see own profile" on profiles for select using (auth.uid() = id);
-create policy "users update own profile" on profiles for update using (auth.uid() = id);
-create policy "admins see all profiles" on profiles for select using (
-  exists(select 1 from profiles where id=auth.uid() and role='admin')
-);
-create policy "supervisors see all profiles" on profiles for select using (
-  exists(select 1 from profiles where id=auth.uid() and role='supervisor')
-);
-create policy "admins update all profiles" on profiles for update using (
-  exists(select 1 from profiles where id=auth.uid() and role='admin')
-);
-create policy "admins delete profiles" on profiles for delete using (
-  exists(select 1 from profiles where id=auth.uid() and role='admin')
-);
-create policy "users insert records" on survey_records for insert with check (auth.uid() = user_id);
-create policy "users see own records" on survey_records for select using (
-  auth.uid() = user_id or
-  exists(select 1 from profiles where id=auth.uid() and role in ('admin','supervisor','viewer'))
-);
-create policy "admins delete" on survey_records for delete using (
-  exists(select 1 from profiles where id=auth.uid() and role='admin')
-);
-create or replace function handle_new_user() returns trigger language plpgsql security definer as $$
+
+create index if not exists idx_sr_uid  on public.survey_records(user_id);
+create index if not exists idx_sr_date on public.survey_records(rec_date);
+create index if not exists idx_sr_ca   on public.survey_records(created_at desc);
+
+-- ROW LEVEL SECURITY
+alter table public.profiles       enable row level security;
+alter table public.survey_records enable row level security;
+
+-- STORAGE BUCKET PËR FOTO
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('survey-photos','survey-photos',false,10485760,
+  array['image/jpeg','image/png','image/webp'])
+on conflict (id) do nothing;
+
+-- Profiles policies (rregulluar: supervisor lexon profiles)
+drop policy if exists "own_read"        on public.profiles;
+drop policy if exists "own_update"      on public.profiles;
+drop policy if exists "admin_read"      on public.profiles;
+drop policy if exists "admin_upd"       on public.profiles;
+drop policy if exists "elevated_read"   on public.profiles;
+drop policy if exists "supervisor_read" on public.profiles;
+create policy "own_read" on public.profiles for select using (auth.uid()=id);
+create policy "elevated_read" on public.profiles for select using (
+  exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','supervisor')));
+create policy "own_update" on public.profiles for update using (auth.uid()=id)
+  with check (role=(select role from public.profiles where id=auth.uid()));
+create policy "admin_upd" on public.profiles for update using (
+  exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='admin'));
+
+-- Survey records policies (shtuar upd_admin)
+drop policy if exists "ins_own"      on public.survey_records;
+drop policy if exists "sel_own"      on public.survey_records;
+drop policy if exists "sel_elevated" on public.survey_records;
+drop policy if exists "del_admin"    on public.survey_records;
+drop policy if exists "upd_admin"    on public.survey_records;
+create policy "ins_own" on public.survey_records for insert
+  with check (auth.uid()=user_id);
+create policy "sel_own" on public.survey_records for select using (
+  auth.uid()=user_id or
+  exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','supervisor','viewer')));
+create policy "del_admin" on public.survey_records for delete using (
+  exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='admin'));
+create policy "upd_admin" on public.survey_records for update using (
+  exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='admin'));
+
+-- Storage policies
+drop policy if exists "photo_upload" on storage.objects;
+drop policy if exists "photo_select" on storage.objects;
+drop policy if exists "photo_delete" on storage.objects;
+create policy "photo_upload" on storage.objects for insert
+  with check (bucket_id='survey-photos' and auth.uid()::text=(string_to_array(name,'/'))[1]);
+create policy "photo_select" on storage.objects for select using (
+  bucket_id='survey-photos' and (
+    auth.uid()::text=(string_to_array(name,'/'))[1] or
+    exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','supervisor'))));
+create policy "photo_delete" on storage.objects for delete using (
+  bucket_id='survey-photos' and
+  exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='admin'));
+
+-- TRIGGER: siguri — blloko role=admin nga regjistrim i klientit
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer set search_path=public as $$
+declare _r text;
 begin
-  insert into public.profiles (id, email, full_name, role)
-  values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name',''), coalesce(new.raw_user_meta_data->>'role','field'));
+  _r := coalesce(new.raw_user_meta_data->>'role','field');
+  if _r not in ('supervisor','field','viewer') then _r := 'field'; end if;
+  insert into public.profiles(id,email,full_name,role)
+  values(new.id, new.email,
+    coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email,'@',1)),
+    _r) on conflict(id) do nothing;
   return new;
 end;$$;
-create or replace trigger on_auth_user_created after insert on auth.users
-  for each row execute procedure handle_new_user();</div>
 
-  <div style="margin-bottom:14px">
-    <div class="auth-field"><label>Project URL</label><input type="url" id="cfg-url" placeholder="https://xxxxxxxxxxxx.supabase.co"></div>
-    <div class="auth-field"><label>Anon Key (public)</label><input type="text" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></div>
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+
+-- BËNI ADMIN-IN E PARË (ndërroni email-in tuaj):
+-- update public.profiles set role='admin' where email='juaji@email.com';</div>
+      <button class="btn sm" onclick="copySql()" style="position:absolute;top:7px;right:7px">
+        <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Kopjo
+      </button>
+    </div>
+    <div class="instr"><div class="instr-n">3</div><div class="instr-t">Duhet të shihni: <code style="color:var(--acc)">Success. No rows returned</code> → keni sukses!</div></div>
+    <div class="instr"><div class="instr-n">4</div><div class="instr-t">Bëni admin-in e parë: <code>update public.profiles set role='admin' where email='tuaj@email.com'</code></div></div>
+    <div class="brow" style="margin-top:16px">
+      <button class="btn" onclick="goSS(0)">← Prapa</button>
+      <button class="btn pri" onclick="goSS(2)">SQL u ekzekutua →</button>
+    </div>
   </div>
-  <div style="display:flex;gap:8px">
-    <button class="btn sm" onclick="document.getElementById('sql-block').style.display=document.getElementById('sql-block').style.display==='none'?'block':'none'">Shfaq SQL</button>
-    <button class="auth-btn" style="flex:1" onclick="saveConfig()">Ruaj & Vazhdo →</button>
+
+  <!-- HAPI 2 -->
+  <div id="ss2" class="card hidden">
+    <div class="card-title">Vendosni çelësat API</div>
+    <div class="card-sub">Hapi 3 / 3</div>
+    <div class="instr"><div class="instr-n">1</div><div class="instr-t">Projekti juaj Supabase → <code>Settings</code> (⚙) → <code>API</code></div></div>
+    <div class="instr"><div class="instr-n">2</div><div class="instr-t">Kopjoni <code>Project URL</code> dhe <code>anon public</code> key poshtë</div></div>
+    <div style="margin:16px 0">
+      <div class="ifield"><label>PROJECT URL</label><input type="url" id="cfg-url" placeholder="https://xxxxxxxxxxx.supabase.co" oninput="clearCfgErr()"></div>
+      <div class="ifield"><label>ANON KEY (public)</label><input type="text" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." oninput="clearCfgErr()"></div>
+    </div>
+    <div id="cfg-alert" class="alert err hidden"></div>
+    <div class="brow">
+      <button class="btn" onclick="goSS(1)">← Prapa</button>
+      <button class="btn pri" id="cfg-btn" onclick="saveConfig()">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Lidhu me Supabase
+      </button>
+    </div>
   </div>
-  <div id="cfg-err" class="auth-err" style="margin-top:12px;margin-bottom:0"></div>
 </div>
 </div>
 
-<!-- ===== AUTH SCREEN ===== -->
-<div id="auth-screen" style="display:none">
-<div class="auth-card">
-  <div class="auth-logo">◈ GIS_SURVEY <span>/ ALBANIA</span></div>
-  <div class="auth-title">Mirë se vini</div>
-  <div class="auth-sub">Sistem i menaxhimit të të dhënave gjeografike</div>
-
+<!-- ═══════════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════════ -->
+<div id="scr-auth" class="overlay hidden">
+<div class="card" style="width:440px">
+  <div class="card-logo">◈ GIS_SURVEY_PRO <span>/ ALBANIA</span></div>
+  <div class="card-title">Mirë se vini</div>
+  <div class="card-sub">Sistem i menaxhimit të të dhënave gjeografike</div>
   <div class="auth-tabs">
-    <div class="auth-tab active" onclick="setAuthTab('login')">Hyr</div>
-    <div class="auth-tab" onclick="setAuthTab('register')">Regjistrohu</div>
+    <div class="atab act" id="atab-li" onclick="aswitch('li')">Hyr</div>
+    <div class="atab" id="atab-rg" onclick="aswitch('rg')">Regjistrohu</div>
   </div>
+  <div id="auth-alert" class="alert err hidden"></div>
 
-  <div id="auth-err" class="auth-err"></div>
-
-  <div id="login-form">
-    <div class="auth-field"><label>Email</label><input type="email" id="login-email" placeholder="user@domain.com"></div>
-    <div class="auth-field"><label>Fjalëkalimi</label><input type="password" id="login-pass" placeholder="••••••••"></div>
-    <button class="auth-btn" onclick="doLogin()">Hyr →</button>
-    <div style="margin-top:12px;text-align:center">
-      <button class="btn sm" style="width:100%" onclick="demoLogin()">▸ Demo me të dhëna testimi</button>
+  <!-- LOGIN -->
+  <div id="aform-li">
+    <div class="ifield"><label>EMAIL</label><input type="email" id="li-em" placeholder="user@domain.com" oninput="clearAuthErr()"></div>
+    <div class="ifield"><label>FJALËKALIMI</label><input type="password" id="li-pw" placeholder="••••••••" oninput="clearAuthErr()" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="auth-main" id="li-btn" onclick="doLogin()">Hyr →</button>
+    <div style="margin-top:8px;text-align:center">
+      <button class="btn xs" style="background:transparent;border:none;color:var(--txt2)" onclick="showForgot()">Harrova fjalëkalimin</button>
     </div>
   </div>
 
-  <div id="register-form" style="display:none">
-    <div class="two-col" style="gap:8px">
-      <div class="auth-field"><label>Emri i plotë</label><input type="text" id="reg-name" placeholder="Arta Krasniqi"></div>
-      <div class="auth-field"><label>Roli</label>
-        <select id="reg-role">
-          <option value="field">Field User</option>
-          <option value="viewer">Viewer</option>
-          <option value="supervisor">Supervisor</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
+  <!-- REGISTER -->
+  <div id="aform-rg" class="hidden">
+    <div class="two" style="gap:10px">
+      <div class="ifield"><label>EMRI I PLOTË</label><input type="text" id="rg-nm" placeholder="Arta Krasniqi" oninput="clearAuthErr()"></div>
+      <div class="ifield"><label>EMAIL</label><input type="email" id="rg-em" placeholder="user@domain.com" oninput="clearAuthErr()"></div>
     </div>
-    <div class="auth-field"><label>Email</label><input type="email" id="reg-email" placeholder="user@domain.com"></div>
-    <div class="auth-field"><label>Fjalëkalimi</label><input type="password" id="reg-pass" placeholder="min. 6 karaktere"></div>
-    <button class="auth-btn" onclick="doRegister()">Krijo llogari →</button>
+    <div class="ifield"><label>FJALËKALIMI (min. 6 karaktere)</label><input type="password" id="rg-pw" placeholder="••••••••" oninput="clearAuthErr()"></div>
+    <div class="ifield"><label>ROLI</label></div>
+    <div class="role-grid" id="rcards">
+      <div class="rc sel" data-role="field" onclick="pickRole(this)"><div class="rc-name c-field">Field User</div><div class="rc-desc">Krijon rekorde. Sheh vetëm të tijat.</div></div>
+      <div class="rc" data-role="supervisor" onclick="pickRole(this)"><div class="rc-name c-supervisor">Supervisor</div><div class="rc-desc">Sheh rekordet e ekipit. Pa fshirje.</div></div>
+      <div class="rc" data-role="viewer" onclick="pickRole(this)"><div class="rc-name c-viewer">Viewer</div><div class="rc-desc">Vetëm raporte & statistika.</div></div>
+      <div class="rc" data-role="admin" onclick="pickRole(this)"><div class="rc-name c-admin">Admin</div><div class="rc-desc">Akses i plotë + menaxhim users.</div></div>
+    </div>
+    <button class="auth-main" id="rg-btn" onclick="doRegister()">Krijo llogari →</button>
   </div>
 
-  <div style="margin-top:16px;text-align:center">
-    <button class="btn sm" onclick="showConfig()" style="color:var(--muted)">⚙ Ndrysho Supabase config</button>
+  <div style="margin-top:12px;text-align:center">
+    <button class="btn xs" style="background:transparent;border:none;color:var(--txt3)" onclick="showCfg()">⚙ Ndrysho Supabase config</button>
   </div>
 </div>
 </div>
 
-<!-- ===== MAIN APP ===== -->
+<!-- ═══════════════════════════════════
+     MAIN APP
+═══════════════════════════════════ -->
 <div id="app">
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="logo">◈ GIS<span>_SURVEY</span></div>
-    <div class="topbar-nav">
-      <button class="nav-btn active" id="nav-survey" onclick="showPage('survey')">
-        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Survey
-      </button>
-      <button class="nav-btn" id="nav-records" onclick="showPage('records')">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Rekorde
-      </button>
-      <button class="nav-btn" id="nav-users" onclick="showPage('users')" id="nav-users-btn">
-        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Përdoruesit
-      </button>
-      <button class="nav-btn" id="nav-reports" onclick="showPage('reports')">
-        <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Raporte
-      </button>
+    <div class="nav">
+      <button class="nb on" id="nav-sv" onclick="goPg('sv')"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Survey</button>
+      <button class="nb" id="nav-rc" onclick="goPg('rc')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>Rekorde</button>
+      <button class="nb" id="nav-us" onclick="goPg('us')"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Përdoruesit</button>
+      <button class="nb" id="nav-rp" onclick="goPg('rp')"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Raporte</button>
     </div>
-    <div class="topbar-sep"></div>
-    <div class="conn-indicator"><div class="conn-dot" id="cdot"></div><span id="clabel" style="font-family:var(--mono);font-size:11px">online</span></div>
-    <div style="width:1px;height:20px;background:var(--border);margin:0 8px"></div>
-    <div class="user-chip" onclick="doLogout()">
-      <div class="user-avatar" id="top-avatar" style="background:rgba(0,229,195,0.15);color:var(--accent)">?</div>
-      <div class="user-info">
-        <div class="user-name" id="top-name">—</div>
-        <div class="user-role" id="top-role">—</div>
-      </div>
+    <div class="ts"></div>
+    <div style="display:flex;align-items:center;gap:5px;margin-right:10px">
+      <div class="cdot" id="cdot"></div>
+      <span id="clbl" style="font-family:var(--mono);font-size:11px;color:var(--txt2)">online</span>
+    </div>
+    <div class="uchip" onclick="doLogout()">
+      <div class="ava" id="tava">?</div>
+      <div><div class="uname" id="tname">—</div><div class="urole" id="trole">—</div></div>
     </div>
   </div>
 
-  <!-- PAGES -->
   <div class="pages">
 
-    <!-- SURVEY PAGE -->
-    <div class="page active" id="page-survey">
-      <div class="survey-layout">
-        <div class="survey-panel">
-          <div class="panel-tabs">
-            <div class="ptab active" onclick="switchPTab(0)">Formular</div>
-            <div class="ptab" onclick="switchPTab(1)">Shtresa</div>
-            <div class="ptab" onclick="switchPTab(2)">Shapefile</div>
-            <div class="ptab" onclick="switchPTab(3)">Sinkronizo</div>
+    <!-- ══ SURVEY PAGE ══ -->
+    <div class="page on" id="page-sv">
+      <div class="svl">
+        <div class="svp">
+          <div class="ptabs">
+            <div class="ptab on" onclick="sptab(0)">FORMULAR</div>
+            <div class="ptab" onclick="sptab(1)">SHTRESA</div>
+            <div class="ptab" onclick="sptab(2)">SHAPEFILE</div>
+            <div class="ptab" onclick="sptab(3)">SINKRONIZO</div>
           </div>
 
           <!-- FORM -->
-          <div class="ptab-content active" id="ptab-0">
+          <div class="ptc on" id="ptc0">
             <div class="section">
-              <div class="sec-label">Identifikimi</div>
-              <div class="field"><label>Email adresa</label><input type="email" id="f-email" placeholder="auto nga llogaria"></div>
-              <div class="two-col">
-                <div class="field"><label>Data</label><input type="date" id="f-date"></div>
-                <div class="field"><label>Ora</label><input type="time" id="f-time"></div>
+              <div class="sec-hd">Identifikimi</div>
+              <div class="ifield"><label>EMAIL (automatik)</label><input type="email" id="f-em" readonly style="opacity:.55;cursor:default"></div>
+              <div class="two">
+                <div class="ifield"><label>DATA</label><input type="date" id="f-dt"></div>
+                <div class="ifield"><label>ORA</label><input type="time" id="f-tm"></div>
               </div>
-              <div class="field">
-                <label>Qëllimi i vëzhgimit</label>
-                <select id="f-qellim">
-                  <option value="">Zgjidh qëllimin...</option>
+              <div class="ifield">
+                <label>QËLLIMI I VËZHGIMIT</label>
+                <select id="f-ql">
+                  <option value="">— Zgjidh —</option>
                   <option>Inspektim urban</option><option>Monitorim mjedisi</option>
                   <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
                   <option>Pyje dhe bujqësi</option><option>Ujëra dhe hidrologji</option>
-                  <option>Arkeologji / Trashëgimi</option><option>Fatkeqësi natyrore</option><option>Tjetër</option>
+                  <option>Arkeologji / Trashëgimi</option><option>Fatkeqësi natyrore</option>
+                  <option>Inspektim ndërtese</option><option>Tjetër</option>
                 </select>
               </div>
-              <div class="field"><label>Shënime</label><textarea id="f-notes" placeholder="Përshkruani vëzhgimin..."></textarea></div>
+              <div class="ifield"><label>SHËNIME</label><textarea id="f-nt" placeholder="Përshkruani vëzhgimin..."></textarea></div>
             </div>
-
             <div class="section">
-              <div class="sec-label">Koordinatat GPS</div>
-              <div class="three-col">
-                <div class="field" style="margin:0"><label>Gjerësi</label><div class="coord-box" id="f-lat">—</div></div>
-                <div class="field" style="margin:0"><label>Gjatësi</label><div class="coord-box" id="f-lng">—</div></div>
-                <button class="btn sm" onclick="getGPS()" style="margin-bottom:0">
-                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-                </button>
+              <div class="sec-hd">Koordinatat GPS</div>
+              <div class="three">
+                <div class="ifield" style="margin:0"><label>GJERËSI (LAT)</label><div class="mono-val" id="f-lat">—</div></div>
+                <div class="ifield" style="margin:0"><label>GJATËSI (LNG)</label><div class="mono-val" id="f-lng">—</div></div>
+                <button class="btn sm" onclick="getGPS()" style="margin-bottom:0"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
               </div>
-              <div class="field" style="margin-top:8px"><label>Saktësia</label><div class="coord-box" id="f-acc">—</div></div>
-              <div class="btn-row" style="margin-top:8px">
-                <button class="btn sm" onclick="getGPS()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> GPS Auto</button>
-                <button class="btn sm" id="pick-btn" onclick="togglePick()"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Nga harta</button>
+              <div class="ifield" style="margin-top:8px"><label>SAKTËSIA</label><div class="mono-val" id="f-acc">—</div></div>
+              <div class="brow" style="margin-top:8px">
+                <button class="btn sm" onclick="getGPS()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>GPS Auto</button>
+                <button class="btn sm" id="pick-btn" onclick="togPick()"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Nga harta</button>
               </div>
             </div>
-
             <div class="section">
-              <div class="sec-label">Fotografi</div>
-              <div class="photo-grid" id="photo-grid"></div>
-              <input type="file" id="photo-inp" accept="image/*" multiple style="display:none" onchange="handlePhotos(event)">
-              <div class="btn-row" style="margin-top:10px">
-                <button class="btn sm" onclick="openCam()"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Kamera</button>
-                <button class="btn sm" onclick="document.getElementById('photo-inp').click()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Ngarko</button>
+              <div class="sec-hd">Fotografi (<span id="pcnt">0</span>)</div>
+              <div class="pgrid" id="pgrid"></div>
+              <input type="file" id="phinp" accept="image/*" multiple style="display:none" onchange="addPh(event)">
+              <div class="brow" style="margin-top:9px">
+                <button class="btn sm" onclick="openCam()"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Kamera</button>
+                <button class="btn sm" onclick="document.getElementById('phinp').click()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Ngarko</button>
               </div>
             </div>
-
             <div class="section">
-              <div class="sec-label">Veprime</div>
-              <div class="btn-row" style="margin-bottom:10px">
-                <button class="btn sm" onclick="testConn()"><svg viewBox="0 0 24 24"><path d="M1 6s4-2 11-2 11 2 11 2"/><path d="M1 12s4-2 11-2 11 2 11 2"/></svg> Testo lidhjen</button>
-                <span id="conn-badge" class="badge info" style="display:none">—</span>
-              </div>
-              <div class="btn-row">
-                <button class="btn primary" onclick="addRecord()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Shto rekord</button>
+              <div class="sec-hd">Veprime</div>
+              <div class="brow">
+                <button class="btn pri" id="add-btn" onclick="addRec()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Shto rekord</button>
                 <button class="btn" onclick="clearForm()">Pastro</button>
               </div>
+              <div id="add-status" class="alert hidden" style="margin-top:10px;margin-bottom:0"></div>
             </div>
           </div>
 
           <!-- LAYERS -->
-          <div class="ptab-content" id="ptab-1">
+          <div class="ptc" id="ptc1">
             <div class="section">
-              <div class="sec-label">Harta bazë</div>
-              <div id="base-layers-list"></div>
+              <div class="sec-hd">Harta bazë</div>
+              <div id="bll"></div>
             </div>
             <div class="section">
-              <div class="sec-label">Shtresat aktive</div>
-              <div class="layer-row">
-                <div class="ldot" style="background:var(--accent)"></div>
-                <span class="lname">Pikat e vëzhgimit</span>
-                <label class="toggle"><input type="checkbox" checked onchange="toggleSurveyL(this)"><span class="tslider"></span></label>
-              </div>
-              <div class="layer-row">
-                <div class="ldot" style="background:var(--accent2)"></div>
-                <span class="lname">Shtresat GeoJSON/KML</span>
-                <label class="toggle"><input type="checkbox" checked onchange="toggleShpL(this)"><span class="tslider"></span></label>
-              </div>
+              <div class="sec-hd">Shtresat aktive</div>
+              <div class="lrow"><div class="ldot" style="background:var(--acc)"></div><span class="lnm">Pikat e vëzhgimit</span><label class="ltog"><input type="checkbox" checked onchange="togSL(this)"><span class="tsl"></span></label></div>
+              <div class="lrow"><div class="ldot" style="background:var(--acc2)"></div><span class="lnm">GeoJSON / KML</span><label class="ltog"><input type="checkbox" checked onchange="togShpL(this)"><span class="tsl"></span></label></div>
             </div>
           </div>
 
           <!-- SHAPEFILE -->
-          <div class="ptab-content" id="ptab-2">
+          <div class="ptc" id="ptc2">
             <div class="section">
-              <div class="sec-label">Ngarko shtresa</div>
-              <div class="drag-zone" id="shp-drop" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="handleShpDrop(event)">
+              <div class="sec-hd">Ngarko shtresa</div>
+              <div class="dzone" id="sdz" ondragover="event.preventDefault();this.classList.add('ov')" ondragleave="this.classList.remove('ov')" ondrop="shpDrop(event)" onclick="document.getElementById('shpinp').click()">
                 <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Drag & drop ose kliko<br><span style="font-size:10px;opacity:0.5">.geojson • .kml • .json • .zip</span>
+                Tërhiqe ose kliko<br><span style="font-size:10px;opacity:.5">.geojson • .json • .kml</span>
               </div>
-              <input type="file" id="shp-inp" accept=".geojson,.json,.kml,.zip" multiple style="display:none" onchange="handleShpFile(event)">
-              <button class="btn sm" style="width:100%;margin-top:8px;justify-content:center" onclick="document.getElementById('shp-inp').click()">Zgjidh skedar</button>
+              <input type="file" id="shpinp" accept=".geojson,.json,.kml" multiple style="display:none" onchange="shpFile(event)">
             </div>
-            <div class="section">
-              <div class="sec-label">Shtresat e ngarkuara</div>
-              <div id="shp-list"><div style="font-size:11px;color:var(--muted);text-align:center;padding:16px;font-family:var(--mono)">Asnjë shtresë</div></div>
-            </div>
+            <div class="section"><div class="sec-hd">Shtresat</div><div id="shplist"><div class="empty" style="padding:16px 0">Asnjë shtresë</div></div></div>
           </div>
 
-          <!-- SYNC -->
-          <div class="ptab-content" id="ptab-3">
+          <!-- SYNC / DEBUG -->
+          <div class="ptc" id="ptc3">
             <div class="section">
-              <div class="sec-label">Statusi</div>
-              <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+              <div class="sec-hd">Statusi i lidhjes</div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
                 <button class="btn sm" onclick="testConn()">Testo lidhjen</button>
-                <span id="sync-status" class="badge info">—</span>
+                <span id="sync-st" class="badge info">—</span>
               </div>
-              <div style="font-size:12px;font-family:var(--mono);margin-bottom:4px">Lokale: <span style="color:var(--accent)" id="sync-local">0</span></div>
-              <div style="font-size:12px;font-family:var(--mono)">Pa sinkronizuar: <span style="color:var(--warn)" id="sync-pend">0</span></div>
-              <div class="pbar-wrap" id="spbar" style="display:none"><div class="pbar-fill" id="spfill" style="width:0%"></div></div>
+              <div style="font-family:var(--mono);font-size:12px;margin-bottom:3px">Rekorde Supabase: <span style="color:var(--acc)" id="sl-db">0</span></div>
+              <div style="font-family:var(--mono);font-size:12px;margin-bottom:3px">Rekorde lokale (offline): <span style="color:var(--warn)" id="sl-off">0</span></div>
+              <div class="pbar" id="spbar" style="display:none"><div class="pbf" id="spf" style="width:0%"></div></div>
             </div>
             <div class="section">
-              <div class="sec-label">Veprime</div>
-              <div class="btn-row">
-                <button class="btn primary sm" onclick="syncRecords()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.84-2.5M20.5 15a9 9 0 0 1-14.84 2.5"/></svg> Sinkronizo</button>
-                <button class="btn sm warn" onclick="exportJSON()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> JSON</button>
-                <button class="btn sm" onclick="exportCSV()">CSV</button>
+              <div class="sec-hd">Veprime</div>
+              <div class="brow">
+                <button class="btn pri sm" onclick="syncOff()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.84-2.5M20.5 15a9 9 0 0 1-14.84 2.5"/></svg>Sinkronizo offline</button>
+                <button class="btn sm" onclick="expCSV()">CSV</button>
+                <button class="btn sm warn" onclick="expXLS()">Excel</button>
+                <button class="btn sm" onclick="expJSON()">JSON</button>
               </div>
             </div>
             <div class="section">
-              <div class="sec-label">Log</div>
-              <div class="log-box" id="log-box"><div class="line info">[INIT] Aplikimi u nis</div></div>
+              <div class="sec-hd">Debug Log</div>
+              <div class="dbg" id="dbg"><div class="dl info">[INIT] App u nis</div></div>
+              <div class="brow" style="margin-top:8px">
+                <button class="btn xs" onclick="document.getElementById('dbg').innerHTML='<div class=dl info>[CLR] Log u pastrua</div>'">Pastro log</button>
+                <button class="btn xs danger" onclick="clearOffline()">Pastro offline cache</button>
+              </div>
             </div>
           </div>
         </div>
-
-        <!-- MAP -->
-        <div class="map-wrap">
+        <div class="mapw">
           <div id="map"></div>
-          <div class="map-fab">
-            <div class="fab" onclick="goAlbania()" title="Shqipëri"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+          <div class="mfab">
+            <div class="fab" onclick="goAL()" title="Shqipëri"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
             <div class="fab" onclick="getGPS()" title="GPS"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
-            <div class="fab" id="map-pick-btn" onclick="togglePick()" title="Zgjidhë pikë"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            <div class="fab" id="mfpick" onclick="togPick()"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- RECORDS PAGE -->
-    <div class="page" id="page-records">
-      <div class="records-page" style="width:100%">
-        <div class="page-header">
-          <div>
-            <div class="page-title">Rekordet e vëzhgimit</div>
-            <div class="page-subtitle" id="rec-subtitle">Duke ngarkuar...</div>
-          </div>
-          <div style="flex:1"></div>
-          <button class="btn sm" onclick="exportCSV()">Eksporto CSV</button>
-          <button class="btn primary sm" onclick="loadRecords()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.84-2.5M20.5 15a9 9 0 0 1-14.84 2.5"/></svg> Rifresko</button>
+    <!-- ══ RECORDS PAGE ══ -->
+    <div class="page" id="page-rc">
+      <div class="rpage">
+        <div class="ph">
+          <div><div class="ph-title">Historiku i rekordeve</div><div class="ph-sub" id="rc-sub">Duke ngarkuar...</div></div>
+          <div class="ts"></div>
+          <button class="btn sm" onclick="expCSV()">CSV</button>
+          <button class="btn sm warn" onclick="expXLS()">Excel</button>
+          <button class="btn pri sm" onclick="loadRecs(true)"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.84-2.5M20.5 15a9 9 0 0 1-14.84 2.5"/></svg>Rifresko</button>
         </div>
-        <div class="filter-bar">
-          <input type="text" id="rec-search" placeholder="Kërko..." oninput="filterRecords()">
-          <select id="rec-filter-user" onchange="filterRecords()"><option value="">Të gjithë përdoruesit</option></select>
-          <select id="rec-filter-qellim" onchange="filterRecords()">
+        <div class="fbar">
+          <input type="text" id="fs-q" placeholder="🔍 Kërko..." oninput="filterR()">
+          <select id="fs-u" onchange="filterR()"><option value="">Të gjithë users</option></select>
+          <select id="fs-ql" onchange="filterR()">
             <option value="">Të gjithë qëllimet</option>
             <option>Inspektim urban</option><option>Monitorim mjedisi</option>
             <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
             <option>Pyje dhe bujqësi</option><option>Ujëra dhe hidrologji</option>
-            <option>Arkeologji / Trashëgimi</option><option>Fatkeqësi natyrore</option><option>Tjetër</option>
+            <option>Arkeologji / Trashëgimi</option><option>Fatkeqësi natyrore</option>
+            <option>Inspektim ndërtese</option><option>Tjetër</option>
           </select>
-          <input type="date" id="rec-filter-from" onchange="filterRecords()" title="Nga data">
-          <input type="date" id="rec-filter-to" onchange="filterRecords()" title="Deri data">
-          <span id="rec-count-badge" class="badge info">0 rekorde</span>
+          <input type="date" id="fs-fr" onchange="filterR()" title="Nga data">
+          <input type="date" id="fs-to" onchange="filterR()" title="Deri data">
+          <span id="rc-cnt" class="badge info">0</span>
         </div>
-        <div class="records-table-wrap">
-          <table class="rtable">
-            <thead>
-              <tr>
-                <th>#ID</th>
-                <th>Krijuar nga</th>
-                <th>Data / Ora</th>
-                <th>Koordinatat</th>
-                <th>Qëllimi</th>
-                <th>Shënime</th>
-                <th>Foto</th>
-                <th>Veprime</th>
-              </tr>
-            </thead>
-            <tbody id="records-tbody"></tbody>
+        <div class="tw">
+          <table class="rt">
+            <thead><tr><th>#ID</th><th>Krijuar nga</th><th>Data / Ora</th><th>Koordinatat</th><th>Qëllimi</th><th>Shënime</th><th>Foto</th><th>Statusi</th><th></th></tr></thead>
+            <tbody id="rtb"></tbody>
           </table>
-          <div id="records-empty" class="empty-state" style="display:none">
-            <div style="font-size:28px;margin-bottom:8px">◎</div>
-            Asnjë rekord i gjetur
-          </div>
+          <div id="rc-empty" class="empty hidden"><div style="font-size:28px;margin-bottom:8px">◎</div>Asnjë rekord i gjetur</div>
         </div>
       </div>
     </div>
 
-    <!-- USERS PAGE -->
-    <div class="page" id="page-users">
-      <div class="users-page" style="width:100%">
-        <div class="page-header">
-          <div>
-            <div class="page-title">Menaxhimi i përdoruesve</div>
-            <div class="page-subtitle" id="users-subtitle">Duke ngarkuar...</div>
-          </div>
-          <div style="flex:1"></div>
-          <input type="text" id="users-search" placeholder="Kërko emër / email..." oninput="filterUsers()" style="padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:12px;outline:none;width:200px;transition:0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-          <select id="users-role-filter" onchange="filterUsers()" style="padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:12px;outline:none">
-            <option value="">Të gjithë rolet</option>
-            <option value="admin">Admin</option>
-            <option value="supervisor">Supervisor</option>
-            <option value="field">Field</option>
-            <option value="viewer">Viewer</option>
-            <option value="disabled">Disabled</option>
+    <!-- ══ USERS PAGE ══ -->
+    <div class="page" id="page-us">
+      <div class="upage">
+        <div class="ph">
+          <div><div class="ph-title">Menaxhimi i përdoruesve</div><div class="ph-sub" id="us-sub">Duke ngarkuar...</div></div>
+          <div class="ts"></div>
+          <button class="btn pri sm" onclick="loadUsers()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.84-2.5M20.5 15a9 9 0 0 1-14.84 2.5"/></svg>Rifresko</button>
+        </div>
+        <div class="ugrid" id="ugrid"><div class="empty" style="grid-column:1/-1">Duke ngarkuar...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ REPORTS PAGE ══ -->
+    <div class="page" id="page-rp">
+      <div class="rppage">
+        <div class="ph">
+          <div><div class="ph-title">Raporte & Statistika</div><div class="ph-sub">Analiza e të dhënave gjeografike</div></div>
+          <div class="ts"></div>
+          <select id="rp-days" onchange="loadRep()" style="padding:7px 9px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
+            <option value="7">7 ditë</option><option value="30" selected>30 ditë</option>
+            <option value="90">90 ditë</option><option value="365">1 vit</option><option value="0">Të gjitha</option>
           </select>
-          <button class="btn primary sm" id="invite-btn" onclick="openInviteModal()" style="display:none">
-            <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-            Invite
-          </button>
-          <button class="btn sm" onclick="loadUsers()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.84-2.5M20.5 15a9 9 0 0 1-14.84 2.5"/></svg> Rifresko</button>
+          <button class="btn sm" onclick="expCSV()">CSV</button>
+          <button class="btn sm warn" onclick="expXLS()">Excel</button>
+          <button class="btn pri sm" onclick="loadRep()">Rifresko</button>
         </div>
-        <div class="users-grid" id="users-grid">
-          <div class="empty-state" style="grid-column:1/-1">Duke ngarkuar...</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- REPORTS PAGE -->
-    <div class="page" id="page-reports">
-      <div class="reports-page" style="width:100%">
-        <div class="page-header">
-          <div>
-            <div class="page-title">Raporte & Statistika</div>
-            <div class="page-subtitle">Analiza e të dhënave të vëzhgimit</div>
+        <div class="rpbody">
+          <div class="kpis">
+            <div class="kpi"><div class="kpi-l">REKORDE TOTALE</div><div class="kpi-v" id="kv1">—</div><div class="kpi-s" id="ks1"></div></div>
+            <div class="kpi"><div class="kpi-l">USERS AKTIVË</div><div class="kpi-v" id="kv2">—</div><div class="kpi-s"></div></div>
+            <div class="kpi"><div class="kpi-l">SOT</div><div class="kpi-v" id="kv3">—</div><div class="kpi-s" id="ks3"></div></div>
+            <div class="kpi"><div class="kpi-l">MESATARE / DITË</div><div class="kpi-v" id="kv4">—</div><div class="kpi-s"></div></div>
           </div>
-          <div style="flex:1"></div>
-          <select id="report-period" onchange="loadReports()" style="padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:12px;outline:none">
-            <option value="7">7 ditët e fundit</option>
-            <option value="30" selected>30 ditët e fundit</option>
-            <option value="90">90 ditët e fundit</option>
-            <option value="365">1 vit</option>
-            <option value="0">Të gjitha</option>
-          </select>
-          <button class="btn primary sm" onclick="loadReports()">Rifresko</button>
-        </div>
-        <div class="reports-body">
-          <div class="stat-cards" id="stat-cards">
-            <div class="stat-card"><div class="stat-card-label">Rekorde totale</div><div class="stat-card-val" id="stat-total">—</div><div class="stat-card-delta" id="stat-total-d"></div></div>
-            <div class="stat-card"><div class="stat-card-label">Përdorues aktivë</div><div class="stat-card-val" id="stat-users">—</div><div class="stat-card-delta"></div></div>
-            <div class="stat-card"><div class="stat-card-label">Sot</div><div class="stat-card-val" id="stat-today">—</div><div class="stat-card-delta"></div></div>
-            <div class="stat-card"><div class="stat-card-label">Mesatare / ditë</div><div class="stat-card-val" id="stat-avg">—</div><div class="stat-card-delta"></div></div>
+          <div class="cgrid">
+            <div class="cc"><div class="cc-t">Rekorde sipas ditës</div><div class="cc-w"><canvas id="ch-d"></canvas></div></div>
+            <div class="cc"><div class="cc-t">Sipas qëllimit</div><div class="cc-w"><canvas id="ch-q"></canvas></div></div>
+            <div class="cc"><div class="cc-t">Sipas përdoruesit (top 10)</div><div class="cc-w"><canvas id="ch-u"></canvas></div></div>
+            <div class="cc"><div class="cc-t">Sipas orës</div><div class="cc-w"><canvas id="ch-h"></canvas></div></div>
           </div>
-
-          <div class="charts-grid">
-            <div class="chart-card">
-              <div class="chart-title">Rekorde sipas ditës</div>
-              <div class="chart-wrap"><canvas id="chart-daily"></canvas></div>
-            </div>
-            <div class="chart-card">
-              <div class="chart-title">Sipas qëllimit</div>
-              <div class="chart-wrap"><canvas id="chart-qellim"></canvas></div>
-            </div>
-            <div class="chart-card">
-              <div class="chart-title">Sipas përdoruesit (top 10)</div>
-              <div class="chart-wrap"><canvas id="chart-users"></canvas></div>
-            </div>
-            <div class="chart-card">
-              <div class="chart-title">Rekorde sipas orës së ditës</div>
-              <div class="chart-wrap"><canvas id="chart-hours"></canvas></div>
-            </div>
+          <div class="rpc">
+            <div class="rpc-t"><span>Raport sipas përdoruesit</span><button class="btn xs" onclick="expCSV()">CSV</button></div>
+            <table class="rt"><thead><tr><th>Emri</th><th>Roli</th><th>Email</th><th>Rekorde</th><th>I fundit</th><th>Top qëllim</th></tr></thead><tbody id="urep"></tbody></table>
           </div>
-
-          <div class="report-table-card">
-            <div class="report-table-title">
-              <span>Raport sipas përdoruesit</span>
-              <button class="btn sm" onclick="exportCSV()">Eksporto CSV</button>
+          <div class="rpc">
+            <div class="rpc-t"><span>Rekorde sipas periudhës</span>
+              <div class="brow">
+                <input type="date" id="rp-fr" style="padding:6px 8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
+                <input type="date" id="rp-to" style="padding:6px 8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
+                <button class="btn xs" onclick="repByDate()">Filtro</button>
+              </div>
             </div>
-            <table class="rtable" id="user-report-table">
-              <thead><tr><th>Përdoruesi</th><th>Roli</th><th>Rekorde</th><th>I fundit</th><th>Qëllimi kryesor</th></tr></thead>
-              <tbody id="user-report-tbody"></tbody>
-            </table>
+            <table class="rt"><thead><tr><th>Data</th><th>Rekorde</th><th>Users unikë</th><th>Top qëllim</th></tr></thead><tbody id="drep"></tbody></table>
           </div>
-
-          <div class="report-table-card">
-            <div class="report-table-title"><span>Harta e pikave (miniaturë)</span></div>
-            <div id="report-map" style="height:300px;border-radius:8px;overflow:hidden"></div>
-          </div>
+          <div class="rpc"><div class="rpc-t"><span>Harta e të gjitha pikave</span></div><div id="rmap"></div></div>
         </div>
       </div>
     </div>
 
-  </div>
-</div>
-
-<!-- INVITE USER MODAL -->
-<div class="modal-bg hidden" id="invite-modal">
-  <div class="modal" style="width:420px">
-    <div class="modal-title">Invite përdorues të ri <span class="modal-close" onclick="closeInviteModal()">✕</span></div>
-    <div id="invite-err" class="auth-err"></div>
-    <div class="auth-field"><label>Emri i plotë</label><input type="text" id="inv-name" placeholder="Arta Krasniqi"></div>
-    <div class="auth-field"><label>Email</label><input type="email" id="inv-email" placeholder="user@domain.com"></div>
-    <div class="auth-field"><label>Fjalëkalimi fillestar</label>
-      <div style="display:flex;gap:6px;align-items:center">
-        <input type="text" id="inv-pass" placeholder="min. 8 karaktere" style="flex:1">
-        <button class="btn sm" onclick="genPass()" title="Gjenero automatik">⟳</button>
-      </div>
-      <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:4px">Ndajeni fjalëkalimin me përdoruesin nëpërmjet email-it tuaj</div>
-    </div>
-    <div class="auth-field"><label>Roli</label>
-      <select id="inv-role">
-        <option value="field">Field User — mbledh të dhëna në terren</option>
-        <option value="viewer">Viewer — shikon vetëm</option>
-        <option value="supervisor">Supervisor — menaxhon ekipin</option>
-        <option value="admin">Admin — kontroll i plotë</option>
-      </select>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:4px">
-      <button class="btn primary" style="flex:1" onclick="doInviteUser()">
-        <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-        Krijo llogari
-      </button>
-      <button class="btn" onclick="closeInviteModal()">Anulo</button>
-    </div>
-  </div>
-</div>
-
-<!-- CONFIRM DISABLE MODAL -->
-<div class="modal-bg hidden" id="disable-modal">
-  <div class="modal" style="width:380px">
-    <div class="modal-title" id="disable-modal-title">Veprim <span class="modal-close" onclick="document.getElementById('disable-modal').classList.add('hidden')">✕</span></div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;font-family:var(--mono)" id="disable-modal-body">—</p>
-    <div class="btn-row">
-      <button class="btn danger" style="flex:1" id="disable-modal-confirm-btn" onclick="">Konfirmo</button>
-      <button class="btn" onclick="document.getElementById('disable-modal').classList.add('hidden')">Anulo</button>
-    </div>
   </div>
 </div>
 
 <!-- CAMERA MODAL -->
-<div class="modal-bg hidden" id="cam-modal">
-  <div class="modal" style="width:380px">
-    <div class="modal-title">Kamera <span class="modal-close" onclick="closeCam()">✕</span></div>
-    <video id="cam-video" autoplay playsinline></video>
-    <canvas id="cam-canvas" style="display:none"></canvas>
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn primary" style="flex:1" onclick="snapPhoto()">Fotografo</button>
-      <button class="btn danger" onclick="closeCam()">Mbyll</button>
-    </div>
-  </div>
+<div class="mbg hidden" id="cam-m">
+  <div class="modal sm"><div class="mhd">Kamera <span class="mcl" onclick="closeCam()">✕</span></div>
+  <video id="cam-vid" autoplay playsinline></video><canvas id="cam-cnv" style="display:none"></canvas>
+  <div class="brow" style="margin-top:11px"><button class="btn pri" style="flex:1" onclick="snapPh()">📷 Fotografo</button><button class="btn danger" onclick="closeCam()">Mbyll</button></div></div>
 </div>
 
-<!-- RECORD DETAIL MODAL -->
-<div class="modal-bg hidden" id="detail-modal">
-  <div class="modal">
-    <div class="modal-title">Detajet e rekordit <span class="modal-close" onclick="closeDetail()">✕</span></div>
-    <div id="detail-content"></div>
-  </div>
+<!-- DETAIL MODAL -->
+<div class="mbg hidden" id="det-m">
+  <div class="modal"><div class="mhd">Detajet <span class="mcl" onclick="document.getElementById('det-m').classList.add('hidden')">✕</span></div>
+  <div id="det-body"></div>
+  <div id="det-map" style="height:190px;border-radius:8px;overflow:hidden;margin-top:12px"></div></div>
 </div>
 
-<!-- CHANGE ROLE MODAL -->
-<div class="modal-bg hidden" id="role-modal">
-  <div class="modal" style="width:360px">
-    <div class="modal-title">Ndrysho rolin <span class="modal-close" onclick="document.getElementById('role-modal').classList.add('hidden')">✕</span></div>
-    <div id="role-modal-content"></div>
-  </div>
+<!-- ROLE MODAL -->
+<div class="mbg hidden" id="role-m">
+  <div class="modal sm"><div class="mhd">Ndrysho rolin <span class="mcl" onclick="document.getElementById('role-m').classList.add('hidden')">✕</span></div>
+  <div id="role-body"></div></div>
 </div>
 
-<!-- TOASTS -->
-<div class="toast-wrap" id="toast-wrap"></div>
+<div class="toastwrap" id="toasts"></div>
+
+<!-- ═══════════════════════════════════
+     SUPABASE (loaded inline — no CDN race)
+═══════════════════════════════════ -->
+<script>
+// Load Supabase dynamically after page is ready
+var SB_SCRIPT = document.createElement('script');
+SB_SCRIPT.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
+SB_SCRIPT.onload = function(){ log('info','Supabase SDK u ngarkua'); boot(); };
+SB_SCRIPT.onerror = function(){ log('err','Supabase SDK nuk u ngarkua — kontrolloni internetin'); };
+document.head.appendChild(SB_SCRIPT);
+</script>
 
 <script>
-// ========================================================
-// SUPABASE CONFIG
-// ========================================================
-var SUPA_URL = localStorage.getItem('supa_url') || '';
-var SUPA_KEY = localStorage.getItem('supa_key') || '';
-var sb = null;
-var currentUser = null;
-var currentProfile = null;
-var allRecords = [];
-var filteredRecords = [];
-var photos = [];
-var pickMode = false;
-var camStream = null;
-var map, rMap;
-var surveyMarkers = null;
-var shpLayers = [];
-var baseLayers = {};
-var currentBase = 'osm';
-var chartDaily, chartQellim, chartUsers, chartHours;
+/* ═══════════════════════════════════════
+   GLOBALS
+═══════════════════════════════════════ */
+var SB=null, CU=null, CP=null;
+var allRecs=[], filteredRecs=[], photos=[], shpLay=[];
+var pickMode=false, camStream=null, detMapObj=null, rMapObj=null;
+var leafMap=null, sMarkers=null, baseLays={}, curBase='osm';
+var charts={};
 
-// ========================================================
-// INIT
-// ========================================================
-function initSupabase() {
-  if (!SUPA_URL || !SUPA_KEY) { showConfig(); return; }
-  try {
-    sb = supabase.createClient(SUPA_URL, SUPA_KEY);
-    document.getElementById('config-screen').style.display = 'none';
-    document.getElementById('auth-screen').style.display = 'flex';
-    checkSession();
-  } catch(e) { showConfig(); }
-}
-
-function showConfig() {
-  document.getElementById('config-screen').style.display = 'flex';
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app').classList.remove('visible');
-  document.getElementById('cfg-url').value = SUPA_URL;
-  document.getElementById('cfg-key').value = SUPA_KEY;
-}
-
-function saveConfig() {
-  var url = document.getElementById('cfg-url').value.trim();
-  var key = document.getElementById('cfg-key').value.trim();
-  var err = document.getElementById('cfg-err');
-  if (!url || !key) { err.style.display='block'; err.textContent='Vendosni URL dhe Key!'; return; }
-  if (!url.startsWith('https://')) { err.style.display='block'; err.textContent='URL duhet të fillojë me https://'; return; }
-  localStorage.setItem('supa_url', url); localStorage.setItem('supa_key', key);
-  SUPA_URL = url; SUPA_KEY = key;
-  err.style.display = 'none';
-  initSupabase();
-}
-
-async function checkSession() {
-  if (!sb) return;
-  var { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    var ok = await loadProfile(session.user);
-    if (ok === false) return;
-    startApp();
-  }
-}
-
-// ========================================================
-// AUTH
-// ========================================================
-function setAuthTab(t) {
-  document.querySelectorAll('.auth-tab').forEach(function(el,i){ el.classList.toggle('active', (i===0&&t==='login')||(i===1&&t==='register')); });
-  document.getElementById('login-form').style.display = t==='login'?'block':'none';
-  document.getElementById('register-form').style.display = t==='register'?'block':'none';
-  document.getElementById('auth-err').style.display = 'none';
-}
-
-async function doLogin() {
-  var email = document.getElementById('login-email').value.trim();
-  var pass = document.getElementById('login-pass').value;
-  var err = document.getElementById('auth-err');
-  if (!email||!pass) { showErr(err,'Plotësoni të gjitha fushat'); return; }
-  var { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) { showErr(err, error.message); return; }
-  var ok = await loadProfile(data.user);
-  if (ok === false) return; // disabled user blocked
-  startApp();
-}
-
-async function doRegister() {
-  var name = document.getElementById('reg-name').value.trim();
-  var role = document.getElementById('reg-role').value;
-  var email = document.getElementById('reg-email').value.trim();
-  var pass = document.getElementById('reg-pass').value;
-  var err = document.getElementById('auth-err');
-  if (!name||!email||!pass) { showErr(err,'Plotësoni të gjitha fushat'); return; }
-  var { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: name, role: role } } });
-  if (error) { showErr(err, error.message); return; }
-  toast('info','Email konfirmimi u dërgua! Kontrolloni inbox-in tuaj.');
-  setAuthTab('login');
-}
-
-function demoLogin() {
-  document.getElementById('login-email').value = 'demo@gissurvey.al';
-  document.getElementById('login-pass').value = 'demo123456';
-  toast('info','Të dhënat e demo u plotësuan');
-}
-
-async function doLogout() {
-  if (!confirm('Dëshironi të dilni?')) return;
-  await sb.auth.signOut();
-  currentUser = null; currentProfile = null;
-  document.getElementById('app').classList.remove('visible');
-  document.getElementById('auth-screen').style.display = 'flex';
-  toast('info','U çkyçët');
-}
-
-async function loadProfile(user) {
-  currentUser = user;
-  var { data } = await sb.from('profiles').select('*').eq('id', user.id).single();
-  currentProfile = data || { id: user.id, email: user.email, full_name: user.email.split('@')[0], role: 'field' };
-
-  // Block disabled users
-  if (currentProfile.role === 'disabled') {
-    await sb.auth.signOut();
-    var err = document.getElementById('auth-err');
-    err.style.display = 'block';
-    err.textContent = 'Llogaria juaj është çaktivizuar. Kontaktoni administratorin.';
-    currentUser = null; currentProfile = null;
-    return false;
-  }
-  return true;
-}
-
-function showErr(el, msg) { el.style.display='block'; el.textContent=msg; }
-
-// ========================================================
-// APP START
-// ========================================================
-function startApp() {
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app').classList.add('visible');
-  updateTopbar();
-  initMap();
-  initRenderPhotos();
-  setDateTime();
-  document.getElementById('f-email').value = currentProfile.email || '';
-  if (currentProfile.role === 'field') {
-    document.getElementById('nav-users').style.display = 'none';
-  }
-  if (currentProfile.role === 'viewer') {
-    document.getElementById('nav-users').style.display = 'none';
-  }
-  setupOfflineEvents();
-  initBaseLayersList();
-  loadRecords();
-  toast('ok', 'Mirë se vini, ' + (currentProfile.full_name || currentProfile.email) + '!');
-}
-
-function updateTopbar() {
-  var name = currentProfile.full_name || currentProfile.email;
-  var role = currentProfile.role || 'field';
-  document.getElementById('top-name').textContent = name;
-  document.getElementById('top-role').textContent = role;
-  var init = name.substring(0,2).toUpperCase();
-  var colors = { admin:'bg-admin role-admin', supervisor:'bg-supervisor role-supervisor', field:'bg-field role-field', viewer:'bg-viewer role-viewer' };
-  var av = document.getElementById('top-avatar');
-  av.textContent = init;
-  av.className = 'user-avatar ' + (colors[role]||'bg-field role-field');
-}
-
-// ========================================================
-// MAP
-// ========================================================
-function initMap() {
-  if (map) return;
-  map = L.map('map', { zoomControl: true }).setView([41.15, 20.17], 8);
-  baseLayers = {
-    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}),
-    'esri-imagery': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19}),
-    'esri-street': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19}),
-    'esri-topo': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19}),
-    'esri-gray': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:16}),
-    'esri-dark': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:16}),
-    'esri-natgeo': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri / NatGeo',maxZoom:16}),
-    'carto-dark': L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© CartoDB',maxZoom:19})
-  };
-  baseLayers.osm.addTo(map);
-  surveyMarkers = L.layerGroup().addTo(map);
-
-  map.on('click', function(e) {
-    if (pickMode) { setCoords(e.latlng.lat, e.latlng.lng, 0); togglePick(); }
-  });
-}
-
-function initBaseLayersList() {
-  var defs = [
-    { id:'osm', name:'OpenStreetMap', color:'#4a9eff' },
-    { id:'esri-imagery', name:'Esri World Imagery (Ortofotë)', color:'#e8d44d' },
-    { id:'esri-street', name:'Esri World Street', color:'#ff9a4a' },
-    { id:'esri-topo', name:'Esri World Topo', color:'#7ab867' },
-    { id:'esri-gray', name:'Esri Light Gray Canvas', color:'#aaa' },
-    { id:'esri-dark', name:'Esri Dark Gray Canvas', color:'#555' },
-    { id:'esri-natgeo', name:'Esri National Geographic', color:'#c3b888' },
-    { id:'carto-dark', name:'CartoDB Dark Matter', color:'#2a2a3a' }
-  ];
-  var html = defs.map(function(d) {
-    return '<div class="layer-row'+(d.id==='osm'?' active':'')+'" id="lrow-'+d.id+'" onclick="setBase(\''+d.id+'\')">' +
-      '<div class="ldot" style="background:'+d.color+'"></div>' +
-      '<span class="lname">'+d.name+'</span>' +
-      (d.id==='esri-imagery'?'<span class="lbadge">SH</span>':'')+
-      '</div>';
-  }).join('');
-  document.getElementById('base-layers-list').innerHTML = html;
-}
-
-function setBase(id) {
-  if (baseLayers[currentBase]) map.removeLayer(baseLayers[currentBase]);
-  document.querySelectorAll('[id^="lrow-"]').forEach(function(el){ el.classList.remove('active'); });
-  currentBase = id;
-  baseLayers[id].addTo(map);
-  baseLayers[id].bringToBack();
-  surveyMarkers.bringToFront();
-  var row = document.getElementById('lrow-'+id);
-  if (row) row.classList.add('active');
-  addLog('info','Harta: '+id);
-}
-
-function goAlbania() { map.setView([41.15,20.17],8); }
-
-function togglePick() {
-  pickMode = !pickMode;
-  document.getElementById('pick-btn').classList.toggle('on', pickMode);
-  document.getElementById('map-pick-btn').classList.toggle('on', pickMode);
-  map.getContainer().style.cursor = pickMode ? 'crosshair' : '';
-}
-
-function toggleSurveyL(cb) { if(cb.checked) surveyMarkers.addTo(map); else map.removeLayer(surveyMarkers); }
-function toggleShpL(cb) { shpLayers.forEach(function(s){ if(!s.layer) return; if(cb.checked) s.layer.addTo(map); else map.removeLayer(s.layer); }); }
-
-// ========================================================
-// GPS
-// ========================================================
-function getGPS() {
-  if (!navigator.geolocation) { toast('err','GPS nuk suportohet'); return; }
-  addLog('info','GPS...');
-  navigator.geolocation.getCurrentPosition(function(p) {
-    setCoords(p.coords.latitude, p.coords.longitude, p.coords.accuracy);
-    map.setView([p.coords.latitude, p.coords.longitude], 15);
-    addLog('ok','GPS: '+p.coords.latitude.toFixed(5)+', '+p.coords.longitude.toFixed(5));
-  }, function() {
-    setCoords(41.3275, 19.8187, 10);
-    addLog('warn','GPS i pasinur — Tiranë');
-  });
-}
-
-function setCoords(lat, lng, acc) {
-  document.getElementById('f-lat').textContent = lat.toFixed(6);
-  document.getElementById('f-lng').textContent = lng.toFixed(6);
-  document.getElementById('f-acc').textContent = acc ? acc.toFixed(1)+' m' : '—';
-}
-
-// ========================================================
-// PHOTOS
-// ========================================================
-function initRenderPhotos() { renderPhotos(); }
-
-function handlePhotos(e) {
-  Array.from(e.target.files).forEach(function(f) {
-    var r = new FileReader();
-    r.onload = function(ev) { photos.push({name:f.name,data:ev.target.result}); renderPhotos(); };
-    r.readAsDataURL(f);
-  });
-}
-
-function renderPhotos() {
-  var g = document.getElementById('photo-grid');
-  g.innerHTML = '';
-  photos.forEach(function(p,i) {
-    var d = document.createElement('div'); d.className = 'photo-thumb';
-    d.innerHTML = '<img src="'+p.data+'"><button class="del" onclick="event.stopPropagation();delPhoto('+i+')">✕</button>';
-    g.appendChild(d);
-  });
-  var a = document.createElement('div'); a.className = 'photo-add'; a.textContent = '+';
-  a.onclick = function(){ document.getElementById('photo-inp').click(); };
-  g.appendChild(a);
-}
-
-function delPhoto(i) { photos.splice(i,1); renderPhotos(); }
-
-// ========================================================
-// CAMERA
-// ========================================================
-function openCam() {
-  document.getElementById('cam-modal').classList.remove('hidden');
-  navigator.mediaDevices.getUserMedia({ video: { facingMode:'environment' } })
-    .then(function(s){ camStream=s; document.getElementById('cam-video').srcObject=s; })
-    .catch(function(){ toast('warn','Kamera nuk disponohet'); closeCam(); });
-}
-
-function snapPhoto() {
-  var v = document.getElementById('cam-video');
-  var c = document.getElementById('cam-canvas');
-  c.width = v.videoWidth||640; c.height = v.videoHeight||480;
-  c.getContext('2d').drawImage(v,0,0);
-  photos.push({ name:'cam_'+Date.now()+'.jpg', data:c.toDataURL('image/jpeg',0.8) });
-  renderPhotos(); closeCam(); toast('ok','Foto e bërë!');
-}
-
-function closeCam() {
-  document.getElementById('cam-modal').classList.add('hidden');
-  if (camStream) { camStream.getTracks().forEach(function(t){t.stop();}); camStream=null; }
-}
-
-// ========================================================
-// DATE/TIME
-// ========================================================
-function setDateTime() {
-  var now = new Date();
-  var p = function(n){ return String(n).padStart(2,'0'); };
-  document.getElementById('f-date').value = now.getFullYear()+'-'+p(now.getMonth()+1)+'-'+p(now.getDate());
-  document.getElementById('f-time').value = p(now.getHours())+':'+p(now.getMinutes());
-}
-
-// ========================================================
-// ADD RECORD
-// ========================================================
-async function addRecord() {
-  var lat = document.getElementById('f-lat').textContent;
-  var lng = document.getElementById('f-lng').textContent;
-  if (lat==='—'||lng==='—') { toast('err','Merrni koordinatat GPS ose zgjidhni nga harta!'); return; }
-
-  var rec = {
-    user_id: currentUser.id,
-    user_email: currentProfile.email,
-    user_name: currentProfile.full_name || currentProfile.email,
-    date: document.getElementById('f-date').value,
-    time: document.getElementById('f-time').value,
-    lat: parseFloat(lat), lng: parseFloat(lng),
-    accuracy: parseFloat(document.getElementById('f-acc').textContent)||0,
-    qellim: document.getElementById('f-qellim').value,
-    notes: document.getElementById('f-notes').value,
-    photo_count: photos.length,
-    synced: true
-  };
-
-  if (navigator.onLine && sb) {
-    var { data, error } = await sb.from('survey_records').insert(rec).select().single();
-    if (error) {
-      addLog('warn','Supabase error — ruhet lokalisht: '+error.message);
-      rec.id = Date.now(); rec.synced = false;
-      var local = JSON.parse(localStorage.getItem('gis_offline')||'[]');
-      local.push(rec); localStorage.setItem('gis_offline', JSON.stringify(local));
-      toast('warn','Ruajtur lokalisht (offline)');
-    } else {
-      rec = data;
-      toast('ok','Rekord #'+rec.id+' u shtua në Supabase!');
-      addLog('ok','Rekord #'+rec.id+' → Supabase');
-    }
+/* ═══════════════════════════════════════
+   BOOT — called after Supabase SDK loads
+═══════════════════════════════════════ */
+function boot(){
+  var u=ls('su'), k=ls('sk');
+  if(u&&k){
+    try{
+      SB=supabase.createClient(u,k);
+      log('ok','Supabase inicializuar: '+u.split('.')[0].replace('https://',''));
+      showAuth();
+      SB.auth.getSession().then(function(r){
+        if(r.data&&r.data.session){
+          log('ok','Sesion aktiv — duke hyrë automatikisht');
+          loadProfile(r.data.session.user).then(startApp);
+        }
+      });
+    }catch(e){ log('err','Supabase init gabim: '+e.message); showCfg(); }
   } else {
-    rec.id = Date.now(); rec.synced = false;
-    var local2 = JSON.parse(localStorage.getItem('gis_offline')||'[]');
-    local2.push(rec); localStorage.setItem('gis_offline', JSON.stringify(local2));
-    toast('warn','Offline — ruajtur lokalisht');
-    addLog('warn','Offline — ruajtur lokalisht');
+    log('info','Nuk ka config të ruajtur — duke shfaqur Setup Wizard');
+    showCfg();
   }
-
-  addMapMarker(rec);
-  allRecords.unshift(rec);
-  filterRecords();
-  updateSyncCounts();
-  clearForm();
 }
 
-function addMapMarker(rec) {
-  if (!surveyMarkers) return;
-  var roleColor = { admin:'#ff5a6e', supervisor:'#ffb347', field:'#00e5c3', viewer:'#a259ff' };
-  var color = roleColor[rec.role] || '#00e5c3';
-  var icon = L.divIcon({ className:'', html:'<div style="width:12px;height:12px;background:'+color+';border:2px solid #080c14;border-radius:50%;box-shadow:0 0 0 3px '+color+'44"></div>', iconSize:[12,12], iconAnchor:[6,6] });
-  var m = L.marker([rec.lat, rec.lng], {icon: icon});
-  m.bindPopup('<span style="font-family:monospace;font-size:11px;color:#00e5c3">#'+rec.id+'</span><br><b>'+(rec.user_name||rec.user_email||'?')+'</b><br><span style="font-size:11px;color:#5a6d8a">'+rec.date+' '+rec.time+'</span><br>'+(rec.qellim||'—')+'<br><small>'+((rec.notes||'').substring(0,80))+'</small>', {maxWidth:220});
-  surveyMarkers.addLayer(m);
+/* ═══════════════════════════════════════
+   SETUP WIZARD
+═══════════════════════════════════════ */
+var curSS=0;
+function goSS(n){
+  [0,1,2].forEach(function(i){
+    document.getElementById('ss'+i).classList.toggle('hidden',i!==n);
+    var p=document.getElementById('sp'+i);
+    p.className='step-pip'+(i<n?' done':i===n?' act':'');
+  });
+  curSS=n;
 }
-
-function clearForm() {
-  document.getElementById('f-notes').value = '';
-  document.getElementById('f-qellim').value = '';
-  photos = []; renderPhotos(); setDateTime();
-  document.getElementById('f-lat').textContent = '—';
-  document.getElementById('f-lng').textContent = '—';
-  document.getElementById('f-acc').textContent = '—';
+function copySql(){
+  var txt=document.getElementById('sqlbox').textContent;
+  navigator.clipboard.writeText(txt).then(function(){toast('ok','SQL u kopjua!');}).catch(function(){
+    // fallback
+    var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+    toast('ok','SQL u kopjua!');
+  });
 }
-
-// ========================================================
-// SHAPEFILE
-// ========================================================
-function handleShpDrop(e) {
-  e.preventDefault(); document.getElementById('shp-drop').classList.remove('over');
-  processShp(Array.from(e.dataTransfer.files));
-}
-function handleShpFile(e) { processShp(Array.from(e.target.files)); }
-
-function processShp(files) {
-  files.forEach(function(f) {
-    var ext = f.name.split('.').pop().toLowerCase();
-    if (ext==='geojson'||ext==='json') {
-      var r = new FileReader();
-      r.onload = function(ev) { try { addShpLayer(f.name, JSON.parse(ev.target.result), f.size); } catch(e){ toast('err','GeoJSON i pavlefshëm'); } };
-      r.readAsText(f);
-    } else if (ext==='kml') {
-      var r2 = new FileReader();
-      r2.onload = function(ev) { try { addShpLayer(f.name, kmlToGJ(ev.target.result), f.size); } catch(e){ toast('err','KML error'); } };
-      r2.readAsText(f);
-    } else if (ext==='zip') {
-      toast('warn',f.name+': ZIP/SHP — kërkon shpjs. Ngarkoni GeoJSON/KML.');
+async function saveConfig(){
+  var u=document.getElementById('cfg-url').value.trim();
+  var k=document.getElementById('cfg-key').value.trim();
+  var ae=document.getElementById('cfg-alert');
+  ae.classList.remove('hidden');
+  if(!u||!k){ae.className='alert err';ae.textContent='Vendosni URL dhe Key!';return}
+  if(!u.includes('supabase.co')){ae.className='alert warn';ae.textContent='URL duhet të jetë nga supabase.co — kontrolloni formatin';}
+  var btn=document.getElementById('cfg-btn');btn.disabled=true;btn.textContent='Duke testuar...';
+  try{
+    var client=supabase.createClient(u,k);
+    // test with a real query
+    var{error}=await client.from('profiles').select('id').limit(1);
+    if(error&&error.code!=='PGRST116'&&error.message&&error.message.includes('fetch')){
+      throw new Error(error.message);
     }
-  });
-}
-
-function kmlToGJ(kmlText) {
-  var doc = new DOMParser().parseFromString(kmlText,'text/xml');
-  var features = []; var pms = doc.querySelectorAll('Placemark');
-  pms.forEach(function(pm) {
-    var coords = pm.querySelector('coordinates');
-    if (!coords) return;
-    var parts = coords.textContent.trim().split(/\s+/);
-    if (parts.length===1) {
-      var c=parts[0].split(','); features.push({type:'Feature',properties:{},geometry:{type:'Point',coordinates:[+c[0],+c[1]]}});
-    } else {
-      var ls=parts.map(function(p){var c=p.split(',');return[+c[0],+c[1]];});
-      features.push({type:'Feature',properties:{},geometry:{type:'LineString',coordinates:ls}});
-    }
-  });
-  return {type:'FeatureCollection',features:features};
-}
-
-var shpColors = ['#3a9bff','#ffb347','#ff5a6e','#7ab867','#a259ff','#f5e63d','#00e5c3'];
-var shpCI = 0;
-
-function addShpLayer(name, gj, size) {
-  var color = shpColors[shpCI++ % shpColors.length];
-  var layer = L.geoJSON(gj, {
-    style:{color:color,weight:2,opacity:0.9,fillOpacity:0.2},
-    pointToLayer:function(f,ll){return L.circleMarker(ll,{radius:6,color:color,weight:2,fillOpacity:0.5});},
-    onEachFeature:function(f,l){ if(f.properties){ var t=Object.entries(f.properties).map(function(kv){return'<b>'+kv[0]+':</b> '+kv[1];}).join('<br>'); l.bindPopup(t||'—'); } }
-  }).addTo(map);
-  var fc = gj.features ? gj.features.length : '?';
-  shpLayers.push({name,layer,color,size,features:fc});
-  renderShpList();
-  map.fitBounds(layer.getBounds());
-  toast('ok','Ngarkuar: '+name+' ('+fc+' objekte)');
-  addLog('ok','SHP: '+name);
-}
-
-function renderShpList() {
-  var el = document.getElementById('shp-list');
-  if (!shpLayers.length) { el.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:16px;font-family:var(--mono)">Asnjë shtresë</div>'; return; }
-  el.innerHTML = shpLayers.map(function(s,i){
-    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:5px">' +
-      '<div style="width:10px;height:10px;border-radius:2px;background:'+s.color+';flex-shrink:0"></div>' +
-      '<div style="flex:1;min-width:0"><div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+s.name+'</div>' +
-      '<div style="font-size:10px;color:var(--muted);font-family:var(--mono)">'+s.features+' obj · '+(s.size/1024).toFixed(1)+'KB</div></div>' +
-      '<button class="btn sm danger" onclick="removeShp('+i+')" style="padding:3px 7px">✕</button></div>';
-  }).join('');
-}
-
-function removeShp(i) { if(shpLayers[i].layer) map.removeLayer(shpLayers[i].layer); shpLayers.splice(i,1); renderShpList(); }
-
-// ========================================================
-// LOAD RECORDS
-// ========================================================
-async function loadRecords() {
-  if (!sb) return;
-  var query = sb.from('survey_records').select('*').order('created_at', {ascending:false});
-  if (currentProfile.role === 'field') query = query.eq('user_id', currentUser.id);
-  var { data, error } = await query;
-  if (error) { addLog('err','Gabim ngarkimi: '+error.message); return; }
-  allRecords = data || [];
-
-  // merge offline
-  var offline = JSON.parse(localStorage.getItem('gis_offline')||'[]');
-  offline.forEach(function(r){ if(!allRecords.find(function(x){return x.id===r.id;})) allRecords.unshift(r); });
-
-  // populate user filter
-  var users = {}; allRecords.forEach(function(r){ if(r.user_email) users[r.user_email]=r.user_name||r.user_email; });
-  var sel = document.getElementById('rec-filter-user');
-  var cur = sel.value;
-  sel.innerHTML = '<option value="">Të gjithë përdoruesit</option>';
-  Object.entries(users).forEach(function(kv){ sel.innerHTML += '<option value="'+kv[0]+'">'+kv[1]+'</option>'; });
-  sel.value = cur;
-
-  // draw markers
-  if (surveyMarkers) surveyMarkers.clearLayers();
-  allRecords.forEach(function(r){ if(r.lat&&r.lng) addMapMarker(r); });
-
-  filterRecords();
-  updateSyncCounts();
-  addLog('ok','Ngarkuar '+allRecords.length+' rekorde');
-}
-
-function filterRecords() {
-  var search = (document.getElementById('rec-search').value||'').toLowerCase();
-  var user = document.getElementById('rec-filter-user').value;
-  var qellim = document.getElementById('rec-filter-qellim').value;
-  var from = document.getElementById('rec-filter-from').value;
-  var to = document.getElementById('rec-filter-to').value;
-
-  filteredRecords = allRecords.filter(function(r) {
-    if (user && r.user_email !== user) return false;
-    if (qellim && r.qellim !== qellim) return false;
-    if (from && r.date < from) return false;
-    if (to && r.date > to) return false;
-    if (search) {
-      var hay = (r.user_name+' '+r.user_email+' '+r.qellim+' '+r.notes+' '+r.id).toLowerCase();
-      if (!hay.includes(search)) return false;
-    }
-    return true;
-  });
-
-  renderRecordsTable();
-  document.getElementById('rec-subtitle').textContent = allRecords.length + ' rekorde totale';
-  document.getElementById('rec-count-badge').textContent = filteredRecords.length + ' rekorde';
-}
-
-function renderRecordsTable() {
-  var tbody = document.getElementById('records-tbody');
-  var empty = document.getElementById('records-empty');
-  if (!filteredRecords.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
-  empty.style.display = 'none';
-  var roleColors = {admin:'#ff5a6e',supervisor:'#ffb347',field:'#00e5c3',viewer:'#a259ff'};
-  tbody.innerHTML = filteredRecords.map(function(r) {
-    var name = r.user_name || r.user_email || '?';
-    var init = name.substring(0,2).toUpperCase();
-    var color = roleColors[r.role] || '#00e5c3';
-    var syncBadge = r.synced === false ? '<span class="badge warn" style="margin-left:4px">offline</span>' : '';
-    return '<tr>' +
-      '<td>#'+r.id+'</td>' +
-      '<td><div class="user-tag"><div class="mini-avatar" style="background:'+color+'22;color:'+color+'">'+init+'</div><div><div style="font-size:12px">'+name+'</div><div style="font-size:10px;color:var(--muted);font-family:var(--mono)">'+r.user_email+'</div></div>'+syncBadge+'</div></td>' +
-      '<td><div style="font-family:var(--mono);font-size:11px">'+r.date+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">'+r.time+'</div></td>' +
-      '<td><div style="font-family:var(--mono);font-size:11px;color:var(--accent)">'+(r.lat?r.lat.toFixed(5):'—')+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--accent)">'+(r.lng?r.lng.toFixed(5):'—')+'</div></td>' +
-      '<td>'+(r.qellim?'<span class="badge info">'+r.qellim+'</span>':'<span style="color:var(--muted)">—</span>')+'</td>' +
-      '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12px">'+(r.notes||'—')+'</td>' +
-      '<td><span class="badge '+(r.photo_count>0?'ok':'')+'">'+r.photo_count+'</span></td>' +
-      '<td><div class="rec-actions">' +
-        '<div class="icon-btn" onclick="showDetail('+JSON.stringify(r).replace(/"/g,'&quot;')+')" title="Detajet"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>' +
-        (currentProfile.role==='admin'?'<div class="icon-btn" onclick="deleteRecord('+r.id+')" title="Fshi" style="color:var(--danger);border-color:var(--danger)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></div>':'')+
-      '</div></td>' +
-    '</tr>';
-  }).join('');
-}
-
-async function deleteRecord(id) {
-  if (!confirm('Fshi rekordin #'+id+'?')) return;
-  if (sb) { var {error} = await sb.from('survey_records').delete().eq('id',id); if(error){ toast('err','Gabim: '+error.message); return; } }
-  allRecords = allRecords.filter(function(r){return r.id!==id;});
-  filterRecords();
-  toast('ok','Rekord #'+id+' u fshi');
-}
-
-function showDetail(r) {
-  document.getElementById('detail-content').innerHTML =
-    ['ID','user_name','user_email','date','time','lat','lng','accuracy','qellim','notes','photo_count','created_at'].map(function(k){
-      return '<div class="detail-row"><div class="detail-key">'+k+'</div><div class="detail-val">'+(r[k]!==undefined&&r[k]!==null?String(r[k]):'—')+'</div></div>';
-    }).join('');
-  document.getElementById('detail-modal').classList.remove('hidden');
-}
-function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
-
-// ========================================================
-// USERS
-// ========================================================
-var allProfiles = [];
-
-async function loadUsers() {
-  if (!sb || currentProfile.role === 'field' || currentProfile.role === 'viewer') return;
-
-  // Show invite button for admins only
-  var invBtn = document.getElementById('invite-btn');
-  if (invBtn) invBtn.style.display = currentProfile.role === 'admin' ? 'inline-flex' : 'none';
-
-  var { data: profiles, error } = await sb.from('profiles').select('*').order('created_at', {ascending: true});
-  if (error) { toast('err', 'Gabim ngarkimi: ' + error.message); return; }
-  if (!profiles) return;
-  allProfiles = profiles;
-
-  // count records per user
-  var { data: recs } = await sb.from('survey_records').select('user_id, created_at');
-  var counts = {}; var lastDates = {};
-  (recs||[]).forEach(function(r){
-    counts[r.user_id] = (counts[r.user_id]||0)+1;
-    if (!lastDates[r.user_id] || r.created_at > lastDates[r.user_id]) lastDates[r.user_id] = r.created_at;
-  });
-
-  // store counts on profiles for filtering
-  allProfiles = allProfiles.map(function(p) {
-    return Object.assign({}, p, { _count: counts[p.id]||0, _last: lastDates[p.id]||null });
-  });
-
-  document.getElementById('users-subtitle').textContent = allProfiles.length + ' përdorues gjithsej';
-  renderUsersGrid(allProfiles);
-}
-
-function filterUsers() {
-  var search = (document.getElementById('users-search').value||'').toLowerCase();
-  var roleF = document.getElementById('users-role-filter').value;
-  var filtered = allProfiles.filter(function(p) {
-    if (roleF && (p.role||'field') !== roleF) return false;
-    if (search) {
-      var hay = ((p.full_name||'') + ' ' + (p.email||'')).toLowerCase();
-      if (!hay.includes(search)) return false;
-    }
-    return true;
-  });
-  renderUsersGrid(filtered);
-}
-
-function renderUsersGrid(profiles) {
-  var roleColorsMap = {admin:'bg-admin role-admin',supervisor:'bg-supervisor role-supervisor',field:'bg-field role-field',viewer:'bg-viewer role-viewer',disabled:'bg-viewer role-viewer'};
-  var badgeMap = {admin:'err',supervisor:'warn',viewer:'purple',field:'ok',disabled:'err'};
-  var grid = document.getElementById('users-grid');
-  if (!profiles.length) {
-    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Asnjë përdorues i gjetur</div>';
-    return;
+    // Success
+    SB=client;
+    ls('su',u);ls('sk',k);
+    ae.className='alert ok';ae.textContent='✓ Lidhja u vendos me sukses!';
+    log('ok','Config u ruajt — URL: '+u.split('.')[0].replace('https://',''));
+    setTimeout(function(){showAuth();},800);
+  }catch(e){
+    ae.className='alert err';ae.textContent='✕ Lidhja dështoi: '+e.message+'\n\nKontrolloni: URL dhe Key të sakta? Projekti aktiv?';
+    log('err','Config test dështoi: '+e.message);
   }
-  grid.innerHTML = profiles.map(function(p) {
-    var name = p.full_name || p.email;
-    var init = name.substring(0,2).toUpperCase();
-    var role = p.role || 'field';
-    var rc = p._count || 0;
-    var ld = p._last ? new Date(p._last).toLocaleDateString('sq-AL') : '—';
-    var isDisabled = role === 'disabled';
-    var isMe = p.id === currentProfile.id;
-    var canEdit = currentProfile.role === 'admin' && !isMe;
-    var cardOpacity = isDisabled ? 'opacity:0.55;' : '';
+  btn.disabled=false;btn.textContent='Lidhu me Supabase';
+}
+function clearCfgErr(){document.getElementById('cfg-alert').classList.add('hidden')}
+function showCfg(){
+  document.getElementById('scr-config').classList.remove('hidden');
+  document.getElementById('scr-auth').classList.add('hidden');
+  document.getElementById('app').classList.remove('on');
+  var u=ls('su'),k=ls('sk');
+  if(u)document.getElementById('cfg-url').value=u;
+  if(k)document.getElementById('cfg-key').value=k;
+}
+function showAuth(){
+  document.getElementById('scr-config').classList.add('hidden');
+  document.getElementById('scr-auth').classList.remove('hidden');
+}
 
-    var actionsHtml = '';
-    if (canEdit) {
-      actionsHtml = '<div class="uc-actions" style="flex-wrap:wrap;gap:5px">' +
-        '<button class="btn sm" onclick="openRoleModal(\''+p.id+'\',\''+escQ(name)+'\',\''+role+'\')" ' + (isDisabled?'disabled style="opacity:0.4;cursor:not-allowed"':'')+'>Ndrysho rolin</button>' +
-        (!isDisabled
-          ? '<button class="btn sm warn" onclick="confirmDisable(\''+p.id+'\',\''+escQ(name)+'\')">Disable</button>'
-          : '<button class="btn sm" onclick="confirmEnable(\''+p.id+'\',\''+escQ(name)+'\')">Enable</button>'
-        ) +
-        '<button class="btn sm danger" onclick="confirmDeleteUser(\''+p.id+'\',\''+escQ(name)+'\','+rc+')">Fshi</button>' +
-      '</div>';
-    } else if (isMe) {
-      actionsHtml = '<div style="font-size:10px;color:var(--muted);font-family:var(--mono);padding:4px 0">◈ Llogaria juaj</div>';
-    }
+/* ═══════════════════════════════════════
+   AUTH
+═══════════════════════════════════════ */
+function aswitch(t){
+  document.getElementById('atab-li').classList.toggle('act',t==='li');
+  document.getElementById('atab-rg').classList.toggle('act',t==='rg');
+  document.getElementById('aform-li').classList.toggle('hidden',t!=='li');
+  document.getElementById('aform-rg').classList.toggle('hidden',t!=='rg');
+  clearAuthErr();
+}
+var selRole='field';
+function pickRole(el){
+  document.querySelectorAll('#rcards .rc').forEach(function(c){c.classList.remove('sel')});
+  el.classList.add('sel');selRole=el.dataset.role;
+}
+async function doLogin(){
+  var em=v('li-em'),pw=v('li-pw'),btn=document.getElementById('li-btn');
+  if(!em||!pw){showAAlert('Plotësoni të gjitha fushat!');return}
+  btn.disabled=true;btn.textContent='Duke hyrë...';
+  try{
+    var{data,error}=await SB.auth.signInWithPassword({email:em,password:pw});
+    if(error)throw error;
+    log('ok','Login: '+em);
+    await loadProfile(data.user);
+    startApp();
+  }catch(e){
+    showAAlert('Gabim: '+e.message);
+    log('err','Login dështoi: '+e.message);
+  }
+  btn.disabled=false;btn.textContent='Hyr →';
+}
+async function doRegister(){
+  var nm=v('rg-nm'),em=v('rg-em'),pw=v('rg-pw'),btn=document.getElementById('rg-btn');
+  if(!nm||!em||!pw){showAAlert('Plotësoni të gjitha fushat!');return}
+  if(pw.length<6){showAAlert('Fjalëkalimi min. 6 karaktere!');return}
+  btn.disabled=true;btn.textContent='Duke krijuar...';
+  try{
+    var{data,error}=await SB.auth.signUp({email:em,password:pw,options:{data:{full_name:nm,role:selRole}}});
+    if(error)throw error;
+    log('ok','Regjistrim: '+em+' ['+selRole+']');
+    toast('ok','Llogaria u krijua! Kontrolloni email-in tuaj.');
+    aswitch('li');
+  }catch(e){
+    showAAlert('Gabim: '+e.message);
+    log('err','Regjistrim dështoi: '+e.message);
+  }
+  btn.disabled=false;btn.textContent='Krijo llogari →';
+}
+async function loadProfile(user){
+  CU=user;
+  var{data,error}=await SB.from('profiles').select('*').eq('id',user.id).single();
+  if(error) log('warn','Profili: '+error.message);
+  CP=data||{id:user.id,email:user.email,full_name:user.email.split('@')[0],role:'field'};
+  log('ok','Profil: '+CP.email+' ['+CP.role+']');
+}
+async function doLogout(){
+  if(!confirm('Dilni?'))return;
+  await SB.auth.signOut();
+  CU=null;CP=null;allRecs=[];
+  document.getElementById('app').classList.remove('on');
+  showAuth();toast('info','U çkyçët');
+}
+function showAAlert(msg){var el=document.getElementById('auth-alert');el.className='alert err';el.textContent=msg;el.classList.remove('hidden')}
+function clearAuthErr(){document.getElementById('auth-alert').classList.add('hidden')}
+function showForgot(){
+  var em=prompt('Email juaj:');if(!em)return;
+  SB.auth.resetPasswordForEmail(em).then(function(){toast('ok','Email-i i rivendosjes u dërgua!')});
+}
 
-    return '<div class="user-card" style="'+cardOpacity+'">' +
-      '<div class="uc-top">' +
-        '<div class="uc-avatar '+(roleColorsMap[role]||'bg-field role-field')+'">'+init+'</div>' +
-        '<div style="flex:1;min-width:0"><div class="uc-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+name+'</div><div class="uc-email" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.email+'</div></div>' +
-      '</div>' +
-      '<div style="margin-bottom:12px;display:flex;align-items:center;gap:6px">' +
-        '<span class="badge '+(badgeMap[role]||'ok')+'">'+role+'</span>' +
-        (isMe ? '<span class="badge info">ju</span>' : '') +
-      '</div>' +
-      '<div class="uc-stats">' +
-        '<div class="uc-stat"><div class="uc-stat-label">Rekorde</div><div class="uc-stat-val">'+rc+'</div></div>' +
-        '<div class="uc-stat"><div class="uc-stat-label">I fundit</div><div class="uc-stat-val" style="font-size:11px;padding-top:5px;font-family:var(--mono)">'+ld+'</div></div>' +
-      '</div>' +
-      actionsHtml +
+/* ═══════════════════════════════════════
+   APP START
+═══════════════════════════════════════ */
+function startApp(){
+  document.getElementById('scr-auth').classList.add('hidden');
+  document.getElementById('app').classList.add('on');
+  updateTop();initMap();renderPh();setDT();
+  document.getElementById('f-em').value=CP.email||'';
+  // Hide users nav for field/viewer
+  if(CP.role==='field'||CP.role==='viewer') document.getElementById('nav-us').classList.add('hidden');
+  initBLL();offEvents();
+  loadRecs(false);testConn();
+  toast('ok','Mirë se vini, '+(CP.full_name||CP.email)+'!');
+}
+function updateTop(){
+  var nm=CP.full_name||CP.email,role=CP.role||'field';
+  document.getElementById('tname').textContent=nm;
+  document.getElementById('trole').textContent=role;
+  var av=document.getElementById('tava');
+  av.textContent=nm.substring(0,2).toUpperCase();
+  var rc={admin:'c-admin bg-admin',supervisor:'c-supervisor bg-supervisor',field:'c-field bg-field',viewer:'c-viewer bg-viewer'};
+  av.className='ava '+(rc[role]||'c-field bg-field');
+}
+
+/* ═══════════════════════════════════════
+   MAP
+═══════════════════════════════════════ */
+function initMap(){
+  if(leafMap)return;
+  leafMap=L.map('map',{zoomControl:true}).setView([41.15,20.17],8);
+  baseLays={
+    osm:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'©OSM',maxZoom:19}),
+    'esri-img':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:19}),
+    'esri-str':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:19}),
+    'esri-top':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:19}),
+    'esri-gr':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:16}),
+    'esri-dk':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:16}),
+    'esri-ng':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:16}),
+    carto:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'©CartoDB',maxZoom:19})
+  };
+  baseLays.osm.addTo(leafMap);
+  sMarkers=L.layerGroup().addTo(leafMap);
+  leafMap.on('click',function(e){if(pickMode){setCoords(e.latlng.lat,e.latlng.lng,0);togPick();}});
+}
+var BASES=[
+  {id:'osm',nm:'OpenStreetMap',c:'#4a9eff'},
+  {id:'esri-img',nm:'Esri World Imagery (Ortofotë)',c:'#e8d44d',tag:'SH'},
+  {id:'esri-str',nm:'Esri World Street Map',c:'#ff9a4a'},
+  {id:'esri-top',nm:'Esri World Topo Map',c:'#7ab867'},
+  {id:'esri-gr',nm:'Esri Light Gray Canvas',c:'#aaa'},
+  {id:'esri-dk',nm:'Esri Dark Gray Canvas',c:'#555'},
+  {id:'esri-ng',nm:'Esri National Geographic',c:'#c3b888'},
+  {id:'carto',nm:'CartoDB Dark',c:'#2a3a5a'}
+];
+function initBLL(){
+  document.getElementById('bll').innerHTML=BASES.map(function(b){
+    return'<div class="lrow'+(b.id==='osm'?' on':'')+'" id="lr-'+b.id+'" onclick="setBase(\''+b.id+'\')">' +
+      '<div class="ldot" style="background:'+b.c+'"></div><span class="lnm">'+b.nm+'</span>' +
+      (b.tag?'<span class="badge info" style="font-size:9px">'+b.tag+'</span>':'')+
     '</div>';
   }).join('');
 }
+function setBase(id){
+  if(baseLays[curBase])leafMap.removeLayer(baseLays[curBase]);
+  document.querySelectorAll('[id^="lr-"]').forEach(function(el){el.classList.remove('on')});
+  curBase=id;baseLays[id].addTo(leafMap);baseLays[id].bringToBack();sMarkers.bringToFront();
+  var r=document.getElementById('lr-'+id);if(r)r.classList.add('on');
+}
+function goAL(){leafMap.setView([41.15,20.17],8)}
+function togPick(){pickMode=!pickMode;document.getElementById('pick-btn').classList.toggle('on',pickMode);document.getElementById('mfpick').classList.toggle('on',pickMode);leafMap.getContainer().style.cursor=pickMode?'crosshair':'';}
+function togSL(cb){if(cb.checked)sMarkers.addTo(leafMap);else leafMap.removeLayer(sMarkers)}
+function togShpL(cb){shpLay.forEach(function(s){if(!s.layer)return;if(cb.checked)s.layer.addTo(leafMap);else leafMap.removeLayer(s.layer)})}
 
-function escQ(s) { return (s||'').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
-
-// ---- ROLE MODAL ----
-function openRoleModal(uid, name, currentRole) {
-  document.getElementById('role-modal-content').innerHTML =
-    '<p style="margin-bottom:14px;font-family:var(--mono);font-size:12px;color:var(--muted)">Përdoruesi: <span style="color:var(--text)">'+name+'</span></p>' +
-    '<div class="auth-field"><label>Roli i ri</label>' +
-    '<select id="new-role-sel">' +
-    '<option value="field"'+(currentRole==='field'?' selected':'')+'>Field User</option>' +
-    '<option value="viewer"'+(currentRole==='viewer'?' selected':'')+'>Viewer</option>' +
-    '<option value="supervisor"'+(currentRole==='supervisor'?' selected':'')+'>Supervisor</option>' +
-    '<option value="admin"'+(currentRole==='admin'?' selected':'')+'>Admin</option>' +
-    '</select></div>' +
-    '<div class="btn-row"><button class="btn primary" onclick="saveRole(\''+uid+'\')">Ruaj</button>' +
-    '<button class="btn" onclick="document.getElementById(\'role-modal\').classList.add(\'hidden\')">Anulo</button></div>';
-  document.getElementById('role-modal').classList.remove('hidden');
+/* ═══════════════════════════════════════
+   GPS
+═══════════════════════════════════════ */
+function getGPS(){
+  if(!navigator.geolocation){toast('err','GPS nuk suportohet');return}
+  log('info','Duke marrë GPS...');
+  navigator.geolocation.getCurrentPosition(
+    function(p){setCoords(p.coords.latitude,p.coords.longitude,p.coords.accuracy);leafMap.setView([p.coords.latitude,p.coords.longitude],16);log('ok','GPS: '+p.coords.latitude.toFixed(5)+', '+p.coords.longitude.toFixed(5))},
+    function(e){setCoords(41.3275,19.8187,0);log('warn','GPS dështoi ('+e.message+') — Tiranë default')}
+  );
+}
+function setCoords(la,ln,ac){
+  document.getElementById('f-lat').textContent=la.toFixed(6);
+  document.getElementById('f-lng').textContent=ln.toFixed(6);
+  document.getElementById('f-acc').textContent=ac?ac.toFixed(1)+' m':'—';
 }
 
-async function saveRole(uid) {
-  var role = document.getElementById('new-role-sel').value;
-  var { error } = await sb.from('profiles').update({role: role}).eq('id', uid);
-  if (error) { toast('err','Gabim: '+error.message); return; }
-  document.getElementById('role-modal').classList.add('hidden');
-  toast('ok','Roli u ndryshua në: ' + role);
-  loadUsers();
+/* ═══════════════════════════════════════
+   DATE/TIME
+═══════════════════════════════════════ */
+function setDT(){
+  var n=new Date(),p=function(x){return String(x).padStart(2,'0')};
+  document.getElementById('f-dt').value=n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate());
+  document.getElementById('f-tm').value=p(n.getHours())+':'+p(n.getMinutes());
 }
 
-// ---- DISABLE / ENABLE ----
-function confirmDisable(uid, name) {
-  document.getElementById('disable-modal-title').innerHTML = 'Disable përdorues <span class="modal-close" onclick="document.getElementById(\'disable-modal\').classList.add(\'hidden\')">✕</span>';
-  document.getElementById('disable-modal-body').textContent = 'Do të çaktivizoni llogarinë e "' + name + '". Ata nuk do të mund të hyjnë derisa ta riaktivizoni. Rekordet e tyre ruhen.';
-  var btn = document.getElementById('disable-modal-confirm-btn');
-  btn.textContent = 'Disable';
-  btn.className = 'btn warn';
-  btn.onclick = function() { doDisableUser(uid); };
-  document.getElementById('disable-modal').classList.remove('hidden');
-}
-
-function confirmEnable(uid, name) {
-  document.getElementById('disable-modal-title').innerHTML = 'Riaktivizo përdorues <span class="modal-close" onclick="document.getElementById(\'disable-modal\').classList.add(\'hidden\')">✕</span>';
-  document.getElementById('disable-modal-body').textContent = 'Do të riaktivizoni llogarinë e "' + name + '". Ata do të mund të hyjnë sërish me rolin e mëparshëm (field).';
-  var btn = document.getElementById('disable-modal-confirm-btn');
-  btn.textContent = 'Riaktivizo';
-  btn.className = 'btn primary';
-  btn.onclick = function() { doEnableUser(uid); };
-  document.getElementById('disable-modal').classList.remove('hidden');
-}
-
-async function doDisableUser(uid) {
-  var { error } = await sb.from('profiles').update({ role: 'disabled' }).eq('id', uid);
-  document.getElementById('disable-modal').classList.add('hidden');
-  if (error) { toast('err', 'Gabim: ' + error.message); return; }
-  toast('warn', 'Llogaria u çaktivizua');
-  loadUsers();
-}
-
-async function doEnableUser(uid) {
-  var { error } = await sb.from('profiles').update({ role: 'field' }).eq('id', uid);
-  document.getElementById('disable-modal').classList.add('hidden');
-  if (error) { toast('err', 'Gabim: ' + error.message); return; }
-  toast('ok', 'Llogaria u riaktivizua si Field User');
-  loadUsers();
-}
-
-// ---- DELETE USER ----
-function confirmDeleteUser(uid, name, recCount) {
-  document.getElementById('disable-modal-title').innerHTML = 'Fshi përdorues <span class="modal-close" onclick="document.getElementById(\'disable-modal\').classList.add(\'hidden\')">✕</span>';
-  document.getElementById('disable-modal-body').textContent = 'Jeni duke fshirë llogarinë e "' + name + '".' +
-    (recCount > 0 ? ' Kjo llogari ka ' + recCount + ' rekorde të regjistruara. Profili do të fshihet, por rekordet ruhen.' : ' Kjo veprim nuk mund të kthehet.');
-  var btn = document.getElementById('disable-modal-confirm-btn');
-  btn.textContent = 'Fshi llogarinë';
-  btn.className = 'btn danger';
-  btn.onclick = function() { doDeleteUser(uid, name); };
-  document.getElementById('disable-modal').classList.remove('hidden');
-}
-
-async function doDeleteUser(uid, name) {
-  // Delete profile (auth user deletion requires admin API — we just remove profile)
-  var { error } = await sb.from('profiles').delete().eq('id', uid);
-  document.getElementById('disable-modal').classList.add('hidden');
-  if (error) { toast('err', 'Gabim: ' + error.message); return; }
-  toast('ok', 'Profili i "' + name + '" u fshi');
-  addLog('warn', 'Fshirë profili: ' + name);
-  loadUsers();
-}
-
-// ---- INVITE SYSTEM ----
-function openInviteModal() {
-  document.getElementById('inv-name').value = '';
-  document.getElementById('inv-email').value = '';
-  document.getElementById('inv-role').value = 'field';
-  genPass();
-  document.getElementById('invite-err').style.display = 'none';
-  document.getElementById('invite-modal').classList.remove('hidden');
-}
-
-function closeInviteModal() {
-  document.getElementById('invite-modal').classList.add('hidden');
-}
-
-function genPass() {
-  var chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#';
-  var pass = '';
-  for (var i = 0; i < 12; i++) pass += chars[Math.floor(Math.random() * chars.length)];
-  document.getElementById('inv-pass').value = pass;
-}
-
-async function doInviteUser() {
-  var name = document.getElementById('inv-name').value.trim();
-  var email = document.getElementById('inv-email').value.trim();
-  var pass = document.getElementById('inv-pass').value.trim();
-  var role = document.getElementById('inv-role').value;
-  var errEl = document.getElementById('invite-err');
-
-  if (!name || !email || !pass) {
-    errEl.style.display='block'; errEl.textContent='Plotësoni të gjitha fushat.'; return;
-  }
-  if (pass.length < 8) {
-    errEl.style.display='block'; errEl.textContent='Fjalëkalimi duhet të jetë min. 8 karaktere.'; return;
-  }
-  if (!email.includes('@')) {
-    errEl.style.display='block'; errEl.textContent='Email-i nuk është valid.'; return;
-  }
-
-  errEl.style.display = 'none';
-
-  // Save current session before signup (signup logs in as new user on some Supabase configs)
-  var { data: { session: currentSession } } = await sb.auth.getSession();
-
-  var { data, error } = await sb.auth.signUp({
-    email: email,
-    password: pass,
-    options: { data: { full_name: name, role: role } }
+/* ═══════════════════════════════════════
+   PHOTOS
+═══════════════════════════════════════ */
+function addPh(e){Array.from(e.target.files).forEach(function(f){var r=new FileReader();r.onload=function(ev){photos.push({name:f.name,data:ev.target.result});renderPh()};r.readAsDataURL(f)})}
+function renderPh(){
+  var g=document.getElementById('pgrid');g.innerHTML='';
+  photos.forEach(function(p,i){
+    var d=document.createElement('div');d.className='pthumb';
+    d.innerHTML='<img src="'+p.data+'"><button class="pdel" onclick="event.stopPropagation();rmPh('+i+')">✕</button>';g.appendChild(d);
   });
+  var a=document.createElement('div');a.className='padd';a.textContent='+';a.onclick=function(){document.getElementById('phinp').click()};g.appendChild(a);
+  document.getElementById('pcnt').textContent=photos.length;
+}
+function rmPh(i){photos.splice(i,1);renderPh()}
 
-  if (error) { errEl.style.display='block'; errEl.textContent=error.message; return; }
+/* ═══════════════════════════════════════
+   CAMERA
+═══════════════════════════════════════ */
+function openCam(){
+  document.getElementById('cam-m').classList.remove('hidden');
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+    .then(function(s){camStream=s;document.getElementById('cam-vid').srcObject=s})
+    .catch(function(e){toast('warn','Kamera: '+e.message);closeCam()});
+}
+function snapPh(){
+  var v2=document.getElementById('cam-vid'),c=document.getElementById('cam-cnv');
+  c.width=v2.videoWidth||640;c.height=v2.videoHeight||480;c.getContext('2d').drawImage(v2,0,0);
+  photos.push({name:'cam_'+Date.now()+'.jpg',data:c.toDataURL('image/jpeg',.85)});
+  renderPh();closeCam();toast('ok','Foto e bërë!');
+}
+function closeCam(){
+  document.getElementById('cam-m').classList.add('hidden');
+  if(camStream){camStream.getTracks().forEach(function(t){t.stop()});camStream=null}
+}
 
-  // If signUp replaced our session, restore it
-  if (currentSession) {
-    await sb.auth.setSession({ access_token: currentSession.access_token, refresh_token: currentSession.refresh_token });
+/* ═══════════════════════════════════════
+   SHAPEFILE / GEOJSON / KML
+═══════════════════════════════════════ */
+function shpDrop(e){e.preventDefault();document.getElementById('sdz').classList.remove('ov');procShp(Array.from(e.dataTransfer.files))}
+function shpFile(e){procShp(Array.from(e.target.files))}
+function procShp(files){
+  files.forEach(function(f){
+    var ext=f.name.split('.').pop().toLowerCase();
+    var r=new FileReader();
+    if(ext==='geojson'||ext==='json'){r.onload=function(ev){try{addShp(f.name,JSON.parse(ev.target.result),f.size)}catch(e){toast('err','GeoJSON gabim')}};r.readAsText(f);}
+    else if(ext==='kml'){r.onload=function(ev){try{addShp(f.name,kml2gj(ev.target.result),f.size)}catch(e){toast('err','KML gabim')}};r.readAsText(f);}
+    else{toast('warn','Format i njohur: .'+ext)}
+  });
+}
+function kml2gj(txt){
+  var doc=new DOMParser().parseFromString(txt,'text/xml');var feats=[];
+  doc.querySelectorAll('Placemark').forEach(function(pm){
+    var co=pm.querySelector('coordinates');if(!co)return;
+    var pts=co.textContent.trim().split(/\s+/);
+    if(pts.length===1){var c=pts[0].split(',');feats.push({type:'Feature',properties:{},geometry:{type:'Point',coordinates:[+c[0],+c[1]]}})}
+    else{feats.push({type:'Feature',properties:{},geometry:{type:'LineString',coordinates:pts.map(function(p){var c=p.split(',');return[+c[0],+c[1]]})}})}
+  });
+  return{type:'FeatureCollection',features:feats};
+}
+var SPAL=['#2d8bff','#ffaa2e','#ff4d6d','#7ab867','#9b5fff','#f5e63d','#05d9a0'];var spI=0;
+function addShp(name,gj,size){
+  var col=SPAL[spI++%SPAL.length];
+  var layer=L.geoJSON(gj,{
+    style:{color:col,weight:2,opacity:.9,fillOpacity:.18},
+    pointToLayer:function(f,ll){return L.circleMarker(ll,{radius:6,color:col,weight:2,fillOpacity:.5})},
+    onEachFeature:function(f,l){if(f.properties){var t=Object.entries(f.properties).map(function(kv){return'<b>'+kv[0]+':</b> '+kv[1]}).join('<br>');l.bindPopup(t||'—')}}
+  }).addTo(leafMap);
+  var fc=gj.features?gj.features.length:'?';
+  shpLay.push({name,layer,color:col,size,features:fc});renderShpList();
+  try{leafMap.fitBounds(layer.getBounds())}catch(e){}
+  toast('ok','Ngarkuar: '+name);log('ok','SHP: '+name+' ('+fc+' obj)');
+}
+function renderShpList(){
+  var el=document.getElementById('shplist');
+  if(!shpLay.length){el.innerHTML='<div class="empty" style="padding:14px 0">Asnjë shtresë</div>';return}
+  el.innerHTML=shpLay.map(function(s,i){
+    return'<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);margin-bottom:5px">' +
+      '<div style="width:8px;height:8px;border-radius:2px;background:'+s.color+';flex-shrink:0"></div>' +
+      '<div style="flex:1;min-width:0"><div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+s.name+'</div>' +
+      '<div style="font-size:10px;color:var(--txt3);font-family:var(--mono)">'+s.features+' obj · '+(s.size/1024).toFixed(1)+'KB</div></div>' +
+      '<button class="btn xs danger" onclick="rmShp('+i+')">✕</button></div>';
+  }).join('');
+}
+function rmShp(i){if(shpLay[i].layer)leafMap.removeLayer(shpLay[i].layer);shpLay.splice(i,1);renderShpList()}
+
+/* ═══════════════════════════════════════
+   STORAGE — NGARKIM FOTOSH NË SUPABASE
+═══════════════════════════════════════ */
+async function uploadPhotos(recordId){
+  if(!SB||!photos.length)return 0;
+  var ok=0;
+  for(var i=0;i<photos.length;i++){
+    try{
+      // Konverto base64 → Blob
+      var b64=photos[i].data.split(',')[1];
+      var mime=photos[i].data.split(';')[0].split(':')[1]||'image/jpeg';
+      var bin=atob(b64);var arr=new Uint8Array(bin.length);
+      for(var j=0;j<bin.length;j++)arr[j]=bin.charCodeAt(j);
+      var blob=new Blob([arr],{type:mime});
+      var ext=mime.split('/')[1]||'jpg';
+      var path=CU.id+'/rec_'+recordId+'_'+i+'.'+ext;
+      var{error}=await SB.storage.from('survey-photos').upload(path,blob,{upsert:true,contentType:mime});
+      if(error)log('warn','Foto '+i+' dështoi: '+error.message);
+      else{ok++;log('ok','Foto '+i+' ngarkuar: '+path)}
+    }catch(e){log('warn','Foto upload gabim: '+e.message)}
   }
+  return ok;
+}
 
-  // If profile wasn't created by trigger yet, create manually
-  if (data.user) {
-    var { error: pe } = await sb.from('profiles').upsert({
-      id: data.user.id, email: email, full_name: name, role: role
-    }, { onConflict: 'id' });
-    // ignore pe — trigger may have already done it
+/* ═══════════════════════════════════════
+   ADD RECORD  — kjo është pjesa kyçe
+═══════════════════════════════════════ */
+async function addRec(){
+  var la=document.getElementById('f-lat').textContent;
+  var ln=document.getElementById('f-lng').textContent;
+  if(la==='—'||ln==='—'){
+    showAddStatus('err','Merrni koordinatat GPS ose zgjidhni nga harta!');return;
   }
+  var btn=document.getElementById('add-btn');
+  btn.disabled=true;btn.textContent='Duke ruajtur...';
+  showAddStatus('info','Duke ruajtur rekordin...');
 
-  closeInviteModal();
-  toast('ok', 'Llogaria e "' + name + '" u krijua si ' + role + '!');
-  addLog('ok', 'Invited: ' + email + ' (' + role + ')');
+  var rec={
+    user_id:CU.id,
+    user_email:CP.email,
+    user_name:CP.full_name||CP.email,
+    user_role:CP.role||'field',
+    rec_date:document.getElementById('f-dt').value,
+    rec_time:document.getElementById('f-tm').value,
+    lat:parseFloat(la),
+    lng:parseFloat(ln),
+    accuracy:parseFloat(document.getElementById('f-acc').textContent)||0,
+    qellim:document.getElementById('f-ql').value||null,
+    notes:document.getElementById('f-nt').value||null,
+    photo_count:photos.length,
+    synced:true
+  };
 
-  // Show credentials summary
-  setTimeout(function() {
-    if (confirm('Llogaria u krijua!\n\nEmail: ' + email + '\nFjalëkalimi: ' + pass + '\nRoli: ' + role + '\n\nKopjoni këto të dhëna dhe ndajini me përdoruesin.\n\nKlikoni OK për t\'i kopjuar.')) {
-      navigator.clipboard.writeText('GIS Survey — Kredencialet\nEmail: ' + email + '\nFjalëkalimi: ' + pass + '\nURL: ' + window.location.href)
-        .then(function(){ toast('ok','Kredencialet u kopjuan'); })
-        .catch(function(){ toast('info','Kopjojeni manualisht nga dialogu'); });
+  log('info','Duke insertuar: user='+rec.user_email+' lat='+rec.lat+' lng='+rec.lng);
+
+  var saved=false;
+  if(navigator.onLine&&SB){
+    try{
+      var{data,error}=await SB.from('survey_records').insert(rec).select().single();
+      if(error){
+        log('err','Supabase insert gabim: '+error.message+' ('+error.code+')');
+        throw error;
+      }
+      rec=data;saved=true;
+      log('ok','✓ Ruajtur në Supabase: #'+rec.id);
+      // Ngarko fotot në Storage nëse ka
+      if(photos.length){
+        showAddStatus('info','Duke ngarkuar '+photos.length+' foto...');
+        var uploaded=await uploadPhotos(rec.id);
+        log('ok','Foto: '+uploaded+'/'+photos.length+' u ngarkuan');
+      }
+      showAddStatus('ok','✓ Rekord #'+rec.id+' u ruajt'+(photos.length?' + '+photos.length+' foto':'')+'!');
+      toast('ok','Rekord #'+rec.id+' u ruajt!');
+    }catch(e){
+      log('warn','Supabase dështoi, ruhet lokalisht: '+e.message);
     }
-    loadUsers();
-  }, 300);
+  }
+
+  if(!saved){
+    rec.id='OFF_'+Date.now();rec.synced=false;
+    var offArr=lsj('go')||[];offArr.push(rec);lsjs('go',offArr);
+    log('warn','Ruajtur lokalisht (offline): '+rec.id);
+    showAddStatus('warn','Ruajtur lokalisht. Do sinkronizohet kur të jeni online.');
+    toast('warn','Ruajtur lokalisht (offline)');
+  }
+
+  addMkr(rec);
+  allRecs.unshift(rec);
+  filteredRecs=allRecs.slice();
+  renderRT();
+  updSyncCounts();
+  clearForm();
+  btn.disabled=false;btn.textContent='Shto rekord';
+
+  // update record count badge
+  document.getElementById('rc-sub').textContent=allRecs.length+' rekorde totale';
 }
 
-// ========================================================
-// REPORTS
-// ========================================================
-async function loadReports() {
-  if (!sb) return;
-  var days = parseInt(document.getElementById('report-period').value);
-  var query = sb.from('survey_records').select('*');
-  if (days > 0) {
-    var since = new Date(); since.setDate(since.getDate()-days);
-    query = query.gte('created_at', since.toISOString());
+function showAddStatus(type,msg){
+  var el=document.getElementById('add-status');
+  el.className='alert '+type;el.textContent=msg;el.classList.remove('hidden');
+  if(type==='ok')setTimeout(function(){el.classList.add('hidden')},4000);
+}
+
+function clearForm(){
+  document.getElementById('f-nt').value='';document.getElementById('f-ql').value='';
+  photos=[];renderPh();setDT();
+  document.getElementById('f-lat').textContent='—';
+  document.getElementById('f-lng').textContent='—';
+  document.getElementById('f-acc').textContent='—';
+}
+
+var RCOL={admin:'#ff4d6d',supervisor:'#ffaa2e',field:'#05d9a0',viewer:'#9b5fff'};
+function addMkr(rec){
+  if(!sMarkers)return;
+  var c=RCOL[rec.user_role]||'#05d9a0';
+  var ic=L.divIcon({className:'',html:'<div style="width:12px;height:12px;background:'+c+';border:2px solid #07090f;border-radius:50%;box-shadow:0 0 0 3px '+c+'44"></div>',iconSize:[12,12],iconAnchor:[6,6]});
+  var m=L.marker([rec.lat,rec.lng],{icon:ic});
+  m.bindPopup('<b style="font-family:monospace;color:'+c+'">#'+(rec.id||'?')+'</b><br>' +
+    '<b>'+(rec.user_name||rec.user_email||'?')+'</b>' +
+    '<span style="font-family:monospace;font-size:10px;color:#8da0bb;margin-left:6px">['+rec.user_role+']</span><br>' +
+    '<span style="font-size:11px;color:#3d5275">'+(rec.rec_date||'')+'</span><br>' +
+    (rec.qellim?'<b>'+rec.qellim+'</b><br>':'')+'<small>'+(rec.notes||'').substring(0,80)+'</small>',{maxWidth:230});
+  sMarkers.addLayer(m);
+}
+
+/* ═══════════════════════════════════════
+   LOAD & FILTER RECORDS
+═══════════════════════════════════════ */
+async function loadRecs(showToast){
+  if(!SB||!CU)return;
+  log('info','Duke ngarkuar rekordet...');
+  try{
+    var q=SB.from('survey_records').select('*').order('created_at',{ascending:false});
+    if(CP.role==='field')q=q.eq('user_id',CU.id);
+    var{data,error}=await q;
+    if(error)throw error;
+    allRecs=data||[];
+    log('ok','Ngarkuar '+allRecs.length+' rekorde nga Supabase');
+  }catch(e){
+    log('err','loadRecs gabim: '+e.message);
+    allRecs=[];
   }
-  var { data } = await query.order('created_at',{ascending:false});
-  var records = data || [];
 
-  // stats
-  var today = new Date().toISOString().slice(0,10);
-  var todayCount = records.filter(function(r){return r.date===today;}).length;
-  var users = new Set(records.map(function(r){return r.user_id;})).size;
-  var avg = days > 0 ? (records.length / days).toFixed(1) : records.length;
-  document.getElementById('stat-total').textContent = records.length;
-  document.getElementById('stat-users').textContent = users;
-  document.getElementById('stat-today').textContent = todayCount;
-  document.getElementById('stat-avg').textContent = avg;
+  // merge offline
+  var off=lsj('go')||[];
+  off.forEach(function(r){if(!allRecs.find(function(x){return x.id===r.id}))allRecs.unshift(r)});
+  if(off.length)log('info','Bashkuar '+off.length+' rekorde offline');
 
-  // daily chart
-  var dailyMap = {};
-  records.forEach(function(r){ if(r.date){ dailyMap[r.date]=(dailyMap[r.date]||0)+1; } });
-  var dailyKeys = Object.keys(dailyMap).sort().slice(-30);
-  renderChart('chart-daily', 'bar', dailyKeys, dailyKeys.map(function(k){return dailyMap[k];}), 'Rekorde/ditë', '#00e5c3');
+  // populate user filter
+  var users={};allRecs.forEach(function(r){if(r.user_email)users[r.user_email]=r.user_name||r.user_email});
+  var sel=document.getElementById('fs-u');var cv=sel.value;
+  sel.innerHTML='<option value="">Të gjithë users</option>';
+  Object.entries(users).forEach(function(kv){sel.innerHTML+='<option value="'+kv[0]+'">'+kv[1]+'</option>'});
+  sel.value=cv;
 
-  // qellim chart
-  var qMap = {};
-  records.forEach(function(r){ var q=r.qellim||'Tjetër'; qMap[q]=(qMap[q]||0)+1; });
-  var qKeys = Object.keys(qMap).sort(function(a,b){return qMap[b]-qMap[a];});
-  renderChart('chart-qellim', 'doughnut', qKeys, qKeys.map(function(k){return qMap[k];}), 'Qëllimi', null);
+  if(sMarkers)sMarkers.clearLayers();
+  allRecs.forEach(function(r){if(r.lat&&r.lng)addMkr(r)});
 
-  // users chart
-  var uMap = {};
-  records.forEach(function(r){ var u=r.user_name||r.user_email||'?'; uMap[u]=(uMap[u]||0)+1; });
-  var uKeys = Object.keys(uMap).sort(function(a,b){return uMap[b]-uMap[a];}).slice(0,10);
-  renderChart('chart-users', 'bar', uKeys, uKeys.map(function(k){return uMap[k];}), 'Rekorde', '#3a9bff');
+  filterR();updSyncCounts();
+  document.getElementById('rc-sub').textContent=allRecs.length+' rekorde totale';
+  if(showToast)toast('ok','Ngarkuar '+allRecs.length+' rekorde');
+  document.getElementById('sl-db').textContent=allRecs.filter(function(r){return r.synced!==false}).length;
+}
 
-  // hours chart
-  var hMap = {};
-  for(var i=0;i<24;i++) hMap[i]=0;
-  records.forEach(function(r){ if(r.time){ var h=parseInt(r.time.split(':')[0]); hMap[h]=(hMap[h]||0)+1; } });
-  var hKeys = Object.keys(hMap).map(Number).sort(function(a,b){return a-b;});
-  renderChart('chart-hours','bar', hKeys.map(function(h){return h+':00';}), hKeys.map(function(h){return hMap[h];}), 'Rekorde/orë', '#a259ff');
-
-  // user report table
-  var uReport = {}; var uLast = {}; var uQellim = {};
-  records.forEach(function(r){
-    var key = r.user_email||'?'; var name = r.user_name||key;
-    uReport[key] = uReport[key] || {name, email:key, role:r.role||'field', count:0};
-    uReport[key].count++;
-    if (!uLast[key] || r.created_at > uLast[key]) uLast[key]=r.created_at;
-    uQellim[key] = uQellim[key]||{}; var q=r.qellim||'—'; uQellim[key][q]=(uQellim[key][q]||0)+1;
+function filterR(){
+  var q=(document.getElementById('fs-q').value||'').toLowerCase();
+  var u=document.getElementById('fs-u').value;
+  var ql=document.getElementById('fs-ql').value;
+  var fr=document.getElementById('fs-fr').value;
+  var to=document.getElementById('fs-to').value;
+  filteredRecs=allRecs.filter(function(r){
+    if(u&&r.user_email!==u)return false;
+    if(ql&&r.qellim!==ql)return false;
+    if(fr&&r.rec_date<fr)return false;
+    if(to&&r.rec_date>to)return false;
+    if(q){var h=((r.user_name||'')+' '+(r.user_email||'')+' '+(r.qellim||'')+' '+(r.notes||'')+' '+r.id).toLowerCase();if(!h.includes(q))return false}
+    return true;
   });
-  var tbody = document.getElementById('user-report-tbody');
-  tbody.innerHTML = Object.values(uReport).sort(function(a,b){return b.count-a.count;}).map(function(u){
-    var mainQ = Object.keys(uQellim[u.email]||{}).sort(function(a2,b2){return (uQellim[u.email][b2]||0)-(uQellim[u.email][a2]||0);})[0]||'—';
-    var ld = uLast[u.email] ? new Date(uLast[u.email]).toLocaleDateString('sq-AL') : '—';
-    return '<tr><td>'+u.name+'</td><td><span class="badge '+(u.role==='admin'?'err':u.role==='supervisor'?'warn':u.role==='viewer'?'purple':'ok')+'">'+u.role+'</span></td><td style="font-weight:600;color:var(--accent)">'+u.count+'</td><td style="font-family:var(--mono);font-size:11px">'+ld+'</td><td>'+mainQ+'</td></tr>';
+  renderRT();document.getElementById('rc-cnt').textContent=filteredRecs.length+' rekorde';
+}
+
+function renderRT(){
+  var tb=document.getElementById('rtb'),em=document.getElementById('rc-empty');
+  if(!filteredRecs.length){tb.innerHTML='';em.classList.remove('hidden');return}
+  em.classList.add('hidden');
+  tb.innerHTML=filteredRecs.map(function(r){
+    var nm=r.user_name||r.user_email||'?';
+    var ini=nm.substring(0,2).toUpperCase();
+    var c=RCOL[r.user_role]||'#05d9a0';
+    var offTag=r.synced===false?'<span class="badge warn" style="margin-left:4px;font-size:9px">offline</span>':'';
+    var sid=String(r.id);var sidShort=sid.startsWith('OFF_')?sid.substring(4,18)+'…':sid;
+    return'<tr>' +
+      '<td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">#'+sidShort+'</td>' +
+      '<td><div class="utag"><div class="mava" style="background:'+c+'22;color:'+c+'">'+ini+'</div>' +
+        '<div><div style="font-size:12px;font-weight:500">'+nm+'</div>' +
+        '<div style="font-size:10px;color:var(--txt3);font-family:var(--mono)">'+r.user_email+'</div></div>'+offTag+'</div></td>' +
+      '<td><div style="font-family:var(--mono);font-size:11px">'+(r.rec_date||'—')+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--txt3)">'+(r.rec_time||'—')+'</div></td>' +
+      '<td><div style="font-family:var(--mono);font-size:11px;color:var(--acc)">'+(r.lat?r.lat.toFixed(5):'—')+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--acc)">'+(r.lng?r.lng.toFixed(5):'—')+'</div></td>' +
+      '<td>'+(r.qellim?'<span class="badge info" style="font-size:10px">'+r.qellim+'</span>':'<span style="color:var(--txt3)">—</span>')+'</td>' +
+      '<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--txt2);font-size:11px">'+(r.notes||'—')+'</td>' +
+      '<td><span class="badge '+(r.photo_count>0?'ok':'')+'">'+(r.photo_count||0)+'</span></td>' +
+      '<td>'+(r.synced===false?'<span class="badge warn">offline</span>':'<span class="badge ok">✓ DB</span>')+'</td>' +
+      '<td><div style="display:flex;gap:3px">' +
+        '<div class="ibtn" onclick="showDet(\''+btoa(unescape(encodeURIComponent(JSON.stringify(r))))+'\')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>' +
+        (CP.role==='admin'?'<div class="ibtn red" onclick="delRec(\''+r.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></div>':'')+
+      '</div></td></tr>';
+  }).join('');
+}
+
+function showDet(b64){
+  var r;try{r=JSON.parse(decodeURIComponent(escape(atob(b64))))}catch(e){toast('err','Gabim');return}
+  var flds=['id','user_name','user_email','user_role','rec_date','rec_time','lat','lng','accuracy','qellim','notes','photo_count','synced','created_at'];
+  document.getElementById('det-body').innerHTML=flds.map(function(k){
+    return'<div class="drow"><div class="dk">'+k+'</div><div class="dv">'+(r[k]!==undefined&&r[k]!==null?String(r[k]):'—')+'</div></div>';
+  }).join('');
+  document.getElementById('det-m').classList.remove('hidden');
+  setTimeout(function(){
+    if(detMapObj){detMapObj.remove();detMapObj=null}
+    detMapObj=L.map('det-map',{zoomControl:false,attributionControl:false}).setView([r.lat||41.15,r.lng||20.17],r.lat?14:8);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(detMapObj);
+    if(r.lat&&r.lng){
+      var c=RCOL[r.user_role]||'#05d9a0';
+      L.circleMarker([r.lat,r.lng],{radius:8,color:c,weight:3,fillOpacity:.6}).addTo(detMapObj);
+    }
+  },100);
+}
+
+async function delRec(id){
+  if(!confirm('Fshi rekordin #'+id+'?'))return;
+  if(String(id).startsWith('OFF_')){
+    var off=lsj('go')||[];lsjs('go',off.filter(function(r){return r.id!==id}));
+  }else if(SB){
+    var{error}=await SB.from('survey_records').delete().eq('id',id);
+    if(error){toast('err','Gabim: '+error.message);return}
+  }
+  allRecs=allRecs.filter(function(r){return r.id!=id});filterR();
+  toast('ok','Rekord u fshi');log('ok','Fshirë: #'+id);
+}
+
+/* ═══════════════════════════════════════
+   USERS
+═══════════════════════════════════════ */
+async function loadUsers(){
+  if(!SB||CP.role==='field'||CP.role==='viewer')return;
+  log('info','Duke ngarkuar users...');
+  var{data:profs,error:pe}=await SB.from('profiles').select('*');
+  if(pe){log('err','Profiles: '+pe.message);return}
+  var{data:rs}=await SB.from('survey_records').select('user_id,created_at,qellim');
+  var cnts={},lasts={},qmp={};
+  (rs||[]).forEach(function(r){
+    cnts[r.user_id]=(cnts[r.user_id]||0)+1;
+    if(!lasts[r.user_id]||r.created_at>lasts[r.user_id])lasts[r.user_id]=r.created_at;
+    qmp[r.user_id]=qmp[r.user_id]||{};var q=r.qellim||'—';qmp[r.user_id][q]=(qmp[r.user_id][q]||0)+1;
+  });
+  var g=document.getElementById('ugrid');
+  var rb={admin:'err',supervisor:'warn',field:'ok',viewer:'purple'};
+  var rc={admin:'c-admin bg-admin',supervisor:'c-supervisor bg-supervisor',field:'c-field bg-field',viewer:'c-viewer bg-viewer'};
+  g.innerHTML=(profs||[]).map(function(p){
+    var nm=p.full_name||p.email,ini=nm.substring(0,2).toUpperCase();
+    var cnt=cnts[p.id]||0,ld=lasts[p.id]?new Date(lasts[p.id]).toLocaleDateString('sq-AL'):'—';
+    var tq=Object.keys(qmp[p.id]||{}).sort(function(a,b){return(qmp[p.id][b]||0)-(qmp[p.id][a]||0)})[0]||'—';
+    var cE=CP.role==='admin'&&p.id!==CU.id;
+    return'<div class="ucard">' +
+      '<div class="uc-top"><div class="uc-ava '+rc[p.role||'field']+'">'+ini+'</div>' +
+      '<div style="min-width:0"><div class="uc-name">'+nm+'</div><div class="uc-email">'+p.email+'</div></div></div>' +
+      '<div style="margin-bottom:12px"><span class="badge '+(rb[p.role||'field']||'ok')+'">'+p.role+'</span></div>' +
+      '<div class="uc-stats">' +
+        '<div class="uc-s"><div class="uc-sl">REKORDE</div><div class="uc-sv">'+cnt+'</div></div>' +
+        '<div class="uc-s"><div class="uc-sl">I FUNDIT</div><div style="font-size:11px;font-family:var(--mono);margin-top:3px;color:var(--txt2)">'+ld+'</div></div>' +
+        '<div class="uc-s"><div class="uc-sl">TOP QËLLIM</div><div style="font-size:10px;margin-top:3px;color:var(--txt2);line-height:1.3">'+tq+'</div></div>' +
+      '</div>' +
+      (cE?'<button class="btn sm sec" onclick="openRole(\''+p.id+'\',\''+nm.replace(/'/g,"\\'")+'\',' +
+        '\''+p.role+'\')" style="width:100%;justify-content:center">Ndrysho rolin</button>':'')+
+    '</div>';
+  }).join('');
+  document.getElementById('us-sub').textContent=(profs||[]).length+' përdorues';
+  log('ok','Ngarkuar '+(profs||[]).length+' përdorues');
+}
+
+function openRole(uid,nm,cr){
+  var roles=['field','viewer','supervisor','admin'];
+  var rb2={admin:'err',supervisor:'warn',field:'ok',viewer:'purple'};
+  document.getElementById('role-body').innerHTML=
+    '<p style="margin-bottom:14px;font-family:var(--mono);font-size:12px;color:var(--txt2)">Përdoruesi: <span style="color:var(--txt)">'+nm+'</span></p>' +
+    '<div class="role-grid" id="rm-cards">'+
+    roles.map(function(r){return'<div class="rc'+(r===cr?' sel':'')+'" data-role="'+r+'" onclick="pickRoleM(this)"><div class="rc-name c-'+r+'"><span class="badge '+(rb2[r]||'ok')+'">'+r+'</span></div></div>'}).join('')+
+    '</div><div class="brow" style="margin-top:6px">' +
+    '<button class="btn pri" onclick="saveRole(\''+uid+'\')">Ruaj</button>' +
+    '<button class="btn" onclick="document.getElementById(\'role-m\').classList.add(\'hidden\')">Anulo</button></div>';
+  document.getElementById('role-m').classList.remove('hidden');
+}
+var newRole='';
+function pickRoleM(el){document.querySelectorAll('#rm-cards .rc').forEach(function(c){c.classList.remove('sel')});el.classList.add('sel');newRole=el.dataset.role}
+async function saveRole(uid){
+  if(!newRole){toast('warn','Zgjidhni rolin');return}
+  var{error}=await SB.from('profiles').update({role:newRole}).eq('id',uid);
+  if(error){toast('err','Gabim: '+error.message);return}
+  document.getElementById('role-m').classList.add('hidden');
+  toast('ok','Roli u ndryshua: '+newRole);loadUsers();log('ok','Role updated: '+uid+' → '+newRole);
+}
+
+/* ═══════════════════════════════════════
+   REPORTS
+═══════════════════════════════════════ */
+async function loadRep(){
+  if(!SB)return;
+  var days=parseInt(document.getElementById('rp-days').value);
+  var q=SB.from('survey_records').select('*');
+  if(days>0){var s=new Date();s.setDate(s.getDate()-days);q=q.gte('created_at',s.toISOString())}
+  var{data}=await q.order('created_at',{ascending:false});
+  var recs=data||[];
+  log('info','Raport: '+recs.length+' rekorde ('+days+' ditë)');
+
+  var today=new Date().toISOString().slice(0,10);
+  var tCnt=recs.filter(function(r){return r.rec_date===today}).length;
+  var uSet=new Set(recs.map(function(r){return r.user_id})).size;
+  var avg=days>0?(recs.length/days).toFixed(1):recs.length;
+  document.getElementById('kv1').textContent=recs.length;
+  document.getElementById('kv2').textContent=uSet;
+  document.getElementById('kv3').textContent=tCnt;
+  document.getElementById('kv4').textContent=avg;
+  document.getElementById('ks1').textContent='gjithsej';
+  document.getElementById('ks3').textContent='sot';
+
+  // daily
+  var dm={};recs.forEach(function(r){if(r.rec_date){dm[r.rec_date]=(dm[r.rec_date]||0)+1}});
+  var dk=Object.keys(dm).sort().slice(-30);
+  mkChart('ch-d','bar',dk,dk.map(function(k){return dm[k]}),'Ditë','#05d9a0');
+
+  // qellim
+  var qm={};recs.forEach(function(r){var q2=r.qellim||'Pa qëllim';qm[q2]=(qm[q2]||0)+1});
+  var qk=Object.keys(qm).sort(function(a,b){return qm[b]-qm[a]});
+  mkChart('ch-q','doughnut',qk,qk.map(function(k){return qm[k]}),'','');
+
+  // users top10
+  var um={};recs.forEach(function(r){var u=r.user_name||r.user_email||'?';um[u]=(um[u]||0)+1});
+  var uk=Object.keys(um).sort(function(a,b){return um[b]-um[a]}).slice(0,10);
+  mkChart('ch-u','bar',uk,uk.map(function(k){return um[k]}),'Rekorde','#2d8bff');
+
+  // hours
+  var hm={};for(var i=0;i<24;i++)hm[i]=0;
+  recs.forEach(function(r){if(r.rec_time){var h=parseInt(r.rec_time.split(':')[0]);hm[h]=(hm[h]||0)+1}});
+  mkChart('ch-h','bar',Array.from({length:24},function(_,i){return i+':00'}),Object.values(hm),'Orë','#9b5fff');
+
+  // user table
+  var umap={},ulast={},uqm={};
+  recs.forEach(function(r){
+    var k=r.user_email||'?';umap[k]=umap[k]||{nm:r.user_name||k,email:k,role:r.user_role||'field',cnt:0};
+    umap[k].cnt++;
+    if(!ulast[k]||r.created_at>ulast[k])ulast[k]=r.created_at;
+    uqm[k]=uqm[k]||{};var q3=r.qellim||'—';uqm[k][q3]=(uqm[k][q3]||0)+1;
+  });
+  var rb3={admin:'err',supervisor:'warn',field:'ok',viewer:'purple'};
+  document.getElementById('urep').innerHTML=Object.values(umap).sort(function(a,b){return b.cnt-a.cnt}).map(function(u){
+    var ld=ulast[u.email]?new Date(ulast[u.email]).toLocaleDateString('sq-AL'):'—';
+    var mq=Object.keys(uqm[u.email]||{}).sort(function(a2,b2){return(uqm[u.email][b2]||0)-(uqm[u.email][a2]||0)})[0]||'—';
+    return'<tr><td style="font-weight:500">'+u.nm+'</td><td><span class="badge '+(rb3[u.role||'field']||'ok')+'">'+u.role+'</span></td>' +
+      '<td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">'+u.email+'</td>' +
+      '<td style="font-weight:700;font-size:16px;color:var(--acc)">'+u.cnt+'</td>' +
+      '<td style="font-family:var(--mono);font-size:11px">'+ld+'</td><td>'+mq+'</td></tr>';
   }).join('');
 
-  // report map
-  initReportMap(records);
+  repByDate();initRMap(recs);
 }
 
-function renderChart(id, type, labels, data, label, color) {
-  var ctx = document.getElementById(id);
-  if (!ctx) return;
-  var existing = Chart.getChart(ctx);
-  if (existing) existing.destroy();
-  var isDoughnut = type === 'doughnut';
-  var palette = ['#00e5c3','#3a9bff','#a259ff','#ffb347','#ff5a6e','#7ab867','#f5e63d','#c3b888','#e8d44d'];
-  new Chart(ctx, {
-    type: type,
-    data: {
-      labels: labels,
-      datasets: [{
-        label: label,
-        data: data,
-        backgroundColor: isDoughnut ? palette : (color ? color+'33' : palette.map(function(c){return c+'33';})),
-        borderColor: isDoughnut ? palette : (color || palette[0]),
-        borderWidth: isDoughnut ? 2 : 1,
-        borderRadius: isDoughnut ? 0 : 4
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: isDoughnut, position:'right', labels:{ color:'#5a6d8a', font:{size:11}, boxWidth:12 } } },
-      scales: isDoughnut ? {} : {
-        x: { ticks:{ color:'#5a6d8a', font:{size:10}, maxRotation:45 }, grid:{ color:'#1a2238' } },
-        y: { ticks:{ color:'#5a6d8a', font:{size:10} }, grid:{ color:'#1a2238' } }
-      }
-    }
+function repByDate(){
+  var fr=document.getElementById('rp-fr').value;
+  var to=document.getElementById('rp-to').value;
+  var src=allRecs.filter(function(r){
+    if(fr&&r.rec_date<fr)return false;
+    if(to&&r.rec_date>to)return false;return true;
   });
-}
-
-function initReportMap(records) {
-  if (!rMap) {
-    rMap = L.map('report-map', { zoomControl:false, scrollWheelZoom:false }).setView([41.15,20.17],8);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(rMap);
-  }
-  var rmg = L.layerGroup().addTo(rMap);
-  records.forEach(function(r){
-    if (!r.lat||!r.lng) return;
-    L.circleMarker([r.lat,r.lng],{radius:5,color:'#00e5c3',weight:2,fillOpacity:0.5}).addTo(rmg);
+  var dm={},du={},dq={};
+  src.forEach(function(r){
+    if(!r.rec_date)return;
+    dm[r.rec_date]=(dm[r.rec_date]||0)+1;
+    du[r.rec_date]=du[r.rec_date]||new Set();du[r.rec_date].add(r.user_email);
+    dq[r.rec_date]=dq[r.rec_date]||{};var q=r.qellim||'—';dq[r.rec_date][q]=(dq[r.rec_date][q]||0)+1;
   });
-  if (records.length > 0) {
-    var bounds = records.filter(function(r){return r.lat&&r.lng;}).map(function(r){return [r.lat,r.lng];});
-    if (bounds.length) rMap.fitBounds(bounds, {padding:[20,20]});
-  }
+  document.getElementById('drep').innerHTML=Object.keys(dm).sort().map(function(d){
+    var mq=Object.keys(dq[d]||{}).sort(function(a,b){return(dq[d][b]||0)-(dq[d][a]||0)})[0]||'—';
+    return'<tr><td style="font-family:var(--mono)">'+d+'</td><td style="font-weight:700;color:var(--acc)">'+dm[d]+'</td><td>'+(du[d]?du[d].size:0)+'</td><td>'+mq+'</td></tr>';
+  }).join('');
 }
 
-// ========================================================
-// SYNC
-// ========================================================
-async function syncRecords() {
-  var offline = JSON.parse(localStorage.getItem('gis_offline')||'[]');
-  if (!offline.length) { toast('info','Asnjë rekord për sinkronizim'); return; }
-  if (!navigator.onLine) { toast('err','Offline'); return; }
-  var bar = document.getElementById('spbar'); var fill = document.getElementById('spfill');
-  bar.style.display='block'; fill.style.width='0%';
-  var done = 0;
-  for (var i = 0; i < offline.length; i++) {
-    var r = Object.assign({}, offline[i]);
-    delete r.id; r.synced = true;
-    var { error } = await sb.from('survey_records').insert(r);
-    if (!error) done++;
-    fill.style.width = Math.round(((i+1)/offline.length)*100)+'%';
-  }
-  if (done === offline.length) {
-    localStorage.removeItem('gis_offline');
-    toast('ok','Sinkronizuar '+done+' rekorde');
-    addLog('ok','Sinkronizim i plotë: '+done+' rekorde');
-  } else {
-    toast('warn','Sinkronizuar '+done+'/'+offline.length);
-  }
-  setTimeout(function(){bar.style.display='none';fill.style.width='0%';},2000);
-  loadRecords();
+function mkChart(id,type,labels,data,label,color){
+  var ctx=document.getElementById(id);if(!ctx)return;
+  var ex=Chart.getChart(ctx);if(ex)ex.destroy();
+  var pal=['#05d9a0','#2d8bff','#9b5fff','#ffaa2e','#ff4d6d','#7ab867','#f5e63d','#c3b888'];
+  var dn=type==='doughnut';
+  new Chart(ctx,{type:type,data:{labels:labels,datasets:[{label:label,data:data,
+    backgroundColor:dn?pal:(color?color+'26':pal.map(function(c){return c+'26'})),
+    borderColor:dn?pal:(color||pal[0]),borderWidth:dn?2:1,borderRadius:dn?0:4
+  }]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:dn,position:'right',labels:{color:'#5a6d8a',font:{size:10},boxWidth:10}}},
+    scales:dn?{}:{x:{ticks:{color:'#5a6d8a',font:{size:10},maxRotation:45},grid:{color:'#18202e'}},y:{ticks:{color:'#5a6d8a',font:{size:10}},grid:{color:'#18202e'}}}
+  }});
 }
 
-function updateSyncCounts() {
-  var offline = JSON.parse(localStorage.getItem('gis_offline')||'[]');
-  document.getElementById('sync-local').textContent = allRecords.length;
-  document.getElementById('sync-pend').textContent = offline.length;
+function initRMap(recs){
+  if(!rMapObj){
+    rMapObj=L.map('rmap',{zoomControl:false,scrollWheelZoom:false}).setView([41.15,20.17],8);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:''}).addTo(rMapObj);
+  }else{rMapObj.eachLayer(function(l){if(l instanceof L.CircleMarker)rMapObj.removeLayer(l)})}
+  var pts=[];
+  recs.forEach(function(r){
+    if(!r.lat||!r.lng)return;
+    var c=RCOL[r.user_role]||'#05d9a0';
+    L.circleMarker([r.lat,r.lng],{radius:5,color:c,weight:2,fillOpacity:.6}).bindPopup('<b>'+(r.user_name||r.user_email||'?')+'</b><br>'+(r.rec_date||'')).addTo(rMapObj);
+    pts.push([r.lat,r.lng]);
+  });
+  if(pts.length)rMapObj.fitBounds(pts,{padding:[20,20]});
+  setTimeout(function(){rMapObj.invalidateSize()},200);
 }
 
-// ========================================================
-// EXPORT
-// ========================================================
-function exportJSON() {
-  var blob = new Blob([JSON.stringify(allRecords,null,2)],{type:'application/json'});
-  var a = document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='gis_survey_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+/* ═══════════════════════════════════════
+   SYNC OFFLINE
+═══════════════════════════════════════ */
+function updSyncCounts(){
+  var off=lsj('go')||[];
+  document.getElementById('sl-db').textContent=allRecs.filter(function(r){return r.synced!==false}).length;
+  document.getElementById('sl-off').textContent=off.length;
+}
+async function syncOff(){
+  var off=lsj('go')||[];
+  if(!off.length){toast('info','Asnjë rekord offline');return}
+  if(!navigator.onLine){toast('err','Jeni offline');return}
+  log('info','Duke sinkronizuar '+off.length+' rekorde...');
+  var bar=document.getElementById('spbar'),fill=document.getElementById('spf');
+  bar.style.display='block';fill.style.width='0%';
+  var done=0,fail=0;
+  for(var i=0;i<off.length;i++){
+    var r=Object.assign({},off[i]);
+    delete r.id;r.synced=true;
+    var{error}=await SB.from('survey_records').insert(r);
+    if(!error)done++;else{fail++;log('err','Sync fail: '+error.message)}
+    fill.style.width=Math.round(((i+1)/off.length)*100)+'%';
+  }
+  if(done===off.length){lsjs('go',[]);toast('ok','Sinkronizuar '+done+' rekorde!')}
+  else toast('warn','Sinkronizuar '+done+', dështuan '+fail);
+  log('ok','Sync: '+done+'/'+off.length);
+  setTimeout(function(){bar.style.display='none';fill.style.width='0%'},2000);
+  loadRecs(false);
+}
+function clearOffline(){
+  if(!confirm('Pastro cache offline?'))return;
+  lsjs('go',[]);updSyncCounts();toast('warn','Cache u pastrua');log('warn','Offline cache cleared');
+}
+
+/* ═══════════════════════════════════════
+   EXPORT
+═══════════════════════════════════════ */
+function expJSON(){
+  dl(JSON.stringify(allRecs,null,2),'application/json','survey_'+dt()+'.json');
   toast('ok','JSON eksportuar');
 }
-
-function exportCSV() {
-  var src = filteredRecords.length ? filteredRecords : allRecords;
-  if (!src.length) { toast('warn','Asnjë rekord'); return; }
-  var keys = ['id','user_name','user_email','date','time','lat','lng','accuracy','qellim','notes','photo_count','created_at'];
-  var csv = keys.join(',') + '\n';
-  src.forEach(function(r){ csv += keys.map(function(k){ var v=r[k]!==undefined?String(r[k]):''; return '"'+v.replace(/"/g,'""')+'"'; }).join(',') + '\n'; });
-  var blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  var a = document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='gis_survey_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+function expCSV(){
+  var src=filteredRecs.length?filteredRecs:allRecs;
+  if(!src.length){toast('warn','Asnjë rekord');return}
+  var k=['id','user_name','user_email','user_role','rec_date','rec_time','lat','lng','accuracy','qellim','notes','photo_count','synced','created_at'];
+  var csv='\uFEFF'+k.join(',')+'\n';
+  src.forEach(function(r){csv+=k.map(function(f){var v=r[f]!==undefined?String(r[f]):'';return'"'+v.replace(/"/g,'""')+'"'}).join(',')+'\n'});
+  dl(csv,'text/csv;charset=utf-8;','survey_'+dt()+'.csv');
   toast('ok','CSV eksportuar ('+src.length+' rekorde)');
 }
+function expXLS(){
+  var src=filteredRecs.length?filteredRecs:allRecs;
+  if(!src.length){toast('warn','Asnjë rekord');return}
+  var k=['id','user_name','user_email','user_role','rec_date','rec_time','lat','lng','accuracy','qellim','notes','photo_count'];
+  var hdrs={id:'#ID',user_name:'Emri',user_email:'Email',user_role:'Roli',rec_date:'Data',rec_time:'Ora',lat:'Gjerësi',lng:'Gjatësi',accuracy:'Saktësia(m)',qellim:'Qëllimi',notes:'Shënime',photo_count:'Foto'};
+  var tb='<table border="1" style="border-collapse:collapse"><thead><tr>'+k.map(function(f){return'<th style="background:#05d9a0;color:#021a10;padding:6px 10px;font-family:monospace">'+hdrs[f]+'</th>'}).join('')+'</tr></thead><tbody>';
+  src.forEach(function(r){tb+='<tr>'+k.map(function(f){return'<td style="padding:5px 9px">'+(r[f]!==undefined?r[f]:'')+'</td>'}).join('')+'</tr>'});
+  tb+='</tbody></table>';
+  var full='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>'+tb+'</body></html>';
+  dl(full,'application/vnd.ms-excel;charset=utf-8;','survey_'+dt()+'.xls');
+  toast('ok','Excel eksportuar ('+src.length+' rekorde)');
+}
+function dl(content,mime,fname){
+  var b=new Blob([content],{type:mime});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname;a.click();
+}
+function dt(){return new Date().toISOString().slice(0,10)}
 
-// ========================================================
-// CONNECTION TEST
-// ========================================================
-function testConn() {
-  var online = navigator.onLine;
-  var b1 = document.getElementById('conn-badge'); var b2 = document.getElementById('sync-status');
-  b1.style.display='inline-flex';
-  if (online) {
-    b1.className='badge ok'; b1.textContent='✓ online';
-    b2.className='badge ok'; b2.textContent='✓ online';
-    document.getElementById('cdot').className='conn-dot'; document.getElementById('clabel').textContent='online';
-    addLog('ok','Lidhja aktive');
-  } else {
-    b1.className='badge err'; b1.textContent='✕ offline';
-    b2.className='badge err'; b2.textContent='✕ offline';
-    document.getElementById('cdot').className='conn-dot off'; document.getElementById('clabel').textContent='offline';
-    addLog('warn','Offline');
+/* ═══════════════════════════════════════
+   CONNECTION TEST
+═══════════════════════════════════════ */
+function testConn(){
+  var on=navigator.onLine;
+  document.getElementById('cdot').className='cdot'+(on?'':' off');
+  document.getElementById('clbl').textContent=on?'online':'offline';
+  var st=document.getElementById('sync-st');
+  st.className='badge '+(on?'ok':'err');st.textContent=on?'✓ online':'✕ offline';
+  log(on?'ok':'warn','Lidhja: '+(on?'online':'offline'));
+  if(on&&SB){
+    SB.from('profiles').select('id').limit(1).then(function(r){
+      if(r.error) log('warn','Supabase ping: '+r.error.message);
+      else log('ok','Supabase ping OK');
+    });
   }
 }
 
-// ========================================================
-// PAGE NAV
-// ========================================================
-function showPage(name) {
-  ['survey','records','users','reports'].forEach(function(p){
-    document.getElementById('page-'+p).classList.remove('active');
-    document.getElementById('nav-'+p).classList.remove('active');
+/* ═══════════════════════════════════════
+   PAGE NAV
+═══════════════════════════════════════ */
+function goPg(nm){
+  ['sv','rc','us','rp'].forEach(function(p){
+    document.getElementById('page-'+p).classList.remove('on');
+    document.getElementById('nav-'+p).classList.remove('on');
   });
-  document.getElementById('page-'+name).classList.add('active');
-  document.getElementById('nav-'+name).classList.add('active');
-  if (name==='records') loadRecords();
-  if (name==='users') loadUsers();
-  if (name==='reports') { loadReports(); setTimeout(function(){ if(rMap) rMap.invalidateSize(); }, 300); }
+  document.getElementById('page-'+nm).classList.add('on');
+  document.getElementById('nav-'+nm).classList.add('on');
+  if(nm==='rc')loadRecs(false);
+  if(nm==='us')loadUsers();
+  if(nm==='rp'){loadRep();setTimeout(function(){if(rMapObj)rMapObj.invalidateSize()},300)}
+}
+function sptab(i){
+  document.querySelectorAll('.ptab').forEach(function(t,j){t.classList.toggle('on',j===i)});
+  document.querySelectorAll('.ptc').forEach(function(c,j){c.classList.toggle('on',j===i)});
+  if(i===3)updSyncCounts();
 }
 
-function switchPTab(idx) {
-  document.querySelectorAll('.ptab').forEach(function(t,i){ t.classList.toggle('active',i===idx); });
-  document.querySelectorAll('.ptab-content').forEach(function(c,i){ c.classList.toggle('active',i===idx); });
+/* ═══════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════ */
+function v(id){return(document.getElementById(id).value||'').trim()}
+function ls(k,val){if(val===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,val)}
+function lsj(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+function lsjs(k,v2){localStorage.setItem(k,JSON.stringify(v2))}
+function log(type,msg){
+  var box=document.getElementById('dbg');if(!box)return;
+  var n=new Date(),p=function(x){return String(x).padStart(2,'0')};
+  var line=document.createElement('div');line.className='dl '+type;
+  line.textContent='['+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds())+'] '+msg;
+  box.appendChild(line);box.scrollTop=box.scrollHeight;
 }
-
-// ========================================================
-// LOG & TOAST
-// ========================================================
-function addLog(type, msg) {
-  var box = document.getElementById('log-box');
-  var now = new Date(); var p=function(n){return String(n).padStart(2,'0');};
-  var line = document.createElement('div'); line.className='line '+type;
-  line.textContent='['+p(now.getHours())+':'+p(now.getMinutes())+':'+p(now.getSeconds())+'] '+msg;
-  box.appendChild(line); box.scrollTop=box.scrollHeight;
+function toast(type,msg){
+  var w=document.getElementById('toasts');
+  var t=document.createElement('div');t.className='toast '+type;
+  var ic={ok:'✓',err:'✕',info:'ℹ',warn:'⚠'};
+  t.innerHTML='<span>'+ic[type]+'</span><span>'+msg+'</span>';
+  w.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(14px)';t.style.transition='all .3s';setTimeout(function(){t.remove()},350)},3800);
 }
-
-function toast(type, msg) {
-  var wrap = document.getElementById('toast-wrap');
-  var t = document.createElement('div'); t.className='toast '+type;
-  var icons = {ok:'✓',err:'✕',info:'ℹ',warn:'⚠'};
-  t.innerHTML='<span style="font-size:14px">'+(icons[type]||'')+'</span><span>'+msg+'</span>';
-  wrap.appendChild(t);
-  setTimeout(function(){ t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.3s'; setTimeout(function(){t.remove();},350); }, 3500);
+function offEvents(){
+  window.addEventListener('online',function(){document.getElementById('cdot').className='cdot';document.getElementById('clbl').textContent='online';toast('ok','Lidhja u restaurua');log('ok','Online')});
+  window.addEventListener('offline',function(){document.getElementById('cdot').className='cdot off';document.getElementById('clbl').textContent='offline';toast('warn','Offline');log('warn','Offline')});
 }
-
-// ========================================================
-// OFFLINE EVENTS
-// ========================================================
-function setupOfflineEvents() {
-  window.addEventListener('online', function(){ document.getElementById('cdot').className='conn-dot'; document.getElementById('clabel').textContent='online'; toast('ok','Lidhja u restaurua'); addLog('ok','Online'); });
-  window.addEventListener('offline', function(){ document.getElementById('cdot').className='conn-dot off'; document.getElementById('clabel').textContent='offline'; toast('warn','Modaliteti offline'); addLog('warn','Offline'); });
-}
-
-// ========================================================
-// BOOT
-// ========================================================
-initSupabase();
+renderPh();
 </script>
 </body>
 </html>
