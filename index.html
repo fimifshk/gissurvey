@@ -209,6 +209,17 @@ input,select,textarea,button{font-family:inherit}
 .cc-t{font-size:13px;font-weight:600;margin-bottom:14px}
 .cc-w{position:relative;height:200px}
 .rpc{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:18px;margin-bottom:14px}
+.rptabs{display:flex;gap:2px;padding:10px 16px 0;background:var(--s1);border-bottom:1px solid var(--b1);flex-shrink:0;flex-wrap:wrap}
+.rptab{padding:8px 14px;font-size:11px;font-family:var(--mono);color:var(--txt3);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap;border-radius:6px 6px 0 0}
+.rptab:hover{color:var(--txt);background:var(--s2)}
+.rptab.on{color:var(--acc);border-bottom-color:var(--acc);background:rgba(5,217,160,.06)}
+.rpsec{display:none}.rpsec.on{display:block}
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.cmp-card{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px}
+.cmp-title{font-size:11px;font-family:var(--mono);color:var(--txt3);margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase}
+.cmp-val{font-size:26px;font-weight:700}
+.cmp-diff{font-size:11px;font-family:var(--mono);margin-top:4px}
+.cmp-diff.up{color:var(--acc)}.cmp-diff.dn{color:var(--err)}.cmp-diff.eq{color:var(--txt3)}
 .rpc-t{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
 #rmap{height:270px;border-radius:8px;overflow:hidden}
 
@@ -660,45 +671,119 @@ create trigger on_auth_user_created
     <!-- ══ REPORTS PAGE ══ -->
     <div class="page" id="page-rp">
       <div class="rppage">
-        <div class="ph">
-          <div><div class="ph-title">Raporte & Statistika</div><div class="ph-sub">Analiza e të dhënave gjeografike</div></div>
-          <div class="ts"></div>
-          <select id="rp-days" onchange="loadRep()" style="padding:7px 9px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
-            <option value="7">7 ditë</option><option value="30" selected>30 ditë</option>
-            <option value="90">90 ditë</option><option value="365">1 vit</option><option value="0">Të gjitha</option>
-          </select>
-          <button class="btn sm" onclick="expCSV()">CSV</button>
-          <button class="btn sm warn" onclick="expXLS()">Excel</button>
-          <button class="btn pri sm" onclick="loadRep()">Rifresko</button>
+        <div class="ph" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div><div class="ph-title">Raporte & Statistika</div><div class="ph-sub">Dashboard i analizës gjeografike</div></div>
+          <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+            <select id="rp-days" onchange="loadRep()" style="padding:7px 9px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
+              <option value="7">7 ditë</option><option value="30" selected>30 ditë</option>
+              <option value="90">90 ditë</option><option value="365">1 vit</option><option value="0">Të gjitha</option>
+            </select>
+            <button class="btn sm" onclick="expCSV()">CSV</button>
+            <button class="btn sm" onclick="expXLS()">Excel</button>
+            <button class="btn sm sec" onclick="expPDF()">PDF</button>
+            <button class="btn pri sm" onclick="loadRep()">Rifresko</button>
+          </div>
         </div>
-        <div class="rpbody">
-          <div class="kpis">
-            <div class="kpi"><div class="kpi-l">REKORDE TOTALE</div><div class="kpi-v" id="kv1">—</div><div class="kpi-s" id="ks1"></div></div>
-            <div class="kpi"><div class="kpi-l">USERS AKTIVË</div><div class="kpi-v" id="kv2">—</div><div class="kpi-s"></div></div>
-            <div class="kpi"><div class="kpi-l">SOT</div><div class="kpi-v" id="kv3">—</div><div class="kpi-s" id="ks3"></div></div>
-            <div class="kpi"><div class="kpi-l">MESATARE / DITË</div><div class="kpi-v" id="kv4">—</div><div class="kpi-s"></div></div>
+        <div class="rptabs">
+          <div class="rptab on" onclick="rpTab(0)">📊 Përmbledhje</div>
+          <div class="rptab" onclick="rpTab(1)">👤 Përdoruesit</div>
+          <div class="rptab" onclick="rpTab(2)">🏢 Kategoritë</div>
+          <div class="rptab" onclick="rpTab(3)">📅 Periudhat</div>
+          <div class="rptab" onclick="rpTab(4)">🗺️ Harta</div>
+        </div>
+        <div class="rpbody" id="rpbody">
+          <!-- TAB 0 -->
+          <div class="rpsec on" id="rpsec0">
+            <div class="kpis">
+              <div class="kpi"><div class="kpi-l">REKORDE TOTALE</div><div class="kpi-v" id="kv1">—</div><div class="kpi-s" id="ks1"></div></div>
+              <div class="kpi"><div class="kpi-l">USERS AKTIVË</div><div class="kpi-v" id="kv2">—</div></div>
+              <div class="kpi"><div class="kpi-l">SOT</div><div class="kpi-v" id="kv3">—</div><div class="kpi-s" id="ks3"></div></div>
+              <div class="kpi"><div class="kpi-l">MESATARE / DITË</div><div class="kpi-v" id="kv4">—</div></div>
+            </div>
+            <div class="cgrid">
+              <div class="cc"><div class="cc-t">Rekorde sipas ditës</div><div class="cc-w"><canvas id="ch-d"></canvas></div></div>
+              <div class="cc"><div class="cc-t">Sipas kategorisë</div><div class="cc-w"><canvas id="ch-q"></canvas></div></div>
+              <div class="cc"><div class="cc-t">Sipas përdoruesit (top 10)</div><div class="cc-w"><canvas id="ch-u"></canvas></div></div>
+              <div class="cc"><div class="cc-t">Sipas orës</div><div class="cc-w"><canvas id="ch-h"></canvas></div></div>
+            </div>
+            <div class="rpc">
+              <div class="rpc-t">Krahasim: Ky muaj vs muaji i kaluar</div>
+              <div class="cmp-grid">
+                <div class="cmp-card"><div class="cmp-title">KY MUAJ</div><div class="cmp-val" id="cmp-cur">—</div><div class="cmp-diff" id="cmp-diff">—</div></div>
+                <div class="cmp-card"><div class="cmp-title">MUAJI I KALUAR</div><div class="cmp-val" id="cmp-prev">—</div></div>
+              </div>
+              <div class="cc-w" style="height:160px"><canvas id="ch-cmp"></canvas></div>
+            </div>
           </div>
-          <div class="cgrid">
-            <div class="cc"><div class="cc-t">Rekorde sipas ditës</div><div class="cc-w"><canvas id="ch-d"></canvas></div></div>
-            <div class="cc"><div class="cc-t">Sipas qëllimit</div><div class="cc-w"><canvas id="ch-q"></canvas></div></div>
-            <div class="cc"><div class="cc-t">Sipas përdoruesit (top 10)</div><div class="cc-w"><canvas id="ch-u"></canvas></div></div>
-            <div class="cc"><div class="cc-t">Sipas orës</div><div class="cc-w"><canvas id="ch-h"></canvas></div></div>
+          <!-- TAB 1 -->
+          <div class="rpsec" id="rpsec1">
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+              <input type="text" id="rp-fu" placeholder="Kërko user..." oninput="filterRepUser()" style="padding:7px 10px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none;width:180px">
+              <select id="rp-frole" onchange="filterRepUser()" style="padding:7px 9px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
+                <option value="">Të gjitha rolet</option>
+                <option value="admin">Admin</option><option value="supervisor">Supervisor</option>
+                <option value="field">Field</option><option value="viewer">Viewer</option>
+              </select>
+            </div>
+            <div class="cgrid">
+              <div class="cc"><div class="cc-t">Rekorde për user</div><div class="cc-w"><canvas id="ch-ub"></canvas></div></div>
+              <div class="cc"><div class="cc-t">Aktiviteti javor (top 5)</div><div class="cc-w"><canvas id="ch-uw"></canvas></div></div>
+            </div>
+            <div class="rpc">
+              <div class="rpc-t"><span>Detaje përdoruesit</span><button class="btn xs" onclick="expCSV()">CSV</button></div>
+              <table class="rt"><thead><tr><th>Emri</th><th>Roli</th><th>Email</th><th>Rekorde</th><th>Foto</th><th>I fundit</th><th>Top kategori</th></tr></thead><tbody id="urep"></tbody></table>
+            </div>
           </div>
-          <div class="rpc">
-            <div class="rpc-t"><span>Raport sipas përdoruesit</span><button class="btn xs" onclick="expCSV()">CSV</button></div>
-            <table class="rt"><thead><tr><th>Emri</th><th>Roli</th><th>Email</th><th>Rekorde</th><th>I fundit</th><th>Top qëllim</th></tr></thead><tbody id="urep"></tbody></table>
+          <!-- TAB 2 -->
+          <div class="rpsec" id="rpsec2">
+            <div class="cgrid">
+              <div class="cc"><div class="cc-t">Rekorde sipas kategorisë</div><div class="cc-w"><canvas id="ch-qb"></canvas></div></div>
+              <div class="cc"><div class="cc-t">Trend kategorish (7 ditë)</div><div class="cc-w"><canvas id="ch-qt"></canvas></div></div>
+            </div>
+            <div class="rpc">
+              <div class="rpc-t">Detaje kategorish</div>
+              <table class="rt"><thead><tr><th>Kategoria</th><th>Rekorde</th><th>%</th><th>Users</th><th>Foto</th><th>I fundit</th></tr></thead><tbody id="qrep"></tbody></table>
+            </div>
           </div>
-          <div class="rpc">
-            <div class="rpc-t"><span>Rekorde sipas periudhës</span>
-              <div class="brow">
-                <input type="date" id="rp-fr" style="padding:6px 8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
-                <input type="date" id="rp-to" style="padding:6px 8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
-                <button class="btn xs" onclick="repByDate()">Filtro</button>
+          <!-- TAB 3 -->
+          <div class="rpsec" id="rpsec3">
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+              <span style="font-family:var(--mono);font-size:11px;color:var(--txt2)">Nga:</span>
+              <input type="date" id="rp-fr" onchange="repByDate()" style="padding:6px 8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
+              <span style="font-family:var(--mono);font-size:11px;color:var(--txt2)">Deri:</span>
+              <input type="date" id="rp-to" onchange="repByDate()" style="padding:6px 8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
+              <div style="display:flex;gap:4px">
+                <button class="btn xs" onclick="setPeriod('week')">Javë</button>
+                <button class="btn xs" onclick="setPeriod('month')">Muaj</button>
+                <button class="btn xs" onclick="setPeriod('quarter')">Tremujor</button>
+                <button class="btn xs" onclick="setPeriod('year')">Vit</button>
               </div>
             </div>
-            <table class="rt"><thead><tr><th>Data</th><th>Rekorde</th><th>Users unikë</th><th>Top qëllim</th></tr></thead><tbody id="drep"></tbody></table>
+            <div class="rpc"><div class="cc-w" style="height:200px"><canvas id="ch-per"></canvas></div></div>
+            <div class="rpc">
+              <div class="rpc-t">Rekorde sipas periudhës</div>
+              <table class="rt"><thead><tr><th>Data</th><th>Rekorde</th><th>Users unikë</th><th>Kategoria kryesore</th></tr></thead><tbody id="drep"></tbody></table>
+            </div>
           </div>
-          <div class="rpc"><div class="rpc-t"><span>Harta e të gjitha pikave</span></div><div id="rmap"></div></div>
+          <!-- TAB 4 -->
+          <div class="rpsec" id="rpsec4">
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+              <select id="rp-muser" onchange="updateRMap()" style="padding:7px 9px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
+                <option value="">Të gjithë users</option>
+              </select>
+              <select id="rp-mqel" onchange="updateRMap()" style="padding:7px 9px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
+                <option value="">Të gjitha kategoritë</option>
+              </select>
+              <label style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--txt2);cursor:pointer">
+                <input type="checkbox" id="rp-hmap" onchange="updateRMap()"> Heatmap
+              </label>
+            </div>
+            <div class="rpc" style="padding:0;overflow:hidden"><div id="rmap" style="height:400px"></div></div>
+            <div class="rpc" style="margin-top:14px">
+              <div class="rpc-t">Zonat me më shumë aktivitet</div>
+              <table class="rt"><thead><tr><th>#</th><th>Koordinatat</th><th>Rekorde</th><th>Kategoria</th></tr></thead><tbody id="zrep"></tbody></table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -746,6 +831,10 @@ var charts={};
    BOOT — called after Supabase SDK loads
 ═══════════════════════════════════════ */
 function boot(){
+  // Config nga URL params (për celular)
+  var params=new URLSearchParams(window.location.search);
+  var pu=params.get('su'),pk=params.get('sk');
+  if(pu&&pk){ls('su',pu);ls('sk',pk);history.replaceState({},'',window.location.pathname);}
   var u=ls('su'), k=ls('sk');
   if(u&&k){
     try{
@@ -1388,6 +1477,28 @@ async function saveRole(uid){
 /* ═══════════════════════════════════════
    REPORTS
 ═══════════════════════════════════════ */
+var _rpRecs=[];
+var _rpTab=0;
+function rpTab(n){
+  _rpTab=n;
+  document.querySelectorAll('.rptab').forEach(function(t,i){t.classList.toggle('on',i===n)});
+  document.querySelectorAll('.rpsec').forEach(function(s,i){s.classList.toggle('on',i===n)});
+  if(n===4){setTimeout(function(){if(rMapObj)rMapObj.invalidateSize();updateRMap();},300);}
+  else if(n===1)renderUserTab();
+  else if(n===2)renderCatTab();
+  else if(n===3)repByDate();
+}
+function setPeriod(p){
+  var now=new Date(),fr=new Date();
+  if(p==='week')fr.setDate(now.getDate()-7);
+  else if(p==='month')fr.setMonth(now.getMonth()-1);
+  else if(p==='quarter')fr.setMonth(now.getMonth()-3);
+  else if(p==='year')fr.setFullYear(now.getFullYear()-1);
+  var fmt=function(d){return d.toISOString().slice(0,10)};
+  document.getElementById('rp-fr').value=fmt(fr);
+  document.getElementById('rp-to').value=fmt(now);
+  repByDate();
+}
 async function loadRep(){
   if(!SB)return;
   var days=parseInt(document.getElementById('rp-days').value);
@@ -1397,8 +1508,9 @@ async function loadRep(){
   var res=await q.order('created_at',{ascending:false});
   if(res.error){log('err','loadRep: '+res.error.message);toast('err','Raporte: '+res.error.message);return;}
   var recs=res.data||[];
-  log('info','Raport: '+recs.length+' rekorde ('+days+' ditë)');
-
+  _rpRecs=recs;
+  log('info','Raport: '+recs.length+' rekorde');
+  // KPIs
   var today=new Date().toISOString().slice(0,10);
   var tCnt=recs.filter(function(r){return r.rec_date===today}).length;
   var uSet=new Set(recs.map(function(r){return r.user_id})).size;
@@ -1409,46 +1521,130 @@ async function loadRep(){
   document.getElementById('kv4').textContent=avg;
   document.getElementById('ks1').textContent='gjithsej';
   document.getElementById('ks3').textContent='sot';
-
-  // daily
+  // Chart ditë
   var dm={};recs.forEach(function(r){if(r.rec_date){dm[r.rec_date]=(dm[r.rec_date]||0)+1}});
   var dk=Object.keys(dm).sort().slice(-30);
   mkChart('ch-d','bar',dk,dk.map(function(k){return dm[k]}),'Ditë','#05d9a0');
-
-  // qellim
-  var qm={};recs.forEach(function(r){var q2=r.qellim||'Pa qëllim';qm[q2]=(qm[q2]||0)+1});
+  // Chart kategori
+  var qm={};recs.forEach(function(r){var q2=r.qellim||'Pa kategori';qm[q2]=(qm[q2]||0)+1});
   var qk=Object.keys(qm).sort(function(a,b){return qm[b]-qm[a]});
   mkChart('ch-q','doughnut',qk,qk.map(function(k){return qm[k]}),'','');
-
-  // users top10
+  // Chart users
   var um={};recs.forEach(function(r){var u=r.user_name||r.user_email||'?';um[u]=(um[u]||0)+1});
   var uk=Object.keys(um).sort(function(a,b){return um[b]-um[a]}).slice(0,10);
   mkChart('ch-u','bar',uk,uk.map(function(k){return um[k]}),'Rekorde','#2d8bff');
-
-  // hours
+  // Chart orë
   var hm={};for(var i=0;i<24;i++)hm[i]=0;
-  recs.forEach(function(r){if(r.rec_time){var h=parseInt(r.rec_time.split(':')[0]);hm[h]=(hm[h]||0)+1}});
+  recs.forEach(function(r){if(r.rec_time){var hh=parseInt(r.rec_time.split(':')[0]);hm[hh]=(hm[hh]||0)+1}});
   mkChart('ch-h','bar',Array.from({length:24},function(_,i){return i+':00'}),Object.values(hm),'Orë','#9b5fff');
-
-  // user table
-  var umap={},ulast={},uqm={};
+  // Krahasim muajsh
+  var now=new Date();
+  var cm=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var pm2=new Date(now.getFullYear(),now.getMonth()-1,1);
+  var pmStr=pm2.getFullYear()+'-'+String(pm2.getMonth()+1).padStart(2,'0');
+  var curCnt=recs.filter(function(r){return r.rec_date&&r.rec_date.startsWith(cm)}).length;
+  var prvCnt=recs.filter(function(r){return r.rec_date&&r.rec_date.startsWith(pmStr)}).length;
+  document.getElementById('cmp-cur').textContent=curCnt;
+  document.getElementById('cmp-prev').textContent=prvCnt;
+  var diff=curCnt-prvCnt;
+  var dEl=document.getElementById('cmp-diff');
+  dEl.textContent=(diff>0?'↑ +':diff<0?'↓ ':'→ ')+diff+' nga muaji i kaluar';
+  dEl.className='cmp-diff '+(diff>0?'up':diff<0?'dn':'eq');
+  mkChart('ch-cmp','bar',[pmStr,cm],[prvCnt,curCnt],'Rekorde','#ffaa2e');
+  // Popullo filtrat hartë
+  var muSel=document.getElementById('rp-muser');
+  var mqSel=document.getElementById('rp-mqel');
+  if(muSel&&mqSel){
+    var umap2={};recs.forEach(function(r){if(r.user_email)umap2[r.user_email]=r.user_name||r.user_email;});
+    muSel.innerHTML='<option value="">Të gjithë users</option>'+Object.entries(umap2).map(function(kv){return'<option value="'+kv[0]+'">'+kv[1]+'</option>'}).join('');
+    var qmap2={};recs.forEach(function(r){if(r.qellim)qmap2[r.qellim]=1;});
+    mqSel.innerHTML='<option value="">Të gjitha kategoritë</option>'+Object.keys(qmap2).map(function(q){return'<option value="'+q+'">'+q+'</option>'}).join('');
+  }
+  // Render tab aktiv
+  if(_rpTab===0){repByDate();}
+  else if(_rpTab===1)renderUserTab();
+  else if(_rpTab===2)renderCatTab();
+  else if(_rpTab===3)repByDate();
+  else if(_rpTab===4){updateRMap();}
+  initRMap(recs,false);
+}
+function renderUserTab(){
+  var recs=_rpRecs;
+  var fu=(document.getElementById('rp-fu')||{value:''}).value.toLowerCase();
+  var fr=(document.getElementById('rp-frole')||{value:''}).value;
+  var umap={};
   recs.forEach(function(r){
-    var k=r.user_email||'?';umap[k]=umap[k]||{nm:r.user_name||k,email:k,role:r.user_role||'field',cnt:0};
-    umap[k].cnt++;
-    if(!ulast[k]||r.created_at>ulast[k])ulast[k]=r.created_at;
-    uqm[k]=uqm[k]||{};var q3=r.qellim||'—';uqm[k][q3]=(uqm[k][q3]||0)+1;
+    var k=r.user_email||'?';
+    if(!umap[k])umap[k]={nm:r.user_name||k,email:k,role:r.user_role||'field',cnt:0,photos:0,last:null,cats:{}};
+    umap[k].cnt++;umap[k].photos+=(r.photo_count||0);
+    if(!umap[k].last||r.created_at>umap[k].last)umap[k].last=r.created_at;
+    var cat=r.qellim||'—';umap[k].cats[cat]=(umap[k].cats[cat]||0)+1;
   });
+  var users=Object.values(umap).filter(function(u){
+    if(fu&&!u.nm.toLowerCase().includes(fu)&&!u.email.toLowerCase().includes(fu))return false;
+    if(fr&&u.role!==fr)return false;
+    return true;
+  }).sort(function(a,b){return b.cnt-a.cnt});
+  mkChart('ch-ub','bar',users.slice(0,10).map(function(u){return u.nm.split(' ')[0]}),users.slice(0,10).map(function(u){return u.cnt}),'Rekorde','#05d9a0');
+  var top5=users.slice(0,5);
+  var pal=['#05d9a0','#2d8bff','#9b5fff','#ffaa2e','#ff4d6d'];
+  var weeks=[];for(var i=3;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i*7);weeks.push(d.toISOString().slice(0,10));}
+  var ctx=document.getElementById('ch-uw');if(ctx){var ex=Chart.getChart(ctx);if(ex)ex.destroy();
+    new Chart(ctx,{type:'line',data:{labels:weeks,datasets:top5.map(function(u,i){return{label:u.nm.split(' ')[0],data:weeks.map(function(w){var wE=new Date(w);wE.setDate(wE.getDate()+7);var wS=wE.toISOString().slice(0,10);return recs.filter(function(r){return r.user_email===u.email&&r.rec_date>=w&&r.rec_date<wS}).length;}),borderColor:pal[i],backgroundColor:pal[i]+'22',tension:.3,fill:true};})},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#5a6d8a',font:{size:10}}}},scales:{x:{ticks:{color:'#5a6d8a',font:{size:9}},grid:{color:'#18202e'}},y:{ticks:{color:'#5a6d8a'},grid:{color:'#18202e'}}}}});}
   var rb3={admin:'err',supervisor:'warn',field:'ok',viewer:'purple'};
-  document.getElementById('urep').innerHTML=Object.values(umap).sort(function(a,b){return b.cnt-a.cnt}).map(function(u){
-    var ld=ulast[u.email]?new Date(ulast[u.email]).toLocaleDateString('sq-AL'):'—';
-    var mq=Object.keys(uqm[u.email]||{}).sort(function(a2,b2){return(uqm[u.email][b2]||0)-(uqm[u.email][a2]||0)})[0]||'—';
-    return'<tr><td style="font-weight:500">'+u.nm+'</td><td><span class="badge '+(rb3[u.role||'field']||'ok')+'">'+u.role+'</span></td>' +
-      '<td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">'+u.email+'</td>' +
-      '<td style="font-weight:700;font-size:16px;color:var(--acc)">'+u.cnt+'</td>' +
-      '<td style="font-family:var(--mono);font-size:11px">'+ld+'</td><td>'+mq+'</td></tr>';
+  document.getElementById('urep').innerHTML=users.map(function(u){
+    var ld=u.last?new Date(u.last).toLocaleDateString('sq-AL'):'—';
+    var mq=Object.keys(u.cats).sort(function(a,b){return(u.cats[b]||0)-(u.cats[a]||0)})[0]||'—';
+    return'<tr><td style="font-weight:500">'+u.nm+'</td><td><span class="badge '+(rb3[u.role||'field']||'ok')+'">'+u.role+'</span></td><td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">'+u.email+'</td><td style="font-weight:700;font-size:16px;color:var(--acc)">'+u.cnt+'</td><td style="color:var(--txt2)">'+u.photos+'</td><td style="font-family:var(--mono);font-size:11px">'+ld+'</td><td>'+mq+'</td></tr>';
   }).join('');
-
-  repByDate();initRMap(recs);
+}
+function filterRepUser(){renderUserTab();}
+function renderCatTab(){
+  var recs=_rpRecs;
+  var qmap={};
+  recs.forEach(function(r){
+    var q=r.qellim||'Pa kategori';
+    if(!qmap[q])qmap[q]={cnt:0,users:new Set(),photos:0,last:null};
+    qmap[q].cnt++;qmap[q].users.add(r.user_email);qmap[q].photos+=(r.photo_count||0);
+    if(!qmap[q].last||r.rec_date>qmap[q].last)qmap[q].last=r.rec_date;
+  });
+  var cats=Object.entries(qmap).sort(function(a,b){return b[1].cnt-a[1].cnt});
+  var total=recs.length||1;
+  mkChart('ch-qb','bar',cats.map(function(c){return c[0]}),cats.map(function(c){return c[1].cnt}),'Rekorde','#9b5fff');
+  var top5c=cats.slice(0,5).map(function(c){return c[0]});
+  var days7=[];for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);days7.push(d.toISOString().slice(0,10));}
+  var pal2=['#05d9a0','#2d8bff','#9b5fff','#ffaa2e','#ff4d6d'];
+  var ctx2=document.getElementById('ch-qt');if(ctx2){var ex2=Chart.getChart(ctx2);if(ex2)ex2.destroy();
+    new Chart(ctx2,{type:'line',data:{labels:days7,datasets:top5c.map(function(cat,i){return{label:cat,data:days7.map(function(dd){return recs.filter(function(r){return r.qellim===cat&&r.rec_date===dd}).length;}),borderColor:pal2[i],backgroundColor:pal2[i]+'22',tension:.3};})},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#5a6d8a',font:{size:10}}}},scales:{x:{ticks:{color:'#5a6d8a',font:{size:9}},grid:{color:'#18202e'}},y:{ticks:{color:'#5a6d8a'},grid:{color:'#18202e'}}}}});}
+  document.getElementById('qrep').innerHTML=cats.map(function(c){
+    var pct=((c[1].cnt/total)*100).toFixed(1);
+    return'<tr><td><span class="badge info">'+c[0]+'</span></td><td style="font-weight:700;color:var(--acc)">'+c[1].cnt+'</td><td style="font-family:var(--mono)">'+pct+'%</td><td>'+c[1].users.size+'</td><td>'+c[1].photos+'</td><td style="font-family:var(--mono);font-size:11px">'+(c[1].last||'—')+'</td></tr>';
+  }).join('');
+}
+function updateRMap(){
+  var recs=_rpRecs;
+  var mu=(document.getElementById('rp-muser')||{value:''}).value;
+  var mq=(document.getElementById('rp-mqel')||{value:''}).value;
+  var hmap=(document.getElementById('rp-hmap')||{checked:false}).checked;
+  var filtered=recs.filter(function(r){if(mu&&r.user_email!==mu)return false;if(mq&&r.qellim!==mq)return false;return r.lat&&r.lng;});
+  initRMap(filtered,hmap);
+  var zmap={};
+  filtered.forEach(function(r){var key=r.lat.toFixed(2)+'_'+r.lng.toFixed(2);if(!zmap[key])zmap[key]={lat:r.lat,lng:r.lng,cnt:0,cat:{}};zmap[key].cnt++;var c=r.qellim||'—';zmap[key].cat[c]=(zmap[key].cat[c]||0)+1;});
+  var zones=Object.values(zmap).sort(function(a,b){return b.cnt-a.cnt}).slice(0,10);
+  var zEl=document.getElementById('zrep');
+  if(zEl)zEl.innerHTML=zones.map(function(z,i){var mc=Object.keys(z.cat).sort(function(a,b){return(z.cat[b]||0)-(z.cat[a]||0)})[0]||'—';return'<tr><td style="font-family:var(--mono);color:var(--txt3)">'+(i+1)+'</td><td style="font-family:var(--mono);font-size:10px;color:var(--acc)">'+z.lat.toFixed(4)+', '+z.lng.toFixed(4)+'</td><td style="font-weight:700;color:var(--acc)">'+z.cnt+'</td><td><span class="badge info" style="font-size:9px">'+mc+'</span></td></tr>';}).join('');
+}
+function repByDate(){
+  var recs=_rpRecs;
+  var fr=(document.getElementById('rp-fr')||{value:''}).value;
+  var to=(document.getElementById('rp-to')||{value:''}).value;
+  var src=recs.filter(function(r){if(fr&&r.rec_date<fr)return false;if(to&&r.rec_date>to)return false;return true;});
+  var dm={},du={},dq={};
+  src.forEach(function(r){if(!r.rec_date)return;dm[r.rec_date]=(dm[r.rec_date]||0)+1;du[r.rec_date]=du[r.rec_date]||new Set();du[r.rec_date].add(r.user_email);dq[r.rec_date]=dq[r.rec_date]||{};var q=r.qellim||'—';dq[r.rec_date][q]=(dq[r.rec_date][q]||0)+1;});
+  var perCtx=document.getElementById('ch-per');
+  if(perCtx){var dk2=Object.keys(dm).sort();mkChart('ch-per','bar',dk2,dk2.map(function(k){return dm[k]}),'Rekorde','#05d9a0');}
+  var drEl=document.getElementById('drep');
+  if(drEl)drEl.innerHTML=Object.keys(dm).sort().reverse().map(function(d){var mq=Object.keys(dq[d]||{}).sort(function(a,b){return(dq[d][b]||0)-(dq[d][a]||0)})[0]||'—';return'<tr><td style="font-family:var(--mono)">'+d+'</td><td style="font-weight:700;color:var(--acc)">'+dm[d]+'</td><td>'+(du[d]?du[d].size:0)+'</td><td>'+mq+'</td></tr>';}).join('');
 }
 
 function repByDate(){
@@ -1485,20 +1681,23 @@ function mkChart(id,type,labels,data,label,color){
   }});
 }
 
-function initRMap(recs){
+function initRMap(recs,heatmap){
   if(!rMapObj){
-    rMapObj=L.map('rmap',{zoomControl:false,scrollWheelZoom:false}).setView([41.15,20.17],8);
+    rMapObj=L.map('rmap',{zoomControl:true,scrollWheelZoom:true}).setView([41.15,20.17],8);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:''}).addTo(rMapObj);
-  }else{rMapObj.eachLayer(function(l){if(l instanceof L.CircleMarker)rMapObj.removeLayer(l)})}
+  }else{rMapObj.eachLayer(function(l){if(l instanceof L.CircleMarker)rMapObj.removeLayer(l);});}
+  var QCOL={'Inspektim urban':'#2d8bff','Monitorim mjedisi':'#05d9a0','Infrastrukturë rrugore':'#ffaa2e','Kadastër / Pronë':'#9b5fff','Pyje dhe bujqësi':'#7ab867','Ujëra dhe hidrologji':'#4fc3f7','Arkeologji / Trashëgimi':'#f5e63d','Fatkeqësi natyrore':'#ff4d6d','Inspektim ndërtese':'#ff9a4a'};
   var pts=[];
-  recs.forEach(function(r){
-    if(!r.lat||!r.lng)return;
-    var c=RCOL[r.user_role]||'#05d9a0';
-    L.circleMarker([r.lat,r.lng],{radius:5,color:c,weight:2,fillOpacity:.6}).bindPopup('<b>'+(r.user_name||r.user_email||'?')+'</b><br>'+(r.rec_date||'')).addTo(rMapObj);
-    pts.push([r.lat,r.lng]);
-  });
+  if(heatmap){
+    var bounds={};
+    recs.forEach(function(r){if(!r.lat||!r.lng)return;var k=r.lat.toFixed(2)+'_'+r.lng.toFixed(2);bounds[k]=(bounds[k]||0)+1;pts.push([r.lat,r.lng]);});
+    var max=Math.max.apply(null,Object.values(bounds).concat([1]));
+    Object.entries(bounds).forEach(function(e){var c=e[0].split('_');var intensity=e[1]/max;var rad=Math.max(10,intensity*50);L.circleMarker([+c[0],+c[1]],{radius:rad,color:'transparent',fillColor:intensity>0.7?'#ff4d6d':intensity>0.4?'#ffaa2e':'#05d9a0',fillOpacity:0.35+intensity*0.45,weight:0}).addTo(rMapObj);});
+  }else{
+    recs.forEach(function(r){if(!r.lat||!r.lng)return;var c=QCOL[r.qellim]||RCOL[r.user_role]||'#05d9a0';L.circleMarker([r.lat,r.lng],{radius:6,color:c,weight:2,fillOpacity:.7}).bindPopup('<b style="color:'+c+'">'+(r.qellim||'—')+'</b><br><b>'+(r.user_name||'?')+'</b><br><small>'+(r.rec_date||'')+'</small>').addTo(rMapObj);pts.push([r.lat,r.lng]);});
+  }
   if(pts.length)rMapObj.fitBounds(pts,{padding:[20,20]});
-  setTimeout(function(){rMapObj.invalidateSize()},200);
+  setTimeout(function(){rMapObj.invalidateSize();},200);
 }
 
 /* ═══════════════════════════════════════
@@ -1538,6 +1737,30 @@ function clearOffline(){
 /* ═══════════════════════════════════════
    EXPORT
 ═══════════════════════════════════════ */
+function copyMobileLink(){
+  var u=ls('su'),k=ls('sk');
+  if(!u||!k){toast('warn','Konfiguro Supabase fillimisht');return;}
+  var link=window.location.origin+window.location.pathname+'?su='+encodeURIComponent(u)+'&sk='+encodeURIComponent(k);
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(link).then(function(){toast('ok','Link u kopjua! Ngjite në celular.');});}
+  else{var ta=document.createElement('textarea');ta.value=link;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('ok','Link u kopjua!');}
+}
+function expPDF(){
+  if(!_rpRecs.length){toast('warn','Nuk ka të dhëna');return;}
+  var w=window.open('','_blank');
+  var today=new Date().toLocaleDateString('sq-AL');
+  var qm={};_rpRecs.forEach(function(r){var q=r.qellim||'Pa kategori';qm[q]=(qm[q]||0)+1;});
+  var umap={};_rpRecs.forEach(function(r){var k=r.user_email||'?';umap[k]=(umap[k]||0)+1;});
+  var total=_rpRecs.length||1;
+  var catrows=Object.entries(qm).sort(function(a,b){return b[1]-a[1]}).map(function(e){return'<tr><td>'+e[0]+'</td><td style="text-align:center;font-weight:bold;color:#05d9a0">'+e[1]+'</td><td style="text-align:center">'+(e[1]/total*100).toFixed(1)+'%</td></tr>';}).join('');
+  var urows=Object.entries(umap).sort(function(a,b){return b[1]-a[1]}).map(function(e){return'<tr><td>'+e[0]+'</td><td style="text-align:center;font-weight:bold;color:#05d9a0">'+e[1]+'</td></tr>';}).join('');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>GIS Survey — Raport</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#333}h1{color:#05d9a0;border-bottom:2px solid #05d9a0;padding-bottom:8px}h2{color:#2d8bff;margin-top:24px}table{width:100%;border-collapse:collapse;margin-top:10px}th{background:#1e2838;color:#fff;padding:8px 12px;text-align:left}td{padding:7px 12px;border-bottom:1px solid #eee}.kpi{display:inline-block;margin:8px;padding:14px 20px;background:#f5f5f5;border-radius:8px;text-align:center}.kpi-v{font-size:28px;font-weight:bold;color:#05d9a0}.kpi-l{font-size:11px;color:#666}@media print{.noprint{display:none}}</style></head><body>');
+  w.document.write('<h1>GIS Survey Pro — Raport</h1><p style="color:#666">Data: '+today+' | Rekorde: '+_rpRecs.length+'</p>');
+  w.document.write('<div><div class="kpi"><div class="kpi-l">REKORDE</div><div class="kpi-v">'+_rpRecs.length+'</div></div><div class="kpi"><div class="kpi-l">USERS</div><div class="kpi-v">'+Object.keys(umap).length+'</div></div><div class="kpi"><div class="kpi-l">KATEGORI</div><div class="kpi-v">'+Object.keys(qm).length+'</div></div></div>');
+  w.document.write('<h2>Sipas Kategorisë</h2><table><thead><tr><th>Kategoria</th><th>Rekorde</th><th>%</th></tr></thead><tbody>'+catrows+'</tbody></table>');
+  w.document.write('<h2>Sipas Përdoruesit</h2><table><thead><tr><th>Email</th><th>Rekorde</th></tr></thead><tbody>'+urows+'</tbody></table>');
+  w.document.write('<br><button class="noprint" onclick="window.print()" style="padding:10px 20px;background:#05d9a0;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨️ Printo / Ruaj PDF</button></body></html>');
+  w.document.close();toast('ok','PDF gati!');
+}
 function expJSON(){
   dl(JSON.stringify(allRecs,null,2),'application/json','survey_'+dt()+'.json');
   toast('ok','JSON eksportuar');
@@ -1598,7 +1821,7 @@ function goPg(nm){
   document.getElementById('nav-'+nm).classList.add('on');
   if(nm==='rc')loadRecs(false);
   if(nm==='us')loadUsers();
-  if(nm==='rp'){loadRep();setTimeout(function(){if(rMapObj)rMapObj.invalidateSize()},300)}
+  if(nm==='rp'){loadRep();}
 }
 function sptab(i){
   document.querySelectorAll('.ptab').forEach(function(t,j){t.classList.toggle('on',j===i)});
