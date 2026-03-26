@@ -755,6 +755,42 @@ create trigger on_auth_user_created
 <div class="toastwrap" id="toasts"></div>
 
 <!-- ═══════════════════════════════════
+     SCRIPT I HERSHËM — goSS & copySql
+     (ekzekutohet menjëherë, pa pritur SDK)
+═══════════════════════════════════ -->
+<script>
+var curSS=0;
+function goSS(n){
+  [0,1,2].forEach(function(i){
+    var s=document.getElementById('ss'+i);
+    if(s) s.classList.toggle('hidden',i!==n);
+    var p=document.getElementById('sp'+i);
+    if(p) p.className='step-pip'+(i<n?' done':i===n?' act':'');
+  });
+  curSS=n;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function copySql(){
+  var el=document.getElementById('sqlbox');
+  if(!el)return;
+  var txt=el.textContent||el.innerText;
+  var ok=function(){
+    var btns=document.querySelectorAll('[onclick="copySql()"]');
+    btns.forEach(function(b){var o=b.innerHTML;b.textContent='✓ Kopjuar!';setTimeout(function(){b.innerHTML=o},2000);});
+  };
+  var fallback=function(){
+    var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.focus();ta.select();
+    try{document.execCommand('copy');ok();}catch(e){alert('Kopjo manualisht:\n\n'+txt.substring(0,80)+'...');}
+    document.body.removeChild(ta);
+  };
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(txt).then(ok).catch(fallback);
+  } else { fallback(); }
+}
+</script>
+
+<!-- ═══════════════════════════════════
      SUPABASE (loaded inline — no CDN race)
 ═══════════════════════════════════ -->
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
@@ -800,25 +836,9 @@ function boot(){
 }
 
 /* ═══════════════════════════════════════
-   SETUP WIZARD
+   SETUP WIZARD — goSS & copySql janë
+   të definuara më lart (early script)
 ═══════════════════════════════════════ */
-var curSS=0;
-function goSS(n){
-  [0,1,2].forEach(function(i){
-    document.getElementById('ss'+i).classList.toggle('hidden',i!==n);
-    var p=document.getElementById('sp'+i);
-    p.className='step-pip'+(i<n?' done':i===n?' act':'');
-  });
-  curSS=n;
-}
-function copySql(){
-  var txt=document.getElementById('sqlbox').textContent;
-  navigator.clipboard.writeText(txt).then(function(){toast('ok','SQL u kopjua!');}).catch(function(){
-    // fallback
-    var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
-    toast('ok','SQL u kopjua!');
-  });
-}
 async function saveConfig(){
   var u=document.getElementById('cfg-url').value.trim();
   var k=document.getElementById('cfg-key').value.trim();
