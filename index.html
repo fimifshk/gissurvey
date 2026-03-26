@@ -321,62 +321,40 @@ create index if not exists idx_sr_uid  on public.survey_records(user_id);
 create index if not exists idx_sr_date on public.survey_records(rec_date);
 create index if not exists idx_sr_ca   on public.survey_records(created_at desc);
 
--- ROW LEVEL SECURITY
+-- Row Level Security
 alter table public.profiles       enable row level security;
 alter table public.survey_records enable row level security;
 
--- STORAGE BUCKET PËR FOTO
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('survey-photos','survey-photos',false,10485760,
-  array['image/jpeg','image/png','image/webp'])
-on conflict (id) do nothing;
-
--- Profiles policies (rregulluar: supervisor lexon profiles)
-drop policy if exists "own_read"        on public.profiles;
-drop policy if exists "own_update"      on public.profiles;
-drop policy if exists "admin_read"      on public.profiles;
-drop policy if exists "admin_upd"       on public.profiles;
-drop policy if exists "elevated_read"   on public.profiles;
-drop policy if exists "supervisor_read" on public.profiles;
-create policy "own_read" on public.profiles for select using (auth.uid()=id);
-create policy "elevated_read" on public.profiles for select using (
-  exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','supervisor')));
-create policy "own_update" on public.profiles for update using (auth.uid()=id)
-  with check (role=(select role from public.profiles where id=auth.uid()));
-create policy "admin_upd" on public.profiles for update using (
+-- Profiles: secilido lexon profilin e vet
+drop policy if exists "own_read"   on public.profiles;
+drop policy if exists "own_update" on public.profiles;
+drop policy if exists "admin_read" on public.profiles;
+drop policy if exists "admin_upd"  on public.profiles;
+create policy "own_read"   on public.profiles for select using (auth.uid()=id);
+create policy "own_update" on public.profiles for update using (auth.uid()=id);
+create policy "admin_read" on public.profiles for select using (
+  exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='admin'));
+create policy "admin_upd"  on public.profiles for update using (
   exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='admin'));
 
--- Survey records policies (shtuar upd_admin)
-drop policy if exists "ins_own"      on public.survey_records;
-drop policy if exists "sel_own"      on public.survey_records;
-drop policy if exists "sel_elevated" on public.survey_records;
-drop policy if exists "del_admin"    on public.survey_records;
-drop policy if exists "upd_admin"    on public.survey_records;
-create policy "ins_own" on public.survey_records for insert
-  with check (auth.uid()=user_id);
-create policy "sel_own" on public.survey_records for select using (
-  auth.uid()=user_id or
-  exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','supervisor','viewer')));
-create policy "del_admin" on public.survey_records for delete using (
-  exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='admin'));
-create policy "upd_admin" on public.survey_records for update using (
-  exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='admin'));
+-- Records
+drop policy if exists "ins_own"       on public.survey_records;
+drop policy if exists "sel_own"       on public.survey_records;
+drop policy if exists "sel_elevated"  on public.survey_records;
+drop policy if exists "del_admin"     on public.survey_records;
+create policy "ins_own" on public.survey_records
+  for insert with check (auth.uid()=user_id);
+create policy "sel_own" on public.survey_records
+  for select using (
+    auth.uid()=user_id or
+    exists(select 1 from public.profiles p
+           where p.id=auth.uid() and p.role in ('admin','supervisor','viewer'))
+  );
+create policy "del_admin" on public.survey_records
+  for delete using (
+    exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='admin'));
 
--- Storage policies
-drop policy if exists "photo_upload" on storage.objects;
-drop policy if exists "photo_select" on storage.objects;
-drop policy if exists "photo_delete" on storage.objects;
-create policy "photo_upload" on storage.objects for insert
-  with check (bucket_id='survey-photos' and auth.uid()::text=(string_to_array(name,'/'))[1]);
-create policy "photo_select" on storage.objects for select using (
-  bucket_id='survey-photos' and (
-    auth.uid()::text=(string_to_array(name,'/'))[1] or
-    exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','supervisor'))));
-create policy "photo_delete" on storage.objects for delete using (
-  bucket_id='survey-photos' and
-  exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='admin'));
-
--- TRIGGER: siguri — blloko role=admin nga regjistrim i klientit
+-- Auto-create profile pas regjistrimit
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path=public as $$
 declare _r text;
@@ -393,16 +371,12 @@ end;$$;
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
-  for each row execute procedure public.handle_new_user();
-
--- BËNI ADMIN-IN E PARË (ndërroni email-in tuaj):
--- update public.profiles set role='admin' where email='<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e8829d898281a88d85898184c68b8785">[email&#160;protected]</a>';</div>
+  for each row execute procedure public.handle_new_user();</div>
       <button class="btn sm" onclick="copySql()" style="position:absolute;top:7px;right:7px">
         <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Kopjo
       </button>
     </div>
     <div class="instr"><div class="instr-n">3</div><div class="instr-t">Duhet të shihni: <code style="color:var(--acc)">Success. No rows returned</code> → keni sukses!</div></div>
-    <div class="instr"><div class="instr-n">4</div><div class="instr-t">Bëni admin-in e parë: <code>update public.profiles set role='admin' where email='<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0f7b7a6e654f6a626e6663216c6062">[email&#160;protected]</a>'</code></div></div>
     <div class="brow" style="margin-top:16px">
       <button class="btn" onclick="goSS(0)">← Prapa</button>
       <button class="btn pri" onclick="goSS(2)">SQL u ekzekutua →</button>
@@ -752,55 +726,28 @@ create trigger on_auth_user_created
   <div id="role-body"></div></div>
 </div>
 
-<div class="toastwrap" id="toasts"></div>
-
-<!-- ═══════════════════════════════════
-     SCRIPT I HERSHËM — goSS & copySql
-     (ekzekutohet menjëherë, pa pritur SDK)
-═══════════════════════════════════ -->
 <script>
+/* Funksionet e konfigurimit — ekzekutohen menjëherë pa pritur SDK */
 var curSS=0;
 function goSS(n){
   [0,1,2].forEach(function(i){
-    var s=document.getElementById('ss'+i);
-    if(s) s.classList.toggle('hidden',i!==n);
-    var p=document.getElementById('sp'+i);
-    if(p) p.className='step-pip'+(i<n?' done':i===n?' act':'');
-  });
-  curSS=n;
-  window.scrollTo({top:0,behavior:'smooth'});
+    var s=document.getElementById('ss'+i);if(s)s.classList.toggle('hidden',i!==n);
+    var p=document.getElementById('sp'+i);if(p)p.className='step-pip'+(i<n?' done':i===n?' act':'');
+  });curSS=n;window.scrollTo({top:0,behavior:'smooth'});
 }
 function copySql(){
-  var el=document.getElementById('sqlbox');
-  if(!el)return;
-  var txt=el.textContent||el.innerText;
-  var ok=function(){
-    var btns=document.querySelectorAll('[onclick="copySql()"]');
-    btns.forEach(function(b){var o=b.innerHTML;b.textContent='✓ Kopjuar!';setTimeout(function(){b.innerHTML=o},2000);});
-  };
-  var fallback=function(){
-    var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
-    document.body.appendChild(ta);ta.focus();ta.select();
-    try{document.execCommand('copy');ok();}catch(e){alert('Kopjo manualisht:\n\n'+txt.substring(0,80)+'...');}
-    document.body.removeChild(ta);
-  };
-  if(navigator.clipboard&&window.isSecureContext){
-    navigator.clipboard.writeText(txt).then(ok).catch(fallback);
-  } else { fallback(); }
+  var el=document.getElementById('sqlbox');if(!el)return;var txt=el.textContent||el.innerText;
+  var ok=function(){var b=document.querySelector('[onclick="copySql()"]');if(b){var o=b.innerHTML;b.textContent='✓ Kopjuar!';setTimeout(function(){b.innerHTML=o},2000);}};
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(ok).catch(function(){ok();});}
+  else{var ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);ok();}
 }
 </script>
+<div class="toastwrap" id="toasts"></div>
 
 <!-- ═══════════════════════════════════
      SUPABASE (loaded inline — no CDN race)
 ═══════════════════════════════════ -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-// Load Supabase dynamically after page is ready
-var SB_SCRIPT = document.createElement('script');
-SB_SCRIPT.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
-SB_SCRIPT.onload = function(){ log('info','Supabase SDK u ngarkua'); boot(); };
-SB_SCRIPT.onerror = function(){ log('err','Supabase SDK nuk u ngarkua — kontrolloni internetin'); };
-document.head.appendChild(SB_SCRIPT);
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
 <script>
 /* ═══════════════════════════════════════
@@ -836,9 +783,10 @@ function boot(){
 }
 
 /* ═══════════════════════════════════════
-   SETUP WIZARD — goSS & copySql janë
-   të definuara më lart (early script)
+   SETUP WIZARD
 ═══════════════════════════════════════ */
+/* goSS & copySql — të definuara në early script */
+}
 async function saveConfig(){
   var u=document.getElementById('cfg-url').value.trim();
   var k=document.getElementById('cfg-key').value.trim();
@@ -848,6 +796,7 @@ async function saveConfig(){
   if(!u.includes('supabase.co')){ae.className='alert warn';ae.textContent='URL duhet të jetë nga supabase.co — kontrolloni formatin';}
   var btn=document.getElementById('cfg-btn');btn.disabled=true;btn.textContent='Duke testuar...';
   try{
+    if(typeof supabase==='undefined'){ae.className='alert err';ae.textContent='SDK nuk u ngarkua — rifrisho faqen!';btn.disabled=false;btn.textContent='Lidhu me Supabase';return;}
     var client=supabase.createClient(u,k);
     // test with a real query
     var{error}=await client.from('profiles').select('id').limit(1);
@@ -1053,30 +1002,24 @@ function setDT(){
 ═══════════════════════════════════════ */
 var MAX_PHOTOS=10;
 function addPh(e){
-  var files=Array.from(e.target.files);
-  var remaining=MAX_PHOTOS-photos.length;
-  if(remaining<=0){toast('warn','Maksimumi '+MAX_PHOTOS+' foto për rekord');return;}
-  if(files.length>remaining){toast('warn','Zgjidhur '+files.length+' foto, por vetëm '+remaining+' mund të shtohen (max '+MAX_PHOTOS+')');files=files.slice(0,remaining);}
-  files.forEach(function(f){
-    var r=new FileReader();
-    r.onload=function(ev){photos.push({name:f.name,data:ev.target.result});renderPh()};
-    r.readAsDataURL(f);
-  });
-  // Reset input so same files can be re-selected
+  var files=Array.from(e.target.files),rem=MAX_PHOTOS-photos.length;
+  if(rem<=0){toast('warn','Maksimumi '+MAX_PHOTOS+' foto');return;}
+  if(files.length>rem){toast('warn','Vetëm '+rem+' mund të shtohen');files=files.slice(0,rem);}
+  files.forEach(function(f){var r=new FileReader();r.onload=function(ev){photos.push({name:f.name,data:ev.target.result});renderPh()};r.readAsDataURL(f)});
   e.target.value='';
 }
 function renderPh(){
-  var g=document.getElementById('pgrid');g.innerHTML='';
+  var g=document.getElementById('pgrid');if(!g)return;g.innerHTML='';
   photos.forEach(function(p,i){
     var d=document.createElement('div');d.className='pthumb';
     d.innerHTML='<img src="'+p.data+'"><button class="pdel" onclick="event.stopPropagation();rmPh('+i+')">✕</button>';g.appendChild(d);
   });
-  if(photos.length<MAX_PHOTOS){
+  if(photos.length<(MAX_PHOTOS||10)){
     var a=document.createElement('div');a.className='padd';
-    a.innerHTML='<span style="font-size:18px;display:block">+</span><span style="font-size:9px;opacity:.5">'+(MAX_PHOTOS-photos.length)+' të mbetura</span>';
+    a.innerHTML='<span style="font-size:18px">+</span><br><span style="font-size:9px;opacity:.5">'+((MAX_PHOTOS||10)-photos.length)+' të mbetura</span>';
     a.onclick=function(){document.getElementById('phinp').click()};g.appendChild(a);
   }
-  document.getElementById('pcnt').textContent=photos.length+'/'+MAX_PHOTOS;
+  var pc=document.getElementById('pcnt');if(pc)pc.textContent=photos.length+'/'+(MAX_PHOTOS||10);
 }
 function rmPh(i){photos.splice(i,1);renderPh()}
 
@@ -1090,11 +1033,11 @@ function openCam(){
     .catch(function(e){toast('warn','Kamera: '+e.message);closeCam()});
 }
 function snapPh(){
-  if(photos.length>=MAX_PHOTOS){toast('warn','Maksimumi '+MAX_PHOTOS+' foto');closeCam();return;}
+  if(photos.length>=(MAX_PHOTOS||10)){toast('warn','Maksimumi '+(MAX_PHOTOS||10)+' foto');closeCam();return;}
   var v2=document.getElementById('cam-vid'),c=document.getElementById('cam-cnv');
   c.width=v2.videoWidth||640;c.height=v2.videoHeight||480;c.getContext('2d').drawImage(v2,0,0);
   photos.push({name:'cam_'+Date.now()+'.jpg',data:c.toDataURL('image/jpeg',.85)});
-  renderPh();closeCam();toast('ok','Foto e bërë! ('+photos.length+'/'+MAX_PHOTOS+')');
+  renderPh();closeCam();toast('ok','Foto e bërë! ('+photos.length+'/'+(MAX_PHOTOS||10)+')');
 }
 function closeCam(){
   document.getElementById('cam-m').classList.add('hidden');
@@ -1152,25 +1095,22 @@ function renderShpList(){
 function rmShp(i){if(shpLay[i].layer)leafMap.removeLayer(shpLay[i].layer);shpLay.splice(i,1);renderShpList()}
 
 /* ═══════════════════════════════════════
-   STORAGE — NGARKIM FOTOSH NË SUPABASE
+   STORAGE — NGARKIM FOTOSH
 ═══════════════════════════════════════ */
 async function uploadPhotos(recordId){
   if(!SB||!photos.length)return 0;
   var ok=0;
   for(var i=0;i<photos.length;i++){
     try{
-      // Konverto base64 → Blob
       var b64=photos[i].data.split(',')[1];
       var mime=photos[i].data.split(';')[0].split(':')[1]||'image/jpeg';
       var bin=atob(b64);var arr=new Uint8Array(bin.length);
       for(var j=0;j<bin.length;j++)arr[j]=bin.charCodeAt(j);
-      var blob=new Blob([arr],{type:mime});
-      var ext=mime.split('/')[1]||'jpg';
+      var blob=new Blob([arr],{type:mime});var ext=mime.split('/')[1]||'jpg';
       var path=CU.id+'/rec_'+recordId+'_'+i+'.'+ext;
       var{error}=await SB.storage.from('survey-photos').upload(path,blob,{upsert:true,contentType:mime});
-      if(error)log('warn','Foto '+i+' dështoi: '+error.message);
-      else{ok++;log('ok','Foto '+i+' ngarkuar: '+path)}
-    }catch(e){log('warn','Foto upload gabim: '+e.message)}
+      if(error)log('warn','Foto '+i+' dështoi: '+error.message);else ok++;
+    }catch(e){log('warn','Upload err: '+e.message)}
   }
   return ok;
 }
@@ -1216,12 +1156,7 @@ async function addRec(){
       }
       rec=data;saved=true;
       log('ok','✓ Ruajtur në Supabase: #'+rec.id);
-      // Ngarko fotot në Storage nëse ka
-      if(photos.length){
-        showAddStatus('info','Duke ngarkuar '+photos.length+' foto...');
-        var uploaded=await uploadPhotos(rec.id);
-        log('ok','Foto: '+uploaded+'/'+photos.length+' u ngarkuan');
-      }
+      if(photos.length){showAddStatus('info','Duke ngarkuar '+photos.length+' foto...');var upl=await uploadPhotos(rec.id);log('ok','Foto: '+upl+'/'+photos.length);}
       showAddStatus('ok','✓ Rekord #'+rec.id+' u ruajt'+(photos.length?' + '+photos.length+' foto':'')+'!');
       toast('ok','Rekord #'+rec.id+' u ruajt!');
     }catch(e){
@@ -1697,4 +1632,21 @@ function toast(type,msg){
   setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(14px)';t.style.transition='all .3s';setTimeout(function(){t.remove()},350)},3800);
 }
 function offEvents(){
-  window.addEventListener('online',function(){document.getElementById('cdot').className='cdot';document
+  window.addEventListener('online',function(){document.getElementById('cdot').className='cdot';document.getElementById('clbl').textContent='online';toast('ok','Lidhja u restaurua');log('ok','Online')});
+  window.addEventListener('offline',function(){document.getElementById('cdot').className='cdot off';document.getElementById('clbl').textContent='offline';toast('warn','Offline');log('warn','Offline')});
+}
+renderPh();
+// Boot app — SDK është ngarkuar synchronously
+window.addEventListener('DOMContentLoaded',function(){});
+if(typeof supabase!=='undefined'){
+  log('info','Supabase SDK gati');boot();
+}else{
+  log('err','SDK nuk u ngarkua');
+  setTimeout(function(){
+    if(typeof supabase!=='undefined'){log('ok','SDK retry OK');boot();}
+    else{log('err','SDK dështoi plotësisht — kontrolloni internet/adblocker');}
+  },3000);
+}
+</script>
+</body>
+</html>
