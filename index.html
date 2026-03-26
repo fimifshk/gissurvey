@@ -92,11 +92,11 @@ input,select,textarea,button{font-family:inherit}
 /* ── APP SHELL ── */
 #app{display:none;flex-direction:column;height:100vh}
 #app.on{display:flex}
-.topbar{height:52px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;z-index:100}
+.topbar{height:52px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;z-index:100;overflow-x:auto}
 .logo{font-family:var(--mono);font-size:13px;color:var(--acc);letter-spacing:.1em;margin-right:4px}
 .logo span{color:var(--txt3)}
 .nav{display:flex;gap:2px}
-.nb{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:7px;font-size:12px;font-family:var(--mono);color:var(--txt2);cursor:pointer;border:none;background:transparent;transition:.15s}
+.nb{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:7px;font-size:12px;font-family:var(--mono);color:var(--txt2);cursor:pointer;border:none;background:transparent;transition:.15s;white-space:nowrap}
 .nb:hover{color:var(--txt);background:var(--s2)}
 .nb.on{color:var(--acc);background:rgba(5,217,160,.08)}
 .nb svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2}
@@ -197,7 +197,7 @@ input,select,textarea,button{font-family:inherit}
 .uc-sv{font-size:17px;font-weight:700;color:var(--acc)}
 
 /* ── REPORTS ── */
-.rppage{flex-direction:column;background:var(--bg);width:100%}
+.rppage{flex-direction:column;background:var(--bg);width:100%;height:100%;display:flex}
 .rpbody{flex:1;overflow-y:auto;padding:18px 22px}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px}
 .kpi{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:17px 18px}
@@ -209,7 +209,7 @@ input,select,textarea,button{font-family:inherit}
 .cc-t{font-size:13px;font-weight:600;margin-bottom:14px}
 .cc-w{position:relative;height:200px}
 .rpc{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:18px;margin-bottom:14px}
-.rptabs{display:flex;gap:2px;padding:10px 16px 0;background:var(--s1);border-bottom:1px solid var(--b1);flex-shrink:0;flex-wrap:wrap}
+.rptabs{display:flex;gap:2px;padding:10px 16px 0;background:var(--s1);border-bottom:1px solid var(--b1);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:10}
 .rptab{padding:8px 14px;font-size:11px;font-family:var(--mono);color:var(--txt3);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap;border-radius:6px 6px 0 0}
 .rptab:hover{color:var(--txt);background:var(--s2)}
 .rptab.on{color:var(--acc);border-bottom-color:var(--acc);background:rgba(5,217,160,.06)}
@@ -414,9 +414,14 @@ create trigger on_auth_user_created
     </div>
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--b1);text-align:center">
       <div style="font-size:11px;color:var(--txt3);font-family:var(--mono);margin-bottom:8px">Doni ta hapni në celular?</div>
-      <button class="btn sec sm" onclick="copyMobileLink()" style="width:100%;justify-content:center">
-        📱 Kopjo link për celular (me çelësa të integruar)
-      </button>
+      <div style="display:flex;gap:7px">
+        <button class="btn sec sm" onclick="copyMobileLink()" style="flex:1;justify-content:center">
+          📱 Kopjo link
+        </button>
+        <button class="btn sec sm" onclick="showQR()" style="flex:1;justify-content:center">
+          📷 QR Code
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -797,6 +802,19 @@ create trigger on_auth_user_created
   </div>
 </div>
 
+<!-- QR CODE MODAL -->
+<div class="mbg hidden" id="qr-m">
+  <div class="modal sm" style="text-align:center">
+    <div class="mhd">QR Code — Hap në celular <span class="mcl" onclick="document.getElementById('qr-m').classList.add('hidden')">✕</span></div>
+    <div style="font-size:12px;color:var(--txt2);font-family:var(--mono);margin-bottom:16px">Skanoni me kamerën e telefonit</div>
+    <div id="qr-canvas" style="display:flex;justify-content:center;margin-bottom:16px">
+      <canvas id="qr-cv" style="border-radius:8px;background:#fff;padding:12px"></canvas>
+    </div>
+    <div style="font-size:10px;color:var(--txt3);font-family:var(--mono);margin-bottom:14px">⚠️ Ky QR përmban çelësat e Supabase — mos e ndani publikisht</div>
+    <button class="btn pri sm" onclick="document.getElementById('qr-m').classList.add('hidden')" style="width:100%;justify-content:center">Mbyll</button>
+  </div>
+</div>
+
 <!-- CAMERA MODAL -->
 <div class="mbg hidden" id="cam-m">
   <div class="modal sm"><div class="mhd">Kamera <span class="mcl" onclick="closeCam()">✕</span></div>
@@ -822,6 +840,7 @@ create trigger on_auth_user_created
 <!-- ═══════════════════════════════════
      SUPABASE SDK
 ═══════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 /* ═══════════════════════════════════════
@@ -1487,12 +1506,19 @@ var _rpRecs=[];
 var _rpTab=0;
 function rpTab(n){
   _rpTab=n;
-  document.querySelectorAll('.rptab').forEach(function(t,i){t.classList.toggle('on',i===n)});
-  document.querySelectorAll('.rpsec').forEach(function(s,i){s.classList.toggle('on',i===n)});
+  // Tabs
+  var tabs=document.querySelectorAll('.rptab');
+  tabs.forEach(function(t,i){t.classList.toggle('on',i===n)});
+  // Sections
+  var secs=document.querySelectorAll('.rpsec');
+  secs.forEach(function(s,i){s.classList.toggle('on',i===n)});
+  // Scroll rpbody në krye
+  var rb=document.getElementById('rpbody');if(rb)rb.scrollTop=0;
   if(n===4){setTimeout(function(){if(rMapObj)rMapObj.invalidateSize();updateRMap();},300);}
   else if(n===1)renderUserTab();
   else if(n===2)renderCatTab();
   else if(n===3)repByDate();
+  log('info','Raport tab: '+['Përmbledhje','Përdoruesit','Kategoritë','Periudhat','Harta'][n]);
 }
 function setPeriod(p){
   var now=new Date(),fr=new Date();
@@ -1749,6 +1775,33 @@ function copyMobileLink(){
   var link=window.location.origin+window.location.pathname+'?su='+encodeURIComponent(u)+'&sk='+encodeURIComponent(k);
   if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(link).then(function(){toast('ok','Link u kopjua! Ngjite në celular.');});}
   else{var ta=document.createElement('textarea');ta.value=link;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('ok','Link u kopjua!');}
+}
+function showQR(){
+  var u=ls('su'),k=ls('sk');
+  if(!u||!k){toast('warn','Konfiguro Supabase fillimisht');return;}
+  var link=window.location.origin+window.location.pathname+'?su='+encodeURIComponent(u)+'&sk='+encodeURIComponent(k);
+  document.getElementById('qr-m').classList.remove('hidden');
+  var cv=document.getElementById('qr-cv');
+  cv.width=200;cv.height=200;
+  var ctx=cv.getContext('2d');ctx.clearRect(0,0,200,200);
+  if(typeof QRCode!=='undefined'){
+    var tmp=document.createElement('div');
+    new QRCode(tmp,{text:link,width:200,height:200,colorDark:'#07090f',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+    setTimeout(function(){
+      var img=tmp.querySelector('img')||tmp.querySelector('canvas');
+      if(img){
+        if(img.tagName==='IMG'){
+          var i=new Image();i.onload=function(){ctx.drawImage(i,0,0,200,200);};i.src=img.src;
+        }else{ctx.drawImage(img,0,0,200,200);}
+      }
+    },100);
+  }else{
+    // Fallback: vizualizim manual QR i thjeshtë
+    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,200,200);
+    ctx.fillStyle='#07090f';ctx.font='10px monospace';ctx.textAlign='center';
+    ctx.fillText('QR nuk u ngarkua.',100,90);ctx.fillText('Përdorni "Kopjo link"',100,110);
+  }
+  log('ok','QR Code gjeneruar');
 }
 function expPDF(){
   if(!_rpRecs.length){toast('warn','Nuk ka të dhëna');return;}
