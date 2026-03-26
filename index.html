@@ -357,13 +357,14 @@ create policy "del_admin" on public.survey_records
 -- Auto-create profile pas regjistrimit
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path=public as $$
+declare _r text;
 begin
+  _r := coalesce(new.raw_user_meta_data->>'role','field');
+  if _r not in ('supervisor','field','viewer') then _r := 'field'; end if;
   insert into public.profiles(id,email,full_name,role)
-  values(
-    new.id, new.email,
+  values(new.id, new.email,
     coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email,'@',1)),
-    coalesce(new.raw_user_meta_data->>'role','field')
-  ) on conflict(id) do nothing;
+    _r) on conflict(id) do nothing;
   return new;
 end;$$;
 
@@ -728,7 +729,7 @@ create trigger on_auth_user_created
 <div class="toastwrap" id="toasts"></div>
 
 <!-- ═══════════════════════════════════
-     SCRIPTS
+     SUPABASE SDK
 ═══════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -1000,7 +1001,7 @@ var MAX_PHOTOS=10;
 function addPh(e){
   var files=Array.from(e.target.files),rem=MAX_PHOTOS-photos.length;
   if(rem<=0){toast('warn','Maksimumi '+MAX_PHOTOS+' foto');return;}
-  if(files.length>rem){toast('warn','Vetëm '+rem+' mund të shtohen');files=files.slice(0,rem);}
+  if(files.length>rem){toast('warn','Vetëm '+rem+' foto mund të shtohen');files=files.slice(0,rem);}
   files.forEach(function(f){var r=new FileReader();r.onload=function(ev){photos.push({name:f.name,data:ev.target.result});renderPh()};r.readAsDataURL(f)});
   e.target.value='';
 }
@@ -1632,20 +1633,12 @@ function offEvents(){
   window.addEventListener('offline',function(){document.getElementById('cdot').className='cdot off';document.getElementById('clbl').textContent='offline';toast('warn','Offline');log('warn','Offline')});
 }
 renderPh();
-// ── BOOT ──
+// Boot — SDK ngarkohet synchronously
 if(typeof supabase!=='undefined'){
-  log('info','Supabase SDK gati');boot();
+  log('info','Supabase SDK u ngarkua');
+  boot();
 }else{
-  document.addEventListener('DOMContentLoaded',function(){
-    if(typeof supabase!=='undefined'){boot();}
-    else{
-      var s=document.createElement('script');
-      s.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js';
-      s.onload=function(){log('ok','Supabase fallback OK');boot();};
-      s.onerror=function(){log('err','SDK dështoi — kontrolloni internet');};
-      document.head.appendChild(s);
-    }
-  });
+  log('err','SDK nuk u ngarkua — kontrolloni internet ose adblocker');
 }
 </script>
 </body>
