@@ -396,13 +396,13 @@ create trigger on_auth_user_created
   for each row execute procedure public.handle_new_user();
 
 -- BËNI ADMIN-IN E PARË (ndërroni email-in tuaj):
--- update public.profiles set role='admin' where email='juaji@email.com';</div>
+-- update public.profiles set role='admin' where email='<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e8829d898281a88d85898184c68b8785">[email&#160;protected]</a>';</div>
       <button class="btn sm" onclick="copySql()" style="position:absolute;top:7px;right:7px">
         <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Kopjo
       </button>
     </div>
     <div class="instr"><div class="instr-n">3</div><div class="instr-t">Duhet të shihni: <code style="color:var(--acc)">Success. No rows returned</code> → keni sukses!</div></div>
-    <div class="instr"><div class="instr-n">4</div><div class="instr-t">Bëni admin-in e parë: <code>update public.profiles set role='admin' where email='tuaj@email.com'</code></div></div>
+    <div class="instr"><div class="instr-n">4</div><div class="instr-t">Bëni admin-in e parë: <code>update public.profiles set role='admin' where email='<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0f7b7a6e654f6a626e6663216c6062">[email&#160;protected]</a>'</code></div></div>
     <div class="brow" style="margin-top:16px">
       <button class="btn" onclick="goSS(0)">← Prapa</button>
       <button class="btn pri" onclick="goSS(2)">SQL u ekzekutua →</button>
@@ -757,7 +757,7 @@ create trigger on_auth_user_created
 <!-- ═══════════════════════════════════
      SUPABASE (loaded inline — no CDN race)
 ═══════════════════════════════════ -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // Load Supabase dynamically after page is ready
 var SB_SCRIPT = document.createElement('script');
 SB_SCRIPT.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
@@ -1031,15 +1031,32 @@ function setDT(){
 /* ═══════════════════════════════════════
    PHOTOS
 ═══════════════════════════════════════ */
-function addPh(e){Array.from(e.target.files).forEach(function(f){var r=new FileReader();r.onload=function(ev){photos.push({name:f.name,data:ev.target.result});renderPh()};r.readAsDataURL(f)})}
+var MAX_PHOTOS=10;
+function addPh(e){
+  var files=Array.from(e.target.files);
+  var remaining=MAX_PHOTOS-photos.length;
+  if(remaining<=0){toast('warn','Maksimumi '+MAX_PHOTOS+' foto për rekord');return;}
+  if(files.length>remaining){toast('warn','Zgjidhur '+files.length+' foto, por vetëm '+remaining+' mund të shtohen (max '+MAX_PHOTOS+')');files=files.slice(0,remaining);}
+  files.forEach(function(f){
+    var r=new FileReader();
+    r.onload=function(ev){photos.push({name:f.name,data:ev.target.result});renderPh()};
+    r.readAsDataURL(f);
+  });
+  // Reset input so same files can be re-selected
+  e.target.value='';
+}
 function renderPh(){
   var g=document.getElementById('pgrid');g.innerHTML='';
   photos.forEach(function(p,i){
     var d=document.createElement('div');d.className='pthumb';
     d.innerHTML='<img src="'+p.data+'"><button class="pdel" onclick="event.stopPropagation();rmPh('+i+')">✕</button>';g.appendChild(d);
   });
-  var a=document.createElement('div');a.className='padd';a.textContent='+';a.onclick=function(){document.getElementById('phinp').click()};g.appendChild(a);
-  document.getElementById('pcnt').textContent=photos.length;
+  if(photos.length<MAX_PHOTOS){
+    var a=document.createElement('div');a.className='padd';
+    a.innerHTML='<span style="font-size:18px;display:block">+</span><span style="font-size:9px;opacity:.5">'+(MAX_PHOTOS-photos.length)+' të mbetura</span>';
+    a.onclick=function(){document.getElementById('phinp').click()};g.appendChild(a);
+  }
+  document.getElementById('pcnt').textContent=photos.length+'/'+MAX_PHOTOS;
 }
 function rmPh(i){photos.splice(i,1);renderPh()}
 
@@ -1053,10 +1070,11 @@ function openCam(){
     .catch(function(e){toast('warn','Kamera: '+e.message);closeCam()});
 }
 function snapPh(){
+  if(photos.length>=MAX_PHOTOS){toast('warn','Maksimumi '+MAX_PHOTOS+' foto');closeCam();return;}
   var v2=document.getElementById('cam-vid'),c=document.getElementById('cam-cnv');
   c.width=v2.videoWidth||640;c.height=v2.videoHeight||480;c.getContext('2d').drawImage(v2,0,0);
   photos.push({name:'cam_'+Date.now()+'.jpg',data:c.toDataURL('image/jpeg',.85)});
-  renderPh();closeCam();toast('ok','Foto e bërë!');
+  renderPh();closeCam();toast('ok','Foto e bërë! ('+photos.length+'/'+MAX_PHOTOS+')');
 }
 function closeCam(){
   document.getElementById('cam-m').classList.add('hidden');
@@ -1422,9 +1440,11 @@ async function loadRep(){
   if(!SB)return;
   var days=parseInt(document.getElementById('rp-days').value);
   var q=SB.from('survey_records').select('*');
+  if(CP&&CP.role==='field')q=q.eq('user_id',CU.id);
   if(days>0){var s=new Date();s.setDate(s.getDate()-days);q=q.gte('created_at',s.toISOString())}
-  var{data}=await q.order('created_at',{ascending:false});
-  var recs=data||[];
+  var res=await q.order('created_at',{ascending:false});
+  if(res.error){log('err','loadRep: '+res.error.message);toast('err','Raporte: '+res.error.message);return;}
+  var recs=res.data||[];
   log('info','Raport: '+recs.length+' rekorde ('+days+' ditë)');
 
   var today=new Date().toISOString().slice(0,10);
@@ -1657,10 +1677,4 @@ function toast(type,msg){
   setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(14px)';t.style.transition='all .3s';setTimeout(function(){t.remove()},350)},3800);
 }
 function offEvents(){
-  window.addEventListener('online',function(){document.getElementById('cdot').className='cdot';document.getElementById('clbl').textContent='online';toast('ok','Lidhja u restaurua');log('ok','Online')});
-  window.addEventListener('offline',function(){document.getElementById('cdot').className='cdot off';document.getElementById('clbl').textContent='offline';toast('warn','Offline');log('warn','Offline')});
-}
-renderPh();
-</script>
-</body>
-</html>
+  window.addEventListener('online',function(){document.getElementById('cdot').className='cdot';document
