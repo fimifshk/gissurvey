@@ -20,7 +20,7 @@
 html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--txt);font-size:14px;overflow:hidden}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
-input,select,textarea,button{font-family:inherit}
+input,select,textarea,button{font-family:inherit;pointer-events:all}
 
 /* UTILITY */
 .hidden{display:none!important}
@@ -110,7 +110,7 @@ input,select,textarea,button{font-family:inherit}
 .uname{font-size:12px;font-weight:600}
 .urole{font-size:10px;color:var(--txt2);font-family:var(--mono)}
 .pages{flex:1;overflow:hidden;position:relative}
-.page{position:absolute;inset:0;display:none;overflow:hidden}
+.page{position:absolute;inset:0;display:none;overflow:hidden}.page#page-rp{overflow:visible}
 .page.on{display:flex}
 
 /* ── SURVEY LAYOUT ── */
@@ -198,7 +198,7 @@ input,select,textarea,button{font-family:inherit}
 
 /* ── REPORTS ── */
 .rppage{flex-direction:column;background:var(--bg);width:100%;height:100%;display:flex}
-.rpbody{flex:1;overflow-y:auto;padding:18px 22px}
+.rpbody{flex:1;overflow-y:auto;padding:18px 22px;pointer-events:all;position:relative}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px}
 .kpi{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:17px 18px}
 .kpi-l{font-size:11px;color:var(--txt2);font-family:var(--mono);margin-bottom:6px;letter-spacing:.04em}
@@ -209,11 +209,11 @@ input,select,textarea,button{font-family:inherit}
 .cc-t{font-size:13px;font-weight:600;margin-bottom:14px}
 .cc-w{position:relative;height:200px}
 .rpc{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:18px;margin-bottom:14px}
-.rptabs{display:flex;gap:2px;padding:10px 16px 0;background:var(--s1);border-bottom:1px solid var(--b1);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:10}
-.rptab{padding:8px 14px;font-size:11px;font-family:var(--mono);color:var(--txt3);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap;border-radius:6px 6px 0 0}
+.rptabs{display:flex;gap:2px;padding:10px 16px 0;background:var(--s1);border-bottom:1px solid var(--b1);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:50;pointer-events:all}
+.rptab{padding:8px 14px;font-size:11px;font-family:var(--mono);color:var(--txt3);cursor:pointer!important;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap;border-radius:6px 6px 0 0;pointer-events:all!important;user-select:none}
 .rptab:hover{color:var(--txt);background:var(--s2)}
 .rptab.on{color:var(--acc);border-bottom-color:var(--acc);background:rgba(5,217,160,.06)}
-.rpsec{display:none}.rpsec.on{display:block}
+.rpsec{display:none;pointer-events:none}.rpsec.on{display:block;pointer-events:all}
 .cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .cmp-card{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px}
 .cmp-title{font-size:11px;font-family:var(--mono);color:var(--txt3);margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase}
@@ -696,11 +696,11 @@ create trigger on_auth_user_created
           </div>
         </div>
         <div class="rptabs">
-          <div class="rptab on" onclick="rpTab(0)">📊 Përmbledhje</div>
-          <div class="rptab" onclick="rpTab(1)">👤 Përdoruesit</div>
-          <div class="rptab" onclick="rpTab(2)">🏢 Kategoritë</div>
-          <div class="rptab" onclick="rpTab(3)">📅 Periudhat</div>
-          <div class="rptab" onclick="rpTab(4)">🗺️ Harta</div>
+          <div class="rptab on" data-tab="0">📊 Përmbledhje</div>
+          <div class="rptab" data-tab="1">👤 Përdoruesit</div>
+          <div class="rptab" data-tab="2">🏢 Kategoritë</div>
+          <div class="rptab" data-tab="3">📅 Periudhat</div>
+          <div class="rptab" data-tab="4">🗺️ Harta</div>
         </div>
         <div class="rpbody" id="rpbody">
           <!-- TAB 0 -->
@@ -1915,6 +1915,16 @@ function offEvents(){
   window.addEventListener('offline',function(){document.getElementById('cdot').className='cdot off';document.getElementById('clbl').textContent='offline';toast('warn','Offline');log('warn','Offline')});
 }
 renderPh();
+// Event listeners për rptabs (shmang onclick konflikte)
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.rptab[data-tab]').forEach(function(el){
+    el.addEventListener('click', function(e){
+      e.stopPropagation();
+      rpTab(parseInt(this.getAttribute('data-tab')));
+    });
+  });
+});
+
 // Boot — SDK ngarkohet synchronously
 if(typeof supabase!=='undefined'){
   log('info','Supabase SDK u ngarkua');
