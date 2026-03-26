@@ -1053,6 +1053,14 @@ function updateTop(){
 function initMap(){
   if(leafMap)return;
   leafMap=L.map('map',{zoomControl:true}).setView([41.15,20.17],8);
+  // Shtresa WMS ASIG (me proxy CORS fallback)
+  var asigWMS=function(layer,attr){
+    return L.tileLayer.wms('https://geoportal.asig.gov.al/service/wmts',{
+      layers:layer,format:'image/png',transparent:true,
+      attribution:attr||'© ASIG Shqipëri',maxZoom:20,
+      version:'1.1.1',styles:''
+    });
+  };
   baseLays={
     osm:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'©OSM',maxZoom:19}),
     'esri-img':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:19}),
@@ -1061,7 +1069,24 @@ function initMap(){
     'esri-gr':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:16}),
     'esri-dk':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:16}),
     'esri-ng':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:16}),
-    carto:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'©CartoDB',maxZoom:19})
+    carto:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'©CartoDB',maxZoom:19}),
+    // ASIG Ortofoto — WMS layers
+    'asig-orto':L.tileLayer.wms('https://geoportal.asig.gov.al/service/image/wms',{
+      layers:'Ortofoto_2015_2017',format:'image/jpeg',transparent:false,
+      attribution:'© ASIG — Ortofotë 2015-2017',maxZoom:20,version:'1.1.1'
+    }),
+    'asig-orto2018':L.tileLayer.wms('https://geoportal.asig.gov.al/service/image/wms',{
+      layers:'Ortofoto_2018',format:'image/jpeg',transparent:false,
+      attribution:'© ASIG — Ortofotë 2018 Tiranë-Durrës',maxZoom:21,version:'1.1.1'
+    }),
+    'asig-sat2023':L.tileLayer.wms('https://geoportal.asig.gov.al/service/image/wms',{
+      layers:'Ortofoto_CIR_2023',format:'image/jpeg',transparent:false,
+      attribution:'© ASIG — Satelit CIR 2023',maxZoom:20,version:'1.1.1'
+    }),
+    'asig-sat2025':L.tileLayer.wms('https://geoportal.asig.gov.al/service/image/wms',{
+      layers:'Ortofoto_2025',format:'image/jpeg',transparent:false,
+      attribution:'© ASIG — Satelit 2025',maxZoom:20,version:'1.1.1'
+    })
   };
   baseLays.osm.addTo(leafMap);
   sMarkers=L.layerGroup().addTo(leafMap);
@@ -1075,7 +1100,11 @@ var BASES=[
   {id:'esri-gr',nm:'Esri Light Gray Canvas',c:'#aaa'},
   {id:'esri-dk',nm:'Esri Dark Gray Canvas',c:'#555'},
   {id:'esri-ng',nm:'Esri National Geographic',c:'#c3b888'},
-  {id:'carto',nm:'CartoDB Dark',c:'#2a3a5a'}
+  {id:'carto',nm:'CartoDB Dark',c:'#2a3a5a'},
+  {id:'asig-orto',nm:'ASIG Ortofotë 2015-2017 (Shqipëri)',c:'#05d9a0',tag:'AL'},
+  {id:'asig-orto2018',nm:'ASIG Ortofotë 2018 (Tiranë-Durrës)',c:'#2d8bff',tag:'AL'},
+  {id:'asig-sat2023',nm:'ASIG Satelit CIR 2023 (Shqipëri)',c:'#9b5fff',tag:'AL'},
+  {id:'asig-sat2025',nm:'ASIG Satelit 2025 (Shqipëri)',c:'#ffaa2e',tag:'AL'}
 ];
 function initBLL(){
   document.getElementById('bll').innerHTML=BASES.map(function(b){
