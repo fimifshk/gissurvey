@@ -1089,6 +1089,18 @@ function updateTop(){
 function initMap(){
   if(leafMap)return;
   leafMap=L.map('map',{zoomControl:true}).setView([41.15,20.17],8);
+  // Google Maps tiles (falas, pa API key për përdorim bazë)
+  var gTile=function(type){
+    var urls={
+      sat:'https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+      hyb:'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+      str:'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}'
+    };
+    return L.tileLayer(urls[type],{
+      subdomains:'0123',maxZoom:21,
+      attribution:'© Google Maps'
+    });
+  };
   // Shtresa WMS ASIG (me proxy CORS fallback)
   var asigWMS=function(layer,attr){
     return L.tileLayer.wms('https://geoportal.asig.gov.al/service/wmts',{
@@ -1099,6 +1111,9 @@ function initMap(){
   };
   baseLays={
     osm:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'©OSM',maxZoom:19}),
+    'google-sat':gTile('sat'),
+    'google-hyb':gTile('hyb'),
+    'google-str':gTile('str'),
     'esri-img':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:19}),
     'esri-str':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:19}),
     'esri-top':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{attribution:'©Esri',maxZoom:19}),
@@ -1130,17 +1145,19 @@ function initMap(){
 }
 var BASES=[
   {id:'osm',nm:'OpenStreetMap',c:'#4a9eff'},
-  {id:'esri-img',nm:'Esri World Imagery (Ortofotë)',c:'#e8d44d',tag:'SH'},
+  {id:'google-sat',nm:'Google Satellite',c:'#e8d44d',tag:'G'},
+  {id:'google-hyb',nm:'Google Hybrid (Satelit + Rrugë)',c:'#ffaa2e',tag:'G'},
+  {id:'google-str',nm:'Google Street Map',c:'#4a9eff',tag:'G'},
+  {id:'esri-img',nm:'Esri World Imagery',c:'#c3b888',tag:'SH'},
   {id:'esri-str',nm:'Esri World Street Map',c:'#ff9a4a'},
   {id:'esri-top',nm:'Esri World Topo Map',c:'#7ab867'},
-  {id:'esri-gr',nm:'Esri Light Gray Canvas',c:'#aaa'},
-  {id:'esri-dk',nm:'Esri Dark Gray Canvas',c:'#555'},
-  {id:'esri-ng',nm:'Esri National Geographic',c:'#c3b888'},
+  {id:'esri-gr',nm:'Esri Light Gray',c:'#aaa'},
+  {id:'esri-dk',nm:'Esri Dark Gray',c:'#555'},
   {id:'carto',nm:'CartoDB Dark',c:'#2a3a5a'},
-  {id:'asig-orto',nm:'ASIG Ortofotë 2015-2017 (Shqipëri)',c:'#05d9a0',tag:'AL'},
+  {id:'asig-orto',nm:'ASIG Ortofotë 2015-2017',c:'#05d9a0',tag:'AL'},
   {id:'asig-orto2018',nm:'ASIG Ortofotë 2018 (Tiranë-Durrës)',c:'#2d8bff',tag:'AL'},
-  {id:'asig-sat2023',nm:'ASIG Satelit CIR 2023 (Shqipëri)',c:'#9b5fff',tag:'AL'},
-  {id:'asig-sat2025',nm:'ASIG Satelit 2025 (Shqipëri)',c:'#ffaa2e',tag:'AL'}
+  {id:'asig-sat2023',nm:'ASIG Satelit CIR 2023',c:'#9b5fff',tag:'AL'},
+  {id:'asig-sat2025',nm:'ASIG Satelit 2025',c:'#ffaa2e',tag:'AL'}
 ];
 function initBLL(){
   document.getElementById('bll').innerHTML=BASES.map(function(b){
@@ -1234,10 +1251,15 @@ function openPanel(b64){
   try{if(rec.doc_urls)docUrls=JSON.parse(rec.doc_urls);}catch(e){}
   renderDocList(docUrls);
 
-  // Karusel fotosh
+  // Karusel fotosh — ngarko URL-et nga Storage nëse mungojnë
   var photoUrls=[];
   try{if(rec.photo_urls)photoUrls=JSON.parse(rec.photo_urls);}catch(e){}
-  // Nëse nuk ka photo_urls por ka photo_count, trego mesazh
+  if(!photoUrls.length&&rec.photo_count>0&&SB&&CU){
+    // Kërko fotot nga Storage
+    fetchPhotoUrls(rec).then(function(urls){
+      if(urls.length){renderCarousel(urls,urls.length);}
+    });
+  }
   renderCarousel(photoUrls,rec.photo_count||0);
 
   // Hap panelin
@@ -1251,6 +1273,22 @@ function closePanel(){
   document.getElementById('dp-overlay').style.display='none';
   document.body.style.overflow='';
   _dpRec=null;
+}
+
+async function fetchPhotoUrls(rec){
+  if(!SB||!CU)return[];
+  try{
+    var prefix=CU.id+'/rec_'+rec.id+'_';
+    var{data,error}=await SB.storage.from('survey-photos').list(CU.id,{search:'rec_'+rec.id+'_'});
+    if(error||!data||!data.length)return[];
+    var urls=[];
+    for(var i=0;i<data.length;i++){
+      var path=CU.id+'/'+data[i].name;
+      var{data:sd}=await SB.storage.from('survey-photos').createSignedUrl(path,86400);
+      if(sd&&sd.signedUrl)urls.push(sd.signedUrl);
+    }
+    return urls;
+  }catch(e){log('warn','fetchPhotoUrls: '+e.message);return[];}
 }
 
 function renderCarousel(photoUrls,photoCount){
@@ -1470,21 +1508,33 @@ function rmShp(i){if(shpLay[i].layer)leafMap.removeLayer(shpLay[i].layer);shpLay
    STORAGE — NGARKIM FOTOSH
 ═══════════════════════════════════════ */
 async function uploadPhotos(recordId){
-  if(!SB||!photos.length)return 0;
-  var ok=0;
+  if(!SB||!photos.length)return{ok:0,urls:[]};
+  var ok=0,urls=[];
   for(var i=0;i<photos.length;i++){
     try{
       var b64=photos[i].data.split(',')[1];
       var mime=photos[i].data.split(';')[0].split(':')[1]||'image/jpeg';
       var bin=atob(b64);var arr=new Uint8Array(bin.length);
       for(var j=0;j<bin.length;j++)arr[j]=bin.charCodeAt(j);
-      var blob=new Blob([arr],{type:mime});var ext=mime.split('/')[1]||'jpg';
-      var path=CU.id+'/rec_'+recordId+'_'+i+'.'+ext;
+      var blob=new Blob([arr],{type:mime});
+      var ext=(mime.split('/')[1]||'jpg').replace('jpeg','jpg');
+      var path=CU.id+'/rec_'+recordId+'_'+i+'_'+Date.now()+'.'+ext;
       var{error}=await SB.storage.from('survey-photos').upload(path,blob,{upsert:true,contentType:mime});
-      if(error)log('warn','Foto '+i+': '+error.message);else ok++;
+      if(error){log('warn','Foto '+i+': '+error.message);}
+      else{
+        // Merr signed URL (1 vit)
+        var{data:sd,error:se}=await SB.storage.from('survey-photos').createSignedUrl(path,86400*365);
+        if(sd&&sd.signedUrl){urls.push(sd.signedUrl);ok++;}
+        else{
+          // Fallback: public URL
+          var{data:pu}=SB.storage.from('survey-photos').getPublicUrl(path);
+          if(pu&&pu.publicUrl){urls.push(pu.publicUrl);ok++;}
+        }
+        log('ok','Foto '+i+' ngarkuar');
+      }
     }catch(e){log('warn','Upload: '+e.message)}
   }
-  return ok;
+  return{ok:ok,urls:urls};
 }
 
 /* ═══════════════════════════════════════
@@ -1528,7 +1578,17 @@ async function addRec(){
       }
       rec=data;saved=true;
       log('ok','✓ Ruajtur në Supabase: #'+rec.id);
-      if(photos.length){showAddStatus('info','Duke ngarkuar '+photos.length+' foto...');var upl=await uploadPhotos(rec.id);log('ok','Foto: '+upl+'/'+photos.length);}
+      if(photos.length){
+        showAddStatus('info','Duke ngarkuar '+photos.length+' foto...');
+        var uplRes=await uploadPhotos(rec.id);
+        log('ok','Foto: '+uplRes.ok+'/'+photos.length);
+        if(uplRes.urls.length){
+          // Ruaj URL-et e fotove në DB
+          await SB.from('survey_records').update({photo_urls:JSON.stringify(uplRes.urls)}).eq('id',rec.id);
+          rec.photo_urls=JSON.stringify(uplRes.urls);
+          log('ok','photo_urls ruajtur në DB');
+        }
+      }
       showAddStatus('ok','✓ Rekord #'+rec.id+' u ruajt'+(photos.length?' + '+photos.length+' foto':'')+'!');
       toast('ok','Rekord #'+rec.id+' u ruajt!');
     }catch(e){
