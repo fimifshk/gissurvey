@@ -1267,8 +1267,9 @@ function renderCarousel(photoUrls,photoCount){
   }
   nop.style.display='none';
   car.style.display='block';
+  var fbSrc='data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%22400%22 height%3D%22225%22%3E%3Crect fill%3D%22%231c2740%22 width%3D%22400%22 height%3D%22225%22%2F%3E%3Ctext y%3D%2250%25%22 x%3D%2250%25%22 text-anchor%3D%22middle%22 dominant-baseline%3D%22middle%22 fill%3D%22%233d5275%22 font-size%3D%2214%22%3EFoto nuk u ngarkua%3C%2Ftext%3E%3C%2Fsvg%3E';
   slides.innerHTML=photoUrls.map(function(url){
-    return'<img class="carousel-slide" src="'+url+'" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'225\'><rect fill=\'%231c2740\'/><text y=\'50%\' x=\'50%\' text-anchor=\'middle\' fill=\'%233d5275\' font-size=\'12\'>Foto nuk u ngarkua</text></svg>'">';
+    return'<img class="carousel-slide" src="'+url+'" onerror="this.src=\''+fbSrc+'\'">';
   }).join('');
   dots.innerHTML=photoUrls.map(function(_,i){
     return'<div class="cdot2'+(i===0?' on':'')+'" onclick="carouselGo('+i+')"></div>';
