@@ -223,6 +223,38 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 .rpc-t{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
 #rmap{height:270px;border-radius:8px;overflow:hidden}
 
+/* ── DETAIL PANEL (djathtas) ── */
+.dpanel{position:fixed;top:0;right:-520px;width:500px;max-width:100vw;height:100vh;background:var(--s1);border-left:1px solid var(--b1);z-index:4000;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,.4)}
+.dpanel.open{right:0}
+.dpanel-hd{padding:18px 20px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.dpanel-title{font-size:15px;font-weight:700}
+.dpanel-body{flex:1;overflow-y:auto;padding:18px 20px}
+.dpanel-ft{padding:14px 20px;border-top:1px solid var(--b1);display:flex;gap:8px;flex-shrink:0}
+.star-row{display:flex;gap:4px;margin:4px 0}
+.star{font-size:22px;cursor:pointer;color:var(--b3);transition:.15s;line-height:1}
+.star.on,.star:hover{color:#ffaa2e}
+/* Karusel */
+.carousel{position:relative;border-radius:10px;overflow:hidden;background:var(--bg);margin-bottom:14px}
+.carousel-inner{display:flex;transition:transform .3s ease}
+.carousel-slide{min-width:100%;aspect-ratio:16/9;object-fit:cover}
+.carousel-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;z-index:2}
+.carousel-btn.prev{left:8px}
+.carousel-btn.next{right:8px}
+.carousel-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
+.cdot2{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer;transition:.15s}
+.cdot2.on{background:#fff}
+/* Popup Leaflet i pasur */
+.lpopup{min-width:240px;max-width:280px;font-family:var(--sans)}
+.lpopup-img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;margin-bottom:8px;cursor:pointer}
+.lpopup-row{display:flex;gap:6px;align-items:flex-start;margin-bottom:4px;font-size:12px}
+.lpopup-lbl{color:#8da0bb;font-family:monospace;font-size:10px;min-width:60px;padding-top:1px}
+.lpopup-val{color:#dce6f5;flex:1;word-break:break-word}
+/* Upload zone */
+.uzone{border:1.5px dashed var(--b2);border-radius:var(--r);padding:14px;text-align:center;color:var(--txt3);font-size:11px;font-family:var(--mono);cursor:pointer;transition:.2s}
+.uzone:hover{border-color:var(--acc2);color:var(--acc2)}
+.doc-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);margin-bottom:5px;font-size:11px;font-family:var(--mono)}
+.doc-icon{font-size:16px;flex-shrink:0}
+
 /* ── MODALS ── */
 .mbg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px}
 .mbg.hidden{display:none}
@@ -237,6 +269,10 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 #cam-vid{width:100%;border-radius:8px;border:1px solid var(--b1);background:#000;aspect-ratio:4/3;object-fit:cover;display:block}
 
 /* ── TOASTS ── */
+.leaflet-popup-content-wrapper{background:var(--s2)!important;border:1px solid var(--b1)!important;border-radius:10px!important;box-shadow:0 4px 20px rgba(0,0,0,.5)!important;color:var(--txt)!important}
+.leaflet-popup-tip{background:var(--s2)!important}
+.leaflet-popup-content{margin:12px 14px!important;font-family:var(--sans)}
+.leaflet-popup-close-button{color:var(--txt3)!important;font-size:18px!important;top:6px!important;right:8px!important}
 .toastwrap{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:7px}
 .toast{padding:11px 16px;background:var(--s2);border:1px solid var(--b1);border-radius:10px;font-size:12px;font-family:var(--mono);display:flex;align-items:center;gap:8px;animation:tin .3s ease;max-width:320px;border-left-width:3px}
 .toast.ok{border-left-color:var(--acc)}.toast.err{border-left-color:var(--err)}
@@ -1154,6 +1190,187 @@ function setDT(){
 /* ═══════════════════════════════════════
    PHOTOS
 ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   DETAIL PANEL
+═══════════════════════════════════════ */
+var _dpRec=null;
+var _dpDocs=[];
+var _dpCarIdx=0;
+var _dpStar=0;
+
+function openPanel(b64){
+  var rec;
+  try{rec=JSON.parse(decodeURIComponent(escape(atob(b64))));}catch(e){toast('err','Gabim panel');return;}
+  _dpRec=rec;_dpDocs=[];_dpCarIdx=0;
+
+  // Titulli
+  document.getElementById('dp-title').textContent=(rec.qellim||'Rekord #'+rec.id);
+  document.getElementById('dp-id').textContent='#'+rec.id+' · '+rec.user_role;
+
+  // Badge statusi
+  var sb=document.getElementById('dp-status-badge');
+  var smap={aktiv:'ok',ne_ndertim:'warn',ne_rinovim:'warn',i_demtuar:'err',i_braktisur:'err',i_demoluar:'err',ne_investigim:'info'};
+  sb.className='badge '+(smap[rec.statusi]||'info');
+  sb.textContent=STATUS_LBL[rec.statusi]||rec.statusi||'—';
+
+  // Info bazë
+  document.getElementById('dp-user').textContent=(rec.user_name||rec.user_email||'—');
+  document.getElementById('dp-date').textContent=(rec.rec_date||'—');
+  document.getElementById('dp-time').textContent=(rec.rec_time||'—');
+  document.getElementById('dp-gps').textContent=(rec.lat&&rec.lng?rec.lat.toFixed(5)+', '+rec.lng.toFixed(5):'—');
+  document.getElementById('dp-qellim').textContent=(rec.qellim||'—');
+  document.getElementById('dp-notes').textContent=(rec.notes||'—');
+
+  // Fushat e detajuara
+  document.getElementById('dp-adresa').value=rec.adresa||'';
+  document.getElementById('dp-klasi').value=rec.klasifikimi||'';
+  document.getElementById('dp-statusi').value=rec.statusi||'aktiv';
+  document.getElementById('dp-kate').value=rec.kate||'';
+  document.getElementById('dp-lartesia').value=rec.lartesia||'';
+  setStar(rec.vleresimi||0);
+
+  // Dokumentet ekzistues
+  var docUrls=[];
+  try{if(rec.doc_urls)docUrls=JSON.parse(rec.doc_urls);}catch(e){}
+  renderDocList(docUrls);
+
+  // Karusel fotosh
+  var photoUrls=[];
+  try{if(rec.photo_urls)photoUrls=JSON.parse(rec.photo_urls);}catch(e){}
+  // Nëse nuk ka photo_urls por ka photo_count, trego mesazh
+  renderCarousel(photoUrls,rec.photo_count||0);
+
+  // Hap panelin
+  document.getElementById('dpanel').classList.add('open');
+  document.getElementById('dp-overlay').style.display='block';
+  document.body.style.overflow='hidden';
+}
+
+function closePanel(){
+  document.getElementById('dpanel').classList.remove('open');
+  document.getElementById('dp-overlay').style.display='none';
+  document.body.style.overflow='';
+  _dpRec=null;
+}
+
+function renderCarousel(photoUrls,photoCount){
+  var car=document.getElementById('dp-carousel');
+  var nop=document.getElementById('dp-nophoto');
+  var slides=document.getElementById('dp-slides');
+  var dots=document.getElementById('dp-dots');
+
+  if(!photoUrls.length){
+    car.style.display='none';
+    nop.style.display=photoCount>0?'block':'none';
+    if(photoCount>0)nop.innerHTML='📷 '+photoCount+' foto (nuk janë ngarkuar në Storage)';
+    return;
+  }
+  nop.style.display='none';
+  car.style.display='block';
+  slides.innerHTML=photoUrls.map(function(url){
+    return'<img class="carousel-slide" src="'+url+'" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'225\'><rect fill=\'%231c2740\'/><text y=\'50%\' x=\'50%\' text-anchor=\'middle\' fill=\'%233d5275\' font-size=\'12\'>Foto nuk u ngarkua</text></svg>'">';
+  }).join('');
+  dots.innerHTML=photoUrls.map(function(_,i){
+    return'<div class="cdot2'+(i===0?' on':'')+'" onclick="carouselGo('+i+')"></div>';
+  }).join('');
+  _dpCarIdx=0;
+  carouselGo(0);
+}
+
+function carouselGo(i){
+  var slides=document.getElementById('dp-slides');
+  var photoUrls=[];
+  try{if(_dpRec&&_dpRec.photo_urls)photoUrls=JSON.parse(_dpRec.photo_urls);}catch(e){}
+  var n=photoUrls.length||1;
+  _dpCarIdx=((i%n)+n)%n;
+  slides.style.transform='translateX(-'+(_dpCarIdx*100)+'%)';
+  document.querySelectorAll('.cdot2').forEach(function(d,j){d.classList.toggle('on',j===_dpCarIdx)});
+}
+function carouselPrev(){carouselGo(_dpCarIdx-1);}
+function carouselNext(){carouselGo(_dpCarIdx+1);}
+
+function setStar(n){
+  _dpStar=n;
+  document.querySelectorAll('.star').forEach(function(s){
+    s.classList.toggle('on',parseInt(s.getAttribute('data-v'))<=n);
+  });
+  var lbl=document.getElementById('dp-star-lbl');
+  if(lbl)lbl.textContent=n?STAR_LBL[n]:'Pa vlerësim';
+}
+
+function renderDocList(docUrls){
+  var el=document.getElementById('dp-doclist');
+  if(!docUrls.length){el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--txt3);margin-bottom:8px">Nuk ka dokumente</div>';return;}
+  el.innerHTML=docUrls.map(function(url,i){
+    var name=url.split('/').pop().split('?')[0];
+    return'<div class="doc-item"><span class="doc-icon">📄</span>'+
+      '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+name+'</span>'+
+      '<a href="'+url+'" target="_blank" style="color:var(--acc2);font-size:10px;text-decoration:none">Hap</a>'+
+      '</div>';
+  }).join('');
+}
+
+function dpDropDoc(e){
+  e.preventDefault();
+  document.getElementById('dp-dropzone').style.borderColor='';
+  var files=Array.from(e.dataTransfer.files);
+  processDocFiles(files);
+}
+function dpAddDoc(e){processDocFiles(Array.from(e.target.files));e.target.value='';}
+async function processDocFiles(files){
+  if(!SB||!CU){toast('err','Duhet të jeni të kyçur');return;}
+  if(!_dpRec){toast('err','Asnjë rekord i zgjedhur');return;}
+  var up=document.getElementById('dp-uploading');
+  up.style.display='block';
+  var existingUrls=[];
+  try{if(_dpRec.doc_urls)existingUrls=JSON.parse(_dpRec.doc_urls);}catch(e){}
+  for(var i=0;i<files.length;i++){
+    var f=files[i];
+    var path=CU.id+'/doc_'+_dpRec.id+'_'+Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    var{data,error}=await SB.storage.from('survey-docs').upload(path,f,{upsert:false,contentType:f.type});
+    if(error){log('err','Doc upload: '+error.message);toast('err','Dështoi: '+f.name);}
+    else{
+      var{data:urlData}=SB.storage.from('survey-docs').getPublicUrl(path);
+      var url=urlData?urlData.publicUrl:'';
+      if(!url){var{data:sd}=await SB.storage.from('survey-docs').createSignedUrl(path,86400*365);url=sd?sd.signedUrl:'';}
+      existingUrls.push(url);
+      log('ok','Doc ngarkuar: '+f.name);
+      toast('ok','Ngarkuar: '+f.name);
+    }
+  }
+  up.style.display='none';
+  _dpRec.doc_urls=JSON.stringify(existingUrls);
+  renderDocList(existingUrls);
+}
+
+async function saveDetail(){
+  if(!SB||!_dpRec){toast('err','Asnjë rekord');return;}
+  var updates={
+    adresa:document.getElementById('dp-adresa').value||null,
+    klasifikimi:document.getElementById('dp-klasi').value||null,
+    statusi:document.getElementById('dp-statusi').value||'aktiv',
+    kate:parseInt(document.getElementById('dp-kate').value)||null,
+    lartesia:parseFloat(document.getElementById('dp-lartesia').value)||null,
+    vleresimi:_dpStar||null,
+    doc_urls:_dpRec.doc_urls||null
+  };
+  // Nëse rekord offline
+  if(String(_dpRec.id).startsWith('OFF_')){
+    var off=lsj('go')||[];
+    var idx=off.findIndex(function(r){return r.id===_dpRec.id});
+    if(idx>=0){Object.assign(off[idx],updates);lsjs('go',off);}
+    toast('ok','Ruajtur lokalisht');closePanel();loadRecs(false);return;
+  }
+  var{error}=await SB.from('survey_records').update(updates).eq('id',_dpRec.id);
+  if(error){toast('err','Gabim: '+error.message);log('err','saveDetail: '+error.message);return;}
+  toast('ok','✓ Ndryshimet u ruajtën!');
+  log('ok','Detail saved: #'+_dpRec.id);
+  // Përditëso rekord lokal
+  var ri=allRecs.findIndex(function(r){return r.id===_dpRec.id});
+  if(ri>=0)Object.assign(allRecs[ri],updates);
+  closePanel();loadRecs(false);
+}
+
 var MAX_PHOTOS=10;
 function addPh(e){
   var files=Array.from(e.target.files),rem=MAX_PHOTOS-photos.length;
@@ -1353,16 +1570,53 @@ function clearForm(){
 }
 
 var RCOL={admin:'#ff4d6d',supervisor:'#ffaa2e',field:'#05d9a0',viewer:'#9b5fff'};
+var STAR_LBL=['','⭐ Dobët','⭐⭐ Mesatar','⭐⭐⭐ Mirë','⭐⭐⭐⭐ Shumë mirë','⭐⭐⭐⭐⭐ Shkëlqyer'];
+var STATUS_LBL={aktiv:'✅ Aktiv',ne_ndertim:'🚧 Në ndërtim',ne_rinovim:'🔨 Në rinovim',i_demtuar:'⚠️ I dëmtuar',i_braktisur:'🚫 I braktisur',i_demoluar:'💥 I demoluar',ne_investigim:'🔍 Nën investigim'};
+
 function addMkr(rec){
   if(!sMarkers)return;
   var c=RCOL[rec.user_role]||'#05d9a0';
-  var ic=L.divIcon({className:'',html:'<div style="width:12px;height:12px;background:'+c+';border:2px solid #07090f;border-radius:50%;box-shadow:0 0 0 3px '+c+'44"></div>',iconSize:[12,12],iconAnchor:[6,6]});
+  // Ikona sipas statusit
+  var statusEmoji='';
+  if(rec.statusi==='i_demtuar')statusEmoji='⚠';
+  else if(rec.statusi==='i_braktisur')statusEmoji='🚫';
+  else if(rec.statusi==='ne_ndertim')statusEmoji='🚧';
+  var ic=L.divIcon({
+    className:'',
+    html:'<div style="position:relative;width:14px;height:14px">'+
+         '<div style="width:14px;height:14px;background:'+c+';border:2px solid #07090f;border-radius:50%;box-shadow:0 0 0 3px '+c+'44"></div>'+
+         (statusEmoji?'<div style="position:absolute;top:-8px;left:8px;font-size:10px;line-height:1">'+statusEmoji+'</div>':'')+
+         '</div>',
+    iconSize:[14,14],iconAnchor:[7,7]
+  });
   var m=L.marker([rec.lat,rec.lng],{icon:ic});
-  m.bindPopup('<b style="font-family:monospace;color:'+c+'">#'+(rec.id||'?')+'</b><br>' +
-    '<b>'+(rec.user_name||rec.user_email||'?')+'</b>' +
-    '<span style="font-family:monospace;font-size:10px;color:#8da0bb;margin-left:6px">['+rec.user_role+']</span><br>' +
-    '<span style="font-size:11px;color:#3d5275">'+(rec.rec_date||'')+'</span><br>' +
-    (rec.qellim?'<b>'+rec.qellim+'</b><br>':'')+'<small>'+(rec.notes||'').substring(0,80)+'</small>',{maxWidth:230});
+
+  // Popup i pasur
+  var photoUrls=[];
+  try{if(rec.photo_urls)photoUrls=JSON.parse(rec.photo_urls);}catch(e){}
+  var imgHtml='';
+  if(photoUrls.length){
+    imgHtml='<img src="'+photoUrls[0]+'" class="lpopup-img" onerror="this.style.display='none'" onclick="openPanel(''+btoa(unescape(encodeURIComponent(JSON.stringify(rec))))+'')"/>';
+  }
+  var starsHtml='';
+  if(rec.vleresimi){for(var s=1;s<=5;s++)starsHtml+='<span style="color:'+(s<=rec.vleresimi?'#ffaa2e':'#3d5275')+'">★</span>';}
+
+  var popup='<div class="lpopup">'+imgHtml+
+    '<div style="font-weight:600;margin-bottom:6px;color:'+c+'">'+(rec.qellim||'Vëzhgim GIS')+'</div>'+
+    (rec.klasifikimi?'<div class="lpopup-row"><span class="lpopup-lbl">LLOJI</span><span class="lpopup-val">'+rec.klasifikimi+'</span></div>':'')+
+    (rec.statusi?'<div class="lpopup-row"><span class="lpopup-lbl">STATUSI</span><span class="lpopup-val">'+(STATUS_LBL[rec.statusi]||rec.statusi)+'</span></div>':'')+
+    '<div class="lpopup-row"><span class="lpopup-lbl">USER</span><span class="lpopup-val">'+(rec.user_name||rec.user_email||'?')+'</span></div>'+
+    '<div class="lpopup-row"><span class="lpopup-lbl">DATA</span><span class="lpopup-val">'+(rec.rec_date||'—')+' '+(rec.rec_time||'')+'</span></div>'+
+    (rec.adresa?'<div class="lpopup-row"><span class="lpopup-lbl">ADRESA</span><span class="lpopup-val">'+rec.adresa+'</span></div>':'')+
+    (rec.notes?'<div class="lpopup-row"><span class="lpopup-lbl">SHËNIME</span><span class="lpopup-val" style="color:var(--txt2)">'+rec.notes.substring(0,100)+(rec.notes.length>100?'…':'')+'</span></div>':'')+
+    (starsHtml?'<div style="margin:6px 0 4px">'+starsHtml+'</div>':'')+
+    (photoUrls.length>1?'<div style="font-size:10px;color:#8da0bb;font-family:monospace;margin-bottom:6px">📷 '+photoUrls.length+' foto</div>':'')+
+    '<button onclick="openPanel(''+btoa(unescape(encodeURIComponent(JSON.stringify(rec))))+'');" '+
+    'style="width:100%;padding:7px;background:var(--acc);border:none;border-radius:6px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer;margin-top:6px">'+
+    '📋 Hap detajet →</button>'+
+    '</div>';
+
+  m.bindPopup(popup,{maxWidth:290,className:'lpopup-wrap'});
   sMarkers.addLayer(m);
 }
 
@@ -1979,5 +2233,150 @@ if(typeof supabase!=='undefined'){
   log('err','SDK nuk u ngarkua — kontrolloni internet ose adblocker');
 }
 </script>
+<!-- DETAIL PANEL -->
+<div id="dpanel" class="dpanel">
+  <div class="dpanel-hd">
+    <div>
+      <div class="dpanel-title" id="dp-title">Detajet e Rekordeve</div>
+      <div style="font-size:10px;color:var(--txt3);font-family:var(--mono);margin-top:2px" id="dp-id"></div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span id="dp-status-badge"></span>
+      <button onclick="closePanel()" style="background:transparent;border:none;color:var(--txt3);font-size:22px;cursor:pointer;line-height:1;padding:4px">✕</button>
+    </div>
+  </div>
+  <div class="dpanel-body" id="dp-body">
+
+    <!-- KARUSEL FOTOSH -->
+    <div id="dp-carousel" class="carousel" style="display:none">
+      <div class="carousel-inner" id="dp-slides"></div>
+      <button class="carousel-btn prev" onclick="carouselPrev()">‹</button>
+      <button class="carousel-btn next" onclick="carouselNext()">›</button>
+      <div class="carousel-dots" id="dp-dots"></div>
+    </div>
+    <div id="dp-nophoto" style="display:none;text-align:center;padding:20px;color:var(--txt3);font-family:var(--mono);font-size:11px;background:var(--bg);border-radius:8px;margin-bottom:14px">
+      📷 Nuk ka foto
+    </div>
+
+    <!-- INFO BAZË -->
+    <div style="background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div class="sec-hd" style="margin-bottom:10px">Informacion Bazë</div>
+      <div class="lpopup-row"><span class="lpopup-lbl">USER</span><span class="lpopup-val" id="dp-user">—</span></div>
+      <div class="lpopup-row"><span class="lpopup-lbl">DATA</span><span class="lpopup-val" id="dp-date">—</span></div>
+      <div class="lpopup-row"><span class="lpopup-lbl">ORA</span><span class="lpopup-val" id="dp-time">—</span></div>
+      <div class="lpopup-row"><span class="lpopup-lbl">GPS</span><span class="lpopup-val" id="dp-gps">—</span></div>
+      <div class="lpopup-row"><span class="lpopup-lbl">QËLLIMI</span><span class="lpopup-val" id="dp-qellim">—</span></div>
+      <div class="lpopup-row"><span class="lpopup-lbl">SHËNIME</span><span class="lpopup-val" id="dp-notes">—</span></div>
+    </div>
+
+    <!-- FUSHAT E DETAJUARA (editueshme) -->
+    <div style="background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div class="sec-hd" style="margin-bottom:12px">Detaje Strukturore</div>
+
+      <div class="ifield">
+        <label>ADRESA / VENDNDODHJA</label>
+        <input type="text" id="dp-adresa" placeholder="p.sh. Rruga Myslym Shyri, Nr.12, Tiranë">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="ifield">
+          <label>KLASIFIKIMI I STRUKTURËS</label>
+          <select id="dp-klasi">
+            <option value="">— Zgjidh —</option>
+            <optgroup label="Ndërtesa">
+              <option>Banesë private</option>
+              <option>Pallat banimi</option>
+              <option>Ndërtesë administrative</option>
+              <option>Objekt tregtar</option>
+              <option>Objekt industrial</option>
+              <option>Objekt arsimor</option>
+              <option>Objekt shëndetësor</option>
+              <option>Objekt fetar</option>
+              <option>Objekt kulturor</option>
+            </optgroup>
+            <optgroup label="Infrastrukturë">
+              <option>Rrugë automobilistike</option>
+              <option>Rrugë këmbësore</option>
+              <option>Urë / Viadukt</option>
+              <option>Rrjet ujësjellës</option>
+              <option>Rrjet kanalizimi</option>
+              <option>Rrjet elektrik</option>
+            </optgroup>
+            <optgroup label="Tokë / Mjedis">
+              <option>Tokë bujqësore</option>
+              <option>Pyll / Pyje</option>
+              <option>Luhatje / Rrëshqitje</option>
+              <option>Zonë e mbrojtur</option>
+              <option>Tjetër</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="ifield">
+          <label>STATUSI</label>
+          <select id="dp-statusi">
+            <option value="aktiv">✅ Aktiv / Normal</option>
+            <option value="ne_ndertim">🚧 Në ndërtim</option>
+            <option value="ne_rinovim">🔨 Në rinovim</option>
+            <option value="i_demtuar">⚠️ I dëmtuar</option>
+            <option value="i_braktisur">🚫 I braktisur</option>
+            <option value="i_demoluar">💥 I demoluar</option>
+            <option value="ne_investigim">🔍 Nën investigim</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="ifield">
+          <label>NR. KATESH</label>
+          <input type="number" id="dp-kate" placeholder="p.sh. 5" min="0" max="200">
+        </div>
+        <div class="ifield">
+          <label>LARTËSIA (m)</label>
+          <input type="number" id="dp-lartesia" placeholder="p.sh. 14.5" step="0.1" min="0">
+        </div>
+      </div>
+
+      <div class="ifield" style="margin-bottom:6px">
+        <label>VLERËSIMI</label>
+        <div class="star-row" id="dp-stars">
+          <span class="star" data-v="1" onclick="setStar(1)">★</span>
+          <span class="star" data-v="2" onclick="setStar(2)">★</span>
+          <span class="star" data-v="3" onclick="setStar(3)">★</span>
+          <span class="star" data-v="4" onclick="setStar(4)">★</span>
+          <span class="star" data-v="5" onclick="setStar(5)">★</span>
+        </div>
+        <div style="font-size:10px;color:var(--txt3);font-family:var(--mono);margin-top:3px" id="dp-star-lbl">Pa vlerësim</div>
+      </div>
+    </div>
+
+    <!-- DOKUMENTET -->
+    <div style="background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div class="sec-hd" style="margin-bottom:12px">Dokumente (PDF, Word)</div>
+      <div id="dp-doclist"></div>
+      <div class="uzone" id="dp-dropzone" onclick="document.getElementById('dp-docinp').click()"
+           ondragover="event.preventDefault();this.style.borderColor='var(--acc2)'"
+           ondragleave="this.style.borderColor=''"
+           ondrop="dpDropDoc(event)">
+        📎 Kliko ose tërhiq dokumentin këtu<br>
+        <span style="font-size:10px;opacity:.5">PDF, DOC, DOCX — max 50MB</span>
+      </div>
+      <input type="file" id="dp-docinp" accept=".pdf,.doc,.docx" multiple style="display:none" onchange="dpAddDoc(event)">
+      <div id="dp-uploading" style="display:none;font-family:var(--mono);font-size:11px;color:var(--acc);margin-top:8px">Duke ngarkuar dokumentin...</div>
+    </div>
+
+  </div><!-- /dpanel-body -->
+
+  <div class="dpanel-ft">
+    <button onclick="saveDetail()" class="btn pri" style="flex:1;justify-content:center">
+      <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Ruaj Ndryshimet
+    </button>
+    <button onclick="closePanel()" class="btn" style="justify-content:center">Mbyll</button>
+  </div>
+</div>
+
+<!-- OVERLAY për panel -->
+<div id="dp-overlay" onclick="closePanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:3999"></div>
+
 </body>
 </html>
