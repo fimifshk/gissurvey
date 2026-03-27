@@ -1577,7 +1577,6 @@ var STATUS_LBL={aktiv:'✅ Aktiv',ne_ndertim:'🚧 Në ndërtim',ne_rinovim:'�
 function addMkr(rec){
   if(!sMarkers)return;
   var c=RCOL[rec.user_role]||'#05d9a0';
-  // Ikona sipas statusit
   var statusEmoji='';
   if(rec.statusi==='i_demtuar')statusEmoji='⚠';
   else if(rec.statusi==='i_braktisur')statusEmoji='🚫';
@@ -1586,38 +1585,82 @@ function addMkr(rec){
     className:'',
     html:'<div style="position:relative;width:14px;height:14px">'+
          '<div style="width:14px;height:14px;background:'+c+';border:2px solid #07090f;border-radius:50%;box-shadow:0 0 0 3px '+c+'44"></div>'+
-         (statusEmoji?'<div style="position:absolute;top:-8px;left:8px;font-size:10px;line-height:1">'+statusEmoji+'</div>':'')+
+         (statusEmoji?'<div style="position:absolute;top:-8px;left:8px;font-size:10px">'+statusEmoji+'</div>':'')+
          '</div>',
     iconSize:[14,14],iconAnchor:[7,7]
   });
   var m=L.marker([rec.lat,rec.lng],{icon:ic});
 
-  // Popup i pasur
-  var photoUrls=[];
-  try{if(rec.photo_urls)photoUrls=JSON.parse(rec.photo_urls);}catch(e){}
-  var imgHtml='';
-  if(photoUrls.length){
-    imgHtml='<img src="'+photoUrls[0]+'" class="lpopup-img" onerror="this.style.display='none'" onclick="openPanel(''+btoa(unescape(encodeURIComponent(JSON.stringify(rec))))+'')"/>';
-  }
+  // Ruaj rec si data attribute për ta përdorur në onclick
+  var recId=rec.id;
+
+  // Popup i thjeshtë dhe i sigurt
   var starsHtml='';
-  if(rec.vleresimi){for(var s=1;s<=5;s++)starsHtml+='<span style="color:'+(s<=rec.vleresimi?'#ffaa2e':'#3d5275')+'">★</span>';}
+  if(rec.vleresimi){
+    for(var s=1;s<=5;s++){
+      starsHtml+='<span style="color:'+(s<=rec.vleresimi?'#ffaa2e':'#3d5275')+'">★</span>';
+    }
+  }
 
-  var popup='<div class="lpopup">'+imgHtml+
-    '<div style="font-weight:600;margin-bottom:6px;color:'+c+'">'+(rec.qellim||'Vëzhgim GIS')+'</div>'+
-    (rec.klasifikimi?'<div class="lpopup-row"><span class="lpopup-lbl">LLOJI</span><span class="lpopup-val">'+rec.klasifikimi+'</span></div>':'')+
-    (rec.statusi?'<div class="lpopup-row"><span class="lpopup-lbl">STATUSI</span><span class="lpopup-val">'+(STATUS_LBL[rec.statusi]||rec.statusi)+'</span></div>':'')+
-    '<div class="lpopup-row"><span class="lpopup-lbl">USER</span><span class="lpopup-val">'+(rec.user_name||rec.user_email||'?')+'</span></div>'+
-    '<div class="lpopup-row"><span class="lpopup-lbl">DATA</span><span class="lpopup-val">'+(rec.rec_date||'—')+' '+(rec.rec_time||'')+'</span></div>'+
-    (rec.adresa?'<div class="lpopup-row"><span class="lpopup-lbl">ADRESA</span><span class="lpopup-val">'+rec.adresa+'</span></div>':'')+
-    (rec.notes?'<div class="lpopup-row"><span class="lpopup-lbl">SHËNIME</span><span class="lpopup-val" style="color:var(--txt2)">'+rec.notes.substring(0,100)+(rec.notes.length>100?'…':'')+'</span></div>':'')+
-    (starsHtml?'<div style="margin:6px 0 4px">'+starsHtml+'</div>':'')+
-    (photoUrls.length>1?'<div style="font-size:10px;color:#8da0bb;font-family:monospace;margin-bottom:6px">📷 '+photoUrls.length+' foto</div>':'')+
-    '<button onclick="openPanel(''+btoa(unescape(encodeURIComponent(JSON.stringify(rec))))+'');" '+
-    'style="width:100%;padding:7px;background:var(--acc);border:none;border-radius:6px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer;margin-top:6px">'+
-    '📋 Hap detajet →</button>'+
-    '</div>';
+  var popupDiv=document.createElement('div');
+  popupDiv.className='lpopup';
+  popupDiv.style.minWidth='220px';
 
-  m.bindPopup(popup,{maxWidth:290,className:'lpopup-wrap'});
+  // Header
+  var hdr=document.createElement('div');
+  hdr.style.cssText='font-weight:600;margin-bottom:8px;color:'+c+';font-size:13px';
+  hdr.textContent=rec.qellim||'Vëzhgim GIS';
+  popupDiv.appendChild(hdr);
+
+  // Rows
+  var rows=[
+    ['STATUSI', STATUS_LBL[rec.statusi]||rec.statusi||'—'],
+    ['USER', rec.user_name||rec.user_email||'—'],
+    ['DATA', (rec.rec_date||'—')+' '+(rec.rec_time||'')],
+    ['LLOJI', rec.klasifikimi||'—'],
+    ['ADRESA', rec.adresa||'—'],
+    ['SHËNIME', rec.notes?(rec.notes.substring(0,80)+(rec.notes.length>80?'…':'')):null],
+  ];
+  rows.forEach(function(row){
+    if(!row[1]||row[1]==='—')return;
+    var div=document.createElement('div');
+    div.className='lpopup-row';
+    div.innerHTML='<span class="lpopup-lbl">'+row[0]+'</span><span class="lpopup-val">'+row[1]+'</span>';
+    popupDiv.appendChild(div);
+  });
+
+  // Yjet
+  if(starsHtml){
+    var sd=document.createElement('div');
+    sd.style.margin='6px 0 4px';
+    sd.innerHTML=starsHtml;
+    popupDiv.appendChild(sd);
+  }
+
+  // Foto count
+  if(rec.photo_count>0){
+    var pd=document.createElement('div');
+    pd.style.cssText='font-size:10px;color:#8da0bb;font-family:monospace;margin-bottom:6px';
+    pd.textContent='📷 '+rec.photo_count+' foto';
+    popupDiv.appendChild(pd);
+  }
+
+  // Buton Detaje
+  var btn=document.createElement('button');
+  btn.style.cssText='width:100%;padding:8px;background:var(--acc);border:none;border-radius:6px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer;margin-top:6px';
+  btn.textContent='📋 Hap detajet →';
+  btn.onclick=function(){
+    // Gjej rekord nga allRecs
+    var r=allRecs.find(function(x){return x.id==recId});
+    if(r){
+      var b64=btoa(unescape(encodeURIComponent(JSON.stringify(r))));
+      m.closePopup();
+      openPanel(b64);
+    }
+  };
+  popupDiv.appendChild(btn);
+
+  m.bindPopup(popupDiv,{maxWidth:290,className:'lpopup-wrap'});
   sMarkers.addLayer(m);
 }
 
