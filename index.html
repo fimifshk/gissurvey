@@ -1247,9 +1247,9 @@ function openPanel(b64){
   setStar(rec.vleresimi||0);
 
   // Dokumentet ekzistues
-  var docUrls=[];
-  try{if(rec.doc_urls)docUrls=JSON.parse(rec.doc_urls);}catch(e){}
-  renderDocList(docUrls);
+  var docPaths=[];
+  try{if(rec.doc_urls)docPaths=JSON.parse(rec.doc_urls);}catch(e){}
+  renderDocList(docPaths);
 
   // Karusel fotosh — ngarko URL-et nga Storage nëse mungojnë
   var photoUrls=[];
@@ -1337,16 +1337,61 @@ function setStar(n){
   if(lbl)lbl.textContent=n?STAR_LBL[n]:'Pa vlerësim';
 }
 
-function renderDocList(docUrls){
+function renderDocList(docPaths){
+  // Sync version - trego listën me buton "Duke ngarkuar..."
   var el=document.getElementById('dp-doclist');
-  if(!docUrls.length){el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--txt3);margin-bottom:8px">Nuk ka dokumente</div>';return;}
-  el.innerHTML=docUrls.map(function(url,i){
-    var name=url.split('/').pop().split('?')[0];
-    return'<div class="doc-item"><span class="doc-icon">📄</span>'+
+  if(!docPaths||!docPaths.length){
+    el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--txt3);margin-bottom:8px">Nuk ka dokumente</div>';
+    return;
+  }
+  el.innerHTML=docPaths.map(function(p){
+    var name=p.split('/').pop().split('?')[0].replace(/doc_\d+_\d+_/,'');
+    return'<div class="doc-item" id="doc-'+encodeURIComponent(p)+'">'+
+      '<span class="doc-icon">📄</span>'+
       '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+name+'</span>'+
-      '<a href="'+url+'" target="_blank" style="color:var(--acc2);font-size:10px;text-decoration:none">Hap</a>'+
+      '<span style="color:var(--txt3);font-size:10px;font-family:var(--mono)">Duke gjeneruar link...</span>'+
       '</div>';
   }).join('');
+  // Gjenero signed URLs asinkron
+  renderDocListAsync(docPaths);
+}
+async function renderDocListAsync(docPaths){
+  if(!docPaths||!docPaths.length)return;
+  var el=document.getElementById('dp-doclist');
+  if(!el)return;
+  el.innerHTML='';
+  for(var i=0;i<docPaths.length;i++){
+    var p=docPaths[i];
+    var name=p.split('/').pop().replace(/doc_\d+_\d+_/,'');
+    var url='';
+    if(p.startsWith('http')){
+      url=p; // URL e vjetër
+    }else if(SB){
+      // Gjenero signed URL të freskët (1 orë)
+      try{
+        var{data:sd,error:se}=await SB.storage.from('survey-docs').createSignedUrl(p,3600);
+        if(sd&&sd.signedUrl)url=sd.signedUrl;
+        else if(se)log('warn','Signed URL: '+se.message);
+      }catch(e){log('warn','signedUrl err: '+e.message);}
+    }
+    var div=document.createElement('div');
+    div.className='doc-item';
+    div.innerHTML='<span class="doc-icon">📄</span>'+
+      '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--mono);font-size:11px">'+name+'</span>';
+    if(url){
+      var a=document.createElement('a');
+      a.href=url;a.target='_blank';a.rel='noopener';
+      a.style.cssText='color:var(--acc2);font-size:11px;font-family:var(--mono);text-decoration:none;padding:3px 8px;border:1px solid var(--acc2);border-radius:4px;white-space:nowrap';
+      a.textContent='↗ Hap';
+      div.appendChild(a);
+    }else{
+      var sp=document.createElement('span');
+      sp.style.cssText='color:var(--err);font-size:10px;font-family:var(--mono)';
+      sp.textContent='Link dështoi';
+      div.appendChild(sp);
+    }
+    el.appendChild(div);
+  }
 }
 
 function dpDropDoc(e){
@@ -1361,25 +1406,35 @@ async function processDocFiles(files){
   if(!_dpRec){toast('err','Asnjë rekord i zgjedhur');return;}
   var up=document.getElementById('dp-uploading');
   up.style.display='block';
-  var existingUrls=[];
-  try{if(_dpRec.doc_urls)existingUrls=JSON.parse(_dpRec.doc_urls);}catch(e){}
+  // Ruaj PATH-in (jo URL), gjenero signed URL sa herë hapet paneli
+  var existingPaths=[];
+  try{
+    var stored=JSON.parse(_dpRec.doc_urls||'[]');
+    // Mbështet si paths të reja ashtu edhe URL-et e vjetra
+    existingPaths=stored.map(function(s){
+      if(s.startsWith('http'))return s; // URL e vjetër, mbaje
+      return s; // path
+    });
+  }catch(e){}
   for(var i=0;i<files.length;i++){
     var f=files[i];
-    var path=CU.id+'/doc_'+_dpRec.id+'_'+Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    var safeName=f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    var path=CU.id+'/doc_'+_dpRec.id+'_'+Date.now()+'_'+safeName;
     var{data,error}=await SB.storage.from('survey-docs').upload(path,f,{upsert:false,contentType:f.type});
     if(error){log('err','Doc upload: '+error.message);toast('err','Dështoi: '+f.name);}
     else{
-      var{data:urlData}=SB.storage.from('survey-docs').getPublicUrl(path);
-      var url=urlData?urlData.publicUrl:'';
-      if(!url){var{data:sd}=await SB.storage.from('survey-docs').createSignedUrl(path,86400*365);url=sd?sd.signedUrl:'';}
-      existingUrls.push(url);
-      log('ok','Doc ngarkuar: '+f.name);
+      existingPaths.push(path); // ruaj PATH jo URL
+      log('ok','Doc ngarkuar: '+f.name+' → '+path);
       toast('ok','Ngarkuar: '+f.name);
     }
   }
   up.style.display='none';
-  _dpRec.doc_urls=JSON.stringify(existingUrls);
-  renderDocList(existingUrls);
+  _dpRec.doc_urls=JSON.stringify(existingPaths);
+  // Ruaj në DB menjëherë
+  if(SB&&_dpRec.id&&!String(_dpRec.id).startsWith('OFF_')){
+    await SB.from('survey_records').update({doc_urls:_dpRec.doc_urls}).eq('id',_dpRec.id);
+  }
+  await renderDocListAsync(existingPaths);
 }
 
 async function saveDetail(){
