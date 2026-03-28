@@ -3943,6 +3943,20 @@ function renderLocList(){
   });
 }
 
+async function loadLocSurveyData(){
+  if(!SB||!allLocs.length){_locSurveyData={};return;}
+  var{data,error}=await SB.from('survey_records')
+    .select('id,location_id,qellim,rec_date')
+    .not('location_id','is',null);
+  if(error||!data){_locSurveyData={};return;}
+  _locSurveyData={};
+  data.forEach(function(r){
+    if(!_locSurveyData[r.location_id])_locSurveyData[r.location_id]=[];
+    _locSurveyData[r.location_id].push(r);
+  });
+  log('ok','Survey data per lokacione: '+data.length+' rekorde');
+}
+
 function initLkMap(){
   setTimeout(function(){
     positionLkMap();
