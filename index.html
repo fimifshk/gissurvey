@@ -3851,15 +3851,21 @@ function testConn(){
    PAGE NAV
 ═══════════════════════════════════════ */
 function goPg(nm){
-  ['sv','rc','us','rp'].forEach(function(p){
-    document.getElementById('page-'+p).classList.remove('on');
-    document.getElementById('nav-'+p).classList.remove('on');
+  ['sv','rc','us','rp','tk','lk'].forEach(function(p){
+    var pg=document.getElementById('page-'+p);
+    var nb=document.getElementById('nav-'+p);
+    if(pg)pg.classList.remove('on');
+    if(nb)nb.classList.remove('on');
   });
-  document.getElementById('page-'+nm).classList.add('on');
-  document.getElementById('nav-'+nm).classList.add('on');
+  var pg=document.getElementById('page-'+nm);
+  var nb=document.getElementById('nav-'+nm);
+  if(pg)pg.classList.add('on');
+  if(nb)nb.classList.add('on');
   if(nm==='rc')loadRecs(false);
   if(nm==='us')loadUsers();
-  if(nm==='rp'){loadRep();setTimeout(function(){if(rMapObj)rMapObj.invalidateSize()},300)}
+  if(nm==='rp')loadRep();
+  if(nm==='lk')loadLocs();
+  if(nm==='tk')loadTasks();
 }
 function sptab(i){
   document.querySelectorAll('.ptab').forEach(function(t,j){t.classList.toggle('on',j===i)});
