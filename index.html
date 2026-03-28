@@ -2652,8 +2652,8 @@ function expLocCSV(){
   _locRepData.forEach(function(l){
     rows.push([l.name,l.category,l.status,l.visitCount,l.uniqueUsers,l.lastVisit||'—',l.topCat,l.avgRating||'—']);
   });
-  var csv='﻿'+rows.map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('
-');
+  var csv='\uFEFF'+rows.map(function(r){return r.map(function(c){var s=String(c).replace(/"/g,'""');return'"'+s+'"';}).join(',');}).join('\n');
+
   var b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='lokacionet_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
   toast('ok','CSV eksportuar!');
