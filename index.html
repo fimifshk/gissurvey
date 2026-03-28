@@ -670,28 +670,23 @@ create trigger on_auth_user_created
                 <button class="btn sm" onclick="document.getElementById('phinp').click()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Ngarko</button>
               </div>
             </div>
-            <!-- DETAJE SHTESË (accordion) -->
-            <div class="section" style="padding:0;overflow:hidden;border:1px solid #1c2740;border-radius:10px;margin-bottom:8px">
-              <button onclick="toggleSvDetails()" id="sv-det-btn"
-                style="width:100%;padding:11px 16px;background:#0d1119;border:none;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-align:left">
-                <span>📋 Detaje shtesë (opsionale)</span>
+            <!-- DETAJE SHTESË -->
+            <div class="section" style="padding:0;overflow:hidden;border:1px solid var(--b1);border-radius:10px;margin-bottom:8px">
+              <button onclick="toggleSvDetails()" style="width:100%;padding:11px 16px;background:var(--s2);border:none;color:var(--txt2);font-family:var(--mono);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-align:left">
+                <span>📋 Detaje shtesë (plotëso tani ose më vonë)</span>
                 <span id="sv-det-arrow" style="transition:transform .2s">▼</span>
               </button>
-              <div id="sv-det-body" style="display:none;padding:14px;border-top:1px solid #1c2740;flex-direction:column;gap:10px">
+              <div id="sv-det-body" style="display:none;padding:14px;border-top:1px solid var(--b1);flex-direction:column;gap:10px">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                  <div class="ifield" style="margin:0">
-                    <label>KLASIFIKIMI</label>
-                    <select id="f-klasi" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:12px;outline:none">
-                      <option value="">— Pa klasifikim —</option>
+                  <div class="ifield" style="margin:0"><label>KLASIFIKIMI</label>
+                    <select id="f-klasi" class="fi"><option value="">— Pa klasifikim —</option>
                       <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
                       <option>Depo / Magazine</option><option>Objekt industrial</option>
                       <option>Infrastrukturë</option><option>Tokë bujqësore</option>
                       <option>Zonë e mbrojtur</option><option>Tjetër</option>
-                    </select>
-                  </div>
-                  <div class="ifield" style="margin:0">
-                    <label>STATUSI</label>
-                    <select id="f-statusi" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:12px;outline:none">
+                    </select></div>
+                  <div class="ifield" style="margin:0"><label>STATUSI</label>
+                    <select id="f-statusi" class="fi">
                       <option value="aktiv">✅ Aktiv</option>
                       <option value="ne_ndertim">🚧 Në ndërtim</option>
                       <option value="ne_rinovim">🔨 Në rinovim</option>
@@ -699,31 +694,47 @@ create trigger on_auth_user_created
                       <option value="i_braktisur">🚫 I braktisur</option>
                       <option value="i_demoluar">💥 I demoluar</option>
                       <option value="ne_investigim">🔍 Nën investigim</option>
-                    </select>
-                  </div>
+                    </select></div>
                 </div>
-                <div class="ifield" style="margin:0">
-                  <label>ADRESA</label>
-                  <input type="text" id="f-adresa" placeholder="Adresa e objektit..." style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:12px;outline:none">
+                <div class="ifield" style="margin:0"><label>ADRESA</label>
+                  <input type="text" id="f-adresa" class="fi" placeholder="Adresa e plotë..."></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                  <div class="ifield" style="margin:0"><label>KATET</label>
+                    <input type="number" id="f-kate" class="fi" placeholder="0" min="0"></div>
+                  <div class="ifield" style="margin:0"><label>LARTËSIA (m)</label>
+                    <input type="number" id="f-lartesia" class="fi" placeholder="0" min="0"></div>
+                  <div class="ifield" style="margin:0"><label>SIPËRFAQJA (m²)</label>
+                    <input type="number" id="f-siperfaqe" class="fi" placeholder="0" min="0"></div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                  <div class="ifield" style="margin:0">
-                    <label>KATET</label>
-                    <input type="number" id="f-kate" placeholder="0" min="0" max="200" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:12px;outline:none">
-                  </div>
-                  <div class="ifield" style="margin:0">
-                    <label>LARTËSIA (m)</label>
-                    <input type="number" id="f-lartesia" placeholder="0" min="0" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:12px;outline:none">
-                  </div>
+                  <div class="ifield" style="margin:0"><label>NR. INVENTAR</label>
+                    <input type="text" id="f-inventar" class="fi" placeholder="p.sh. INV-001"></div>
+                  <div class="ifield" style="margin:0"><label>VITI NDËRTIMIT</label>
+                    <input type="number" id="f-viti" class="fi" placeholder="2000" min="1800" max="2030"></div>
                 </div>
-                <div class="ifield" style="margin:0">
-                  <label>VLERËSIMI</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="ifield" style="margin:0"><label>PRONËSIA</label>
+                    <select id="f-pronesia" class="fi"><option value="">— Zgjidh —</option>
+                      <option>Publike - Shtet</option><option>Publike - Bashki</option>
+                      <option>Private</option><option>Të përziera</option>
+                    </select></div>
+                  <div class="ifield" style="margin:0"><label>ZONA / LAGJA</label>
+                    <input type="text" id="f-zona" class="fi" placeholder="p.sh. Bllok..."></div>
+                </div>
+                <div class="ifield" style="margin:0"><label>KUSHTET E SIGURISË</label>
+                  <select id="f-siguria" class="fi"><option value="">— Zgjidh —</option>
+                    <option value="shume_mire">✅ Shumë mirë</option>
+                    <option value="mire">🟢 Mirë</option>
+                    <option value="mesatare">🟡 Mesatare</option>
+                    <option value="dobete">🟠 Dobët</option>
+                    <option value="rrezik">🔴 Rrezik i lartë</option>
+                    <option value="jo_aplikueshme">➖ Jo aplikueshme</option>
+                  </select></div>
+                <div class="ifield" style="margin:0"><label>VLERËSIMI</label>
                   <div id="f-stars" style="display:flex;gap:6px;font-size:26px;cursor:pointer;padding:4px 0"></div>
-                  <input type="hidden" id="f-vleresimi" value="0">
-                </div>
+                  <input type="hidden" id="f-vleresimi" value="0"></div>
               </div>
             </div>
-
             <!-- ATTACH SKEDAR -->
             <div class="section" style="padding:0;overflow:hidden;border:1px solid #1c2740;border-radius:10px;margin-bottom:8px">
               <button onclick="toggleSvAttach()" id="sv-att-btn"
@@ -741,7 +752,6 @@ create trigger on_auth_user_created
                 <div id="sv-attach-list" style="margin-top:8px"></div>
               </div>
             </div>
-
             <!-- SHTO DETYRË -->
             <div class="section" style="padding:0;overflow:hidden;border:1px solid #1c2740;border-radius:10px;margin-bottom:8px">
               <button onclick="toggleSvTask()" id="sv-task-btn"
@@ -776,6 +786,72 @@ create trigger on_auth_user_created
                   </select>
                 </div>
                 <div id="sv-task-preview" style="display:none;padding:8px 12px;background:rgba(5,217,160,.06);border:1px solid rgba(5,217,160,.2);border-radius:8px;font-family:monospace;font-size:11px;color:#05d9a0"></div>
+              </div>
+            </div>
+
+            <!-- DETAJE SHTESË -->
+            <div class="section" style="padding:0;overflow:hidden;border:1px solid var(--b1);border-radius:10px;margin-bottom:8px">
+              <button onclick="toggleSvDetails()" style="width:100%;padding:11px 16px;background:var(--s2);border:none;color:var(--txt2);font-family:var(--mono);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-align:left">
+                <span>📋 Detaje shtesë (plotëso tani ose më vonë)</span>
+                <span id="sv-det-arrow" style="transition:transform .2s">▼</span>
+              </button>
+              <div id="sv-det-body" style="display:none;padding:14px;border-top:1px solid var(--b1);flex-direction:column;gap:10px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="ifield" style="margin:0"><label>KLASIFIKIMI</label>
+                    <select id="f-klasi" class="fi"><option value="">— Pa klasifikim —</option>
+                      <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
+                      <option>Depo / Magazine</option><option>Objekt industrial</option>
+                      <option>Infrastrukturë</option><option>Tokë bujqësore</option>
+                      <option>Zonë e mbrojtur</option><option>Tjetër</option>
+                    </select></div>
+                  <div class="ifield" style="margin:0"><label>STATUSI</label>
+                    <select id="f-statusi" class="fi">
+                      <option value="aktiv">✅ Aktiv</option>
+                      <option value="ne_ndertim">🚧 Në ndërtim</option>
+                      <option value="ne_rinovim">🔨 Në rinovim</option>
+                      <option value="i_demtuar">⚠️ I dëmtuar</option>
+                      <option value="i_braktisur">🚫 I braktisur</option>
+                      <option value="i_demoluar">💥 I demoluar</option>
+                      <option value="ne_investigim">🔍 Nën investigim</option>
+                    </select></div>
+                </div>
+                <div class="ifield" style="margin:0"><label>ADRESA</label>
+                  <input type="text" id="f-adresa" class="fi" placeholder="Adresa e plotë..."></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                  <div class="ifield" style="margin:0"><label>KATET</label>
+                    <input type="number" id="f-kate" class="fi" placeholder="0" min="0"></div>
+                  <div class="ifield" style="margin:0"><label>LARTËSIA (m)</label>
+                    <input type="number" id="f-lartesia" class="fi" placeholder="0" min="0"></div>
+                  <div class="ifield" style="margin:0"><label>SIPËRFAQJA (m²)</label>
+                    <input type="number" id="f-siperfaqe" class="fi" placeholder="0" min="0"></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="ifield" style="margin:0"><label>NR. INVENTAR</label>
+                    <input type="text" id="f-inventar" class="fi" placeholder="p.sh. INV-001"></div>
+                  <div class="ifield" style="margin:0"><label>VITI NDËRTIMIT</label>
+                    <input type="number" id="f-viti" class="fi" placeholder="2000" min="1800" max="2030"></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="ifield" style="margin:0"><label>PRONËSIA</label>
+                    <select id="f-pronesia" class="fi"><option value="">— Zgjidh —</option>
+                      <option>Publike - Shtet</option><option>Publike - Bashki</option>
+                      <option>Private</option><option>Të përziera</option>
+                    </select></div>
+                  <div class="ifield" style="margin:0"><label>ZONA / LAGJA</label>
+                    <input type="text" id="f-zona" class="fi" placeholder="p.sh. Bllok..."></div>
+                </div>
+                <div class="ifield" style="margin:0"><label>KUSHTET E SIGURISË</label>
+                  <select id="f-siguria" class="fi"><option value="">— Zgjidh —</option>
+                    <option value="shume_mire">✅ Shumë mirë</option>
+                    <option value="mire">🟢 Mirë</option>
+                    <option value="mesatare">🟡 Mesatare</option>
+                    <option value="dobete">🟠 Dobët</option>
+                    <option value="rrezik">🔴 Rrezik i lartë</option>
+                    <option value="jo_aplikueshme">➖ Jo aplikueshme</option>
+                  </select></div>
+                <div class="ifield" style="margin:0"><label>VLERËSIMI</label>
+                  <div id="f-stars" style="display:flex;gap:6px;font-size:26px;cursor:pointer;padding:4px 0"></div>
+                  <input type="hidden" id="f-vleresimi" value="0"></div>
               </div>
             </div>
 
@@ -1719,6 +1795,74 @@ var charts={};
 /* ═══════════════════════════════════════
    BOOT — called after Supabase SDK loads
 ═══════════════════════════════════════ */
+function openEditModal(){
+  if(!_dpRec)return;
+  var r=_dpRec;
+  var role=CP?CP.role:'field';
+  var isOwn=CU&&(r.user_id===CU.id||r.user_email===CU.email);
+  if(!(role==='admin'||role==='supervisor'||(role==='field'&&isOwn))){toast('warn','Nuk keni leje editimi');return;}
+  document.getElementById('em-id').textContent='#'+r.id;
+  document.getElementById('em-qellim').value=r.qellim||'';
+  document.getElementById('em-statusi').value=r.statusi||'aktiv';
+  document.getElementById('em-klasi').value=r.klasifikimi||'';
+  document.getElementById('em-pronesia').value=r.pronesia||'';
+  document.getElementById('em-adresa').value=r.adresa||'';
+  document.getElementById('em-kate').value=r.kate||'';
+  document.getElementById('em-lartesia').value=r.lartesia||'';
+  document.getElementById('em-siperfaqe').value=r.siperfaqe_m2||'';
+  document.getElementById('em-inventar').value=r.nr_inventar||'';
+  document.getElementById('em-siguria').value=r.siguria_punesimit||'';
+  document.getElementById('em-viti').value=r.viti_ndertimit||'';
+  document.getElementById('em-zona').value=r.zona||'';
+  document.getElementById('em-notes').value=r.notes||'';
+  var emStars=document.getElementById('em-stars');
+  emStars.innerHTML='';var sv=r.vleresimi||0;
+  for(var i=1;i<=5;i++){
+    var s=document.createElement('span');s.textContent='★';
+    s.style.color=i<=sv?'#ffaa2e':'#253352';s.style.cursor='pointer';
+    (function(n){s.onclick=function(){sv=n;for(var j=0;j<emStars.children.length;j++)emStars.children[j].style.color=j<n?'#ffaa2e':'#253352';};s.onmouseenter=function(){for(var j=0;j<emStars.children.length;j++)emStars.children[j].style.color=j<n?'#ffaa2e':'#253352';};s.onmouseleave=function(){for(var j=0;j<emStars.children.length;j++)emStars.children[j].style.color=j<sv?'#ffaa2e':'#253352';};})(i);
+    emStars.appendChild(s);
+  }
+  document.getElementById('edit-modal').style.display='block';
+  document.body.style.overflow='hidden';
+}
+function closeEditModal(){
+  document.getElementById('edit-modal').style.display='none';
+  document.body.style.overflow='';
+}
+async function saveEditModal(){
+  if(!_dpRec||!SB)return;
+  var stars=document.getElementById('em-stars');
+  var sv=0;for(var i=0;i<stars.children.length;i++)if(stars.children[i].style.color==='rgb(255, 170, 46)')sv=i+1;
+  var u={
+    qellim:document.getElementById('em-qellim').value||null,
+    statusi:document.getElementById('em-statusi').value||null,
+    klasifikimi:document.getElementById('em-klasi').value||null,
+    pronesia:document.getElementById('em-pronesia').value||null,
+    adresa:document.getElementById('em-adresa').value||null,
+    kate:parseInt(document.getElementById('em-kate').value)||null,
+    lartesia:parseFloat(document.getElementById('em-lartesia').value)||null,
+    siperfaqe_m2:parseFloat(document.getElementById('em-siperfaqe').value)||null,
+    nr_inventar:document.getElementById('em-inventar').value||null,
+    siguria_punesimit:document.getElementById('em-siguria').value||null,
+    viti_ndertimit:parseInt(document.getElementById('em-viti').value)||null,
+    zona:document.getElementById('em-zona').value||null,
+    notes:document.getElementById('em-notes').value||null,
+    vleresimi:sv||null
+  };
+  var{error}=await SB.from('survey_records').update(u).eq('id',_dpRec.id);
+  if(error){toast('err','Gabim: '+error.message);return;}
+  Object.assign(_dpRec,u);
+  var idx=allRecs.findIndex(function(r){return r.id===_dpRec.id;});
+  if(idx>=0)Object.assign(allRecs[idx],u);
+  toast('ok','✅ Rekord #'+_dpRec.id+' u përditësua!');
+  closeEditModal();
+  var b64=btoa(unescape(encodeURIComponent(JSON.stringify(_dpRec))));
+  openPanel(b64);
+  filterR();
+}
+
+
 function boot(){
   // Config nga URL params (për celular)
   var params=new URLSearchParams(window.location.search);
@@ -2181,29 +2325,7 @@ function dpInitMap(rec){
 }
 
 var _dpEditMode=false;
-function dpStartEdit(){
-  console.log('dpStartEdit called, role:', CP?CP.role:'?');
-  _dpEditMode=true;
-  var role=CP?CP.role:'field';
-
-  // Çift view/edit për çdo fushë
-  var allViewIds=['dp-qellim-view','dp-klasi-view','dp-statusi-view','dp-adresa-view','dp-kate-view','dp-lartesia-view','dp-notes-view'];
-  var allEditIds=['dp-qellim-edit','dp-klasi','dp-statusi','dp-adresa','dp-kate','dp-lartesia','dp-notes-edit'];
-
-  // Field mund ndryshojë vetëm notes
-  var editableEdits = (role==='admin'||role==='supervisor') ? allEditIds : ['dp-notes-edit'];
-  var editableViews = (role==='admin'||role==='supervisor') ? allViewIds : ['dp-notes-view'];
-
-  // Fshih view, shfaq edit për fushat editueshme
-  editableViews.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
-  editableEdits.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='block';});
-
-  // Butonat
-  var eb=document.getElementById('dp-edit-btn');if(eb)eb.style.display='none';
-  var sb=document.getElementById('dp-save-btn');if(sb)sb.style.display='inline-block';
-  var cb=document.getElementById('dp-cancel-btn');if(cb)cb.style.display='inline-block';
-  var db=document.getElementById('dp-del-btn');if(db)db.style.display=(role==='admin')?'inline-block':'none';
-}
+function dpStartEdit(){openEditModal();}
 
 function dpCancelEdit(){
   _dpEditMode=false;
@@ -2702,34 +2824,27 @@ async function addRec(){
   var rec={
     user_id:CU.id,
     location_id:parseInt(document.getElementById('f-loc-id').value)||null,
-    company_id:(function(){
-      var cid=document.getElementById('f-company-sel').value;
-      return cid&&!isNaN(parseInt(cid))?parseInt(cid):null;
-    })(),
-    user_email:CP.email,
-    user_name:CP.full_name||CP.email,
-    user_role:CP.role||'field',
+    company_id:(function(){var cid=document.getElementById('f-company-sel').value;return cid&&!isNaN(parseInt(cid))?parseInt(cid):null;})(),
+    user_email:CP.email,user_name:CP.full_name||CP.email,user_role:CP.role||'field',
     rec_date:document.getElementById('f-dt').value,
     rec_time:document.getElementById('f-tm').value,
-    lat:parseFloat(la),
-    lng:parseFloat(ln),
+    lat:parseFloat(la),lng:parseFloat(ln),
     accuracy:parseFloat(document.getElementById('f-acc').textContent)||0,
     qellim:document.getElementById('f-ql').value||null,
     notes:document.getElementById('f-nt').value||null,
-    klasifikimi:document.getElementById('f-klasi').value||null,
-    statusi:document.getElementById('f-statusi').value||'aktiv',
-    adresa:document.getElementById('f-adresa').value||null,
-    kate:parseInt(document.getElementById('f-kate').value)||null,
-    lartesia:parseFloat(document.getElementById('f-lartesia').value)||null,
-    vleresimi:parseInt(document.getElementById('f-vleresimi').value)||null,
-    klasifikimi:(document.getElementById('f-klasi')||{value:null}).value||null,
+    klasifikimi:(document.getElementById('f-klasi')||{value:''}).value||null,
     statusi:(document.getElementById('f-statusi')||{value:'aktiv'}).value||'aktiv',
-    adresa:(document.getElementById('f-adresa')||{value:null}).value||null,
+    adresa:(document.getElementById('f-adresa')||{value:''}).value||null,
     kate:parseInt((document.getElementById('f-kate')||{value:''}).value)||null,
     lartesia:parseFloat((document.getElementById('f-lartesia')||{value:''}).value)||null,
     vleresimi:parseInt((document.getElementById('f-vleresimi')||{value:'0'}).value)||null,
-    photo_count:photos.length,
-    synced:true
+    nr_inventar:(document.getElementById('f-inventar')||{value:''}).value||null,
+    siperfaqe_m2:parseFloat((document.getElementById('f-siperfaqe')||{value:''}).value)||null,
+    viti_ndertimit:parseInt((document.getElementById('f-viti')||{value:''}).value)||null,
+    pronesia:(document.getElementById('f-pronesia')||{value:''}).value||null,
+    zona:(document.getElementById('f-zona')||{value:''}).value||null,
+    siguria_punesimit:(document.getElementById('f-siguria')||{value:''}).value||null,
+    photo_count:photos.length,synced:true
   };
 
   log('info','Duke insertuar: user='+rec.user_email+' lat='+rec.lat+' lng='+rec.lng);
@@ -5121,5 +5236,87 @@ if(typeof supabase!=='undefined'){
   setTimeout(function(){if(typeof supabase!=='undefined'){log('ok','SDK retry OK');boot();}},3000);
 }
 </script>
+<!-- EDIT MODAL -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.7);overflow-y:auto">
+  <div style="max-width:600px;margin:40px auto;padding:16px">
+    <div style="background:#0d1119;border:1px solid #253352;border-radius:14px;overflow:hidden">
+      <div style="padding:16px 20px;border-bottom:1px solid #1c2740;display:flex;justify-content:space-between;align-items:center;background:#07090f">
+        <div style="font-size:16px;font-weight:700">✏️ Edito Rekord <span id="em-id" style="color:#3d5275;font-size:12px"></span></div>
+        <button onclick="closeEditModal()" style="background:transparent;border:none;color:#3d5275;font-size:22px;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">QËLLIMI</label>
+            <select id="em-qellim" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Zgjidh —</option>
+              <option>Inspektim urban</option><option>Monitorim mjedisi</option>
+              <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
+              <option>Pyje dhe bimësi</option><option>Ujëra dhe hidrologji</option><option>Tjetër</option>
+            </select></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">STATUSI</label>
+            <select id="em-statusi" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="aktiv">✅ Aktiv</option><option value="ne_ndertim">🚧 Në ndërtim</option>
+              <option value="ne_rinovim">🔨 Në rinovim</option><option value="i_demtuar">⚠️ I dëmtuar</option>
+              <option value="i_braktisur">🚫 I braktisur</option><option value="i_demoluar">💥 I demoluar</option>
+              <option value="ne_investigim">🔍 Nën investigim</option>
+            </select></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KLASIFIKIMI</label>
+            <select id="em-klasi" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Pa klasifikim —</option>
+              <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
+              <option>Depo / Magazine</option><option>Objekt industrial</option>
+              <option>Infrastrukturë</option><option>Tokë bujqësore</option>
+              <option>Zonë e mbrojtur</option><option>Tjetër</option>
+            </select></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">PRONËSIA</label>
+            <select id="em-pronesia" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Zgjidh —</option>
+              <option>Publike - Shtet</option><option>Publike - Bashki</option>
+              <option>Private</option><option>Të përziera</option>
+            </select></div>
+        </div>
+        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">ADRESA</label>
+          <input type="text" id="em-adresa" placeholder="Adresa e plotë..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none;box-sizing:border-box"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KATET</label>
+            <input type="number" id="em-kate" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">LARTËSIA (m)</label>
+            <input type="number" id="em-lartesia" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">SIPËRFAQJA (m²)</label>
+            <input type="number" id="em-siperfaqe" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">NR. INVENTAR</label>
+            <input type="text" id="em-inventar" placeholder="INV-001" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KUSHTET E SIGURISË</label>
+            <select id="em-siguria" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Zgjidh —</option>
+              <option value="shume_mire">✅ Shumë mirë</option><option value="mire">🟢 Mirë</option>
+              <option value="mesatare">🟡 Mesatare</option><option value="dobete">🟠 Dobët</option>
+              <option value="rrezik">🔴 Rrezik i lartë</option>
+              <option value="jo_aplikueshme">➖ Jo aplikueshme</option>
+            </select></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">VITI NDËRTIMIT</label>
+            <input type="number" id="em-viti" placeholder="2000" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">ZONA / LAGJA</label>
+            <input type="text" id="em-zona" placeholder="p.sh. Bllok..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+        </div>
+        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">SHËNIME</label>
+          <textarea id="em-notes" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none;min-height:70px;resize:vertical;box-sizing:border-box"></textarea></div>
+        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:6px">VLERËSIMI</label>
+          <div id="em-stars" style="display:flex;gap:6px;font-size:24px;cursor:pointer"></div></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px;border-top:1px solid #1c2740">
+          <button onclick="closeEditModal()" style="padding:9px 20px;background:#18202e;border:1px solid #253352;border-radius:8px;color:#8da0bb;font-family:monospace;font-size:12px;cursor:pointer">Anulo</button>
+          <button onclick="saveEditModal()" style="padding:9px 24px;background:#05d9a0;border:none;border-radius:8px;color:#021a10;font-family:monospace;font-size:12px;font-weight:600;cursor:pointer">💾 Ruaj ndryshimet</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
