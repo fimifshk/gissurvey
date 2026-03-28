@@ -760,6 +760,7 @@ create trigger on_auth_user_created
     <button onclick="rpTab(2)" id="rptb2" style="padding:10px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--txt3);font-family:var(--mono);font-size:11px;cursor:pointer;white-space:nowrap">🏢 Kategoritë</button>
     <button onclick="rpTab(3)" id="rptb3" style="padding:10px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--txt3);font-family:var(--mono);font-size:11px;cursor:pointer;white-space:nowrap">📅 Periudhat</button>
     <button onclick="rpTab(4)" id="rptb4" style="padding:10px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--txt3);font-family:var(--mono);font-size:11px;cursor:pointer;white-space:nowrap">🗺️ Harta</button>
+    <button onclick="rpTab(5)" id="rptb5" style="padding:10px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--txt3);font-family:var(--mono);font-size:11px;cursor:pointer;white-space:nowrap">🏢 Lokacionet</button>
   </div>
 
   <!-- CONTENT -->
@@ -862,6 +863,93 @@ create trigger on_auth_user_created
         <div style="font-size:13px;font-weight:600;margin-bottom:14px">Zonat me më shumë aktivitet</div>
         <div style="overflow-x:auto"><table class="rt"><thead><tr><th>#</th><th>Koordinatat</th><th>Rekorde</th><th>Kategoria</th></tr></thead><tbody id="zrep"></tbody></table></div>
       </div>
+    </div>
+
+    <!-- TAB 5: LOKACIONET / VIZITAT -->
+    <div id="rpsec5" style="display:none">
+
+      <!-- Filtër -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+        <input type="text" id="rp-locq" placeholder="Kërko lokacion..." oninput="filterLocRep()"
+          style="padding:7px 10px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;width:180px">
+        <select id="rp-loccat" onchange="filterLocRep()"
+          style="padding:7px 9px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
+          <option value="">Të gjitha kategoritë</option>
+        </select>
+        <select id="rp-locsort" onchange="filterLocRep()"
+          style="padding:7px 9px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
+          <option value="visits">Sipas vizitave (më shumë)</option>
+          <option value="recent">Vizita e fundit</option>
+          <option value="name">Sipas emrit</option>
+        </select>
+      </div>
+
+      <!-- KPI për lokacionet -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px">
+        <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:17px 18px">
+          <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-bottom:6px">LOKACIONE AKTIVE</div>
+          <div style="font-size:28px;font-weight:700;line-height:1" id="lkv1">—</div>
+        </div>
+        <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:17px 18px">
+          <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-bottom:6px">VIZITA TOTALE</div>
+          <div style="font-size:28px;font-weight:700;line-height:1" id="lkv2">—</div>
+        </div>
+        <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:17px 18px">
+          <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-bottom:6px">MES. VIZITA/LOK</div>
+          <div style="font-size:28px;font-weight:700;line-height:1" id="lkv3">—</div>
+        </div>
+        <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:17px 18px">
+          <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-bottom:6px">MÊ I VIZITUAR</div>
+          <div style="font-size:13px;font-weight:600;margin-top:4px;color:#05d9a0" id="lkv4">—</div>
+        </div>
+      </div>
+
+      <!-- Grafik top lokacione -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+        <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:18px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:14px">Top 10 lokacionet (vizita)</div>
+          <div style="position:relative;height:220px"><canvas id="ch-lk"></canvas></div>
+        </div>
+        <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:18px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:14px">Trend vizitash (30 ditë)</div>
+          <div style="position:relative;height:220px"><canvas id="ch-lkt"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Tabela detajuar -->
+      <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:18px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+          <span>Detaje vizitash sipas lokacionit</span>
+          <button onclick="expLocCSV()" style="padding:4px 10px;background:#18202e;border:1px solid #253352;border-radius:6px;color:#8da0bb;font-family:monospace;font-size:10px;cursor:pointer">CSV</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="rt">
+            <thead><tr>
+              <th>Lokacioni</th>
+              <th>Kategoria</th>
+              <th>Vizita</th>
+              <th>Vizitorë unikë</th>
+              <th>Vizita e fundit</th>
+              <th>Top qëllim</th>
+              <th>Mesatare ⭐</th>
+              <th>Trend</th>
+            </tr></thead>
+            <tbody id="lkrep"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Historiku i vizitave për lokacionin e zgjedhur -->
+      <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:18px;margin-bottom:14px" id="lk-history-box" style="display:none">
+        <div style="font-size:13px;font-weight:600;margin-bottom:14px" id="lk-history-title">Historiku i vizitave</div>
+        <div style="overflow-x:auto">
+          <table class="rt">
+            <thead><tr><th>Data</th><th>Ora</th><th>User</th><th>Qëllimi</th><th>Vlerësimi</th><th>Shënime</th></tr></thead>
+            <tbody id="lkhrep"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
   </div><!-- /rpbody -->
@@ -2102,14 +2190,14 @@ var _rpRecs=[];
 var _rpTab=0;
 function rpTab(n){
   _rpTab=n;
-  [0,1,2,3,4].forEach(function(i){
+  [0,1,2,3,4,5].forEach(function(i){
     var btn=document.getElementById('rptb'+i);
     if(!btn)return;
-    btn.style.color=i===n?'var(--acc)':'var(--txt3)';
-    btn.style.borderBottomColor=i===n?'var(--acc)':'transparent';
+    btn.style.color=i===n?'#05d9a0':'#3d5275';
+    btn.style.borderBottomColor=i===n?'#05d9a0':'transparent';
     btn.style.background=i===n?'rgba(5,217,160,.06)':'transparent';
   });
-  [0,1,2,3,4].forEach(function(i){
+  [0,1,2,3,4,5].forEach(function(i){
     var sec=document.getElementById('rpsec'+i);
     if(sec)sec.style.display=i===n?'block':'none';
   });
@@ -2118,6 +2206,7 @@ function rpTab(n){
   else if(n===1)renderUserTab();
   else if(n===2)renderCatTab();
   else if(n===3)repByDate();
+  else if(n===5)loadLocRep();
 }
 function setPeriod(p){
   var now=new Date(),fr=new Date();
@@ -2368,6 +2457,208 @@ function clearOffline(){
 /* ═══════════════════════════════════════
    EXPORT
 ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   RAPORT — VIZITAT SIPAS LOKACIONIT
+═══════════════════════════════════════ */
+var _locRepData=[];
+
+async function loadLocRep(){
+  if(!SB)return;
+  // Ngarko lokacionet + rekordet me location_id
+  var{data:locs}=await SB.from('locations').select('*').order('name');
+  var{data:recs}=await SB.from('survey_records').select('id,location_id,rec_date,rec_time,user_name,user_email,qellim,vleresimi,notes,created_at').not('location_id','is',null);
+
+  var locsArr=locs||[];
+  var recsArr=recs||[];
+
+  // Grupëzo rekordet sipas location_id
+  var byLoc={};
+  recsArr.forEach(function(r){
+    if(!r.location_id)return;
+    if(!byLoc[r.location_id])byLoc[r.location_id]=[];
+    byLoc[r.location_id].push(r);
+  });
+
+  // Bashko me lokacionet
+  _locRepData=locsArr.map(function(l){
+    var visits=byLoc[l.id]||[];
+    var users=new Set(visits.map(function(v){return v.user_email;}));
+    var lastVisit=visits.reduce(function(m,v){return(!m||v.rec_date>m)?v.rec_date:m;},null);
+    var cats={};visits.forEach(function(v){var q=v.qellim||'—';cats[q]=(cats[q]||0)+1;});
+    var topCat=Object.keys(cats).sort(function(a,b){return cats[b]-cats[a];})[0]||'—';
+    var avgRating=visits.filter(function(v){return v.vleresimi;}).reduce(function(s,v){return s+v.vleresimi;},0);
+    var ratedCount=visits.filter(function(v){return v.vleresimi;}).length;
+
+    // Trend 30 ditë
+    var trend=[];
+    for(var i=29;i>=0;i--){
+      var d=new Date();d.setDate(d.getDate()-i);
+      var ds=d.toISOString().slice(0,10);
+      trend.push(visits.filter(function(v){return v.rec_date===ds;}).length);
+    }
+
+    return{
+      id:l.id, name:l.name, category:l.category||'—', status:l.status||'aktiv',
+      visits:visits, visitCount:visits.length, uniqueUsers:users.size,
+      lastVisit:lastVisit, topCat:topCat,
+      avgRating:ratedCount>0?(avgRating/ratedCount).toFixed(1):null,
+      trend:trend, allRecs:visits
+    };
+  });
+
+  renderLocRep();
+}
+
+function filterLocRep(){
+  var q=(document.getElementById('rp-locq')||{value:''}).value.toLowerCase();
+  var cat=(document.getElementById('rp-loccat')||{value:''}).value;
+  var sort=(document.getElementById('rp-locsort')||{value:'visits'}).value;
+
+  var filtered=_locRepData.filter(function(l){
+    if(cat&&l.category!==cat)return false;
+    if(q&&!l.name.toLowerCase().includes(q))return false;
+    return true;
+  });
+
+  if(sort==='visits')filtered.sort(function(a,b){return b.visitCount-a.visitCount;});
+  else if(sort==='recent')filtered.sort(function(a,b){return(b.lastVisit||'')>(a.lastVisit||'')?1:-1;});
+  else filtered.sort(function(a,b){return a.name.localeCompare(b.name);});
+
+  renderLocRepFiltered(filtered);
+}
+
+function renderLocRep(){
+  // Popullo kategorifiltrin
+  var cats={};
+  _locRepData.forEach(function(l){if(l.category&&l.category!=='—')cats[l.category]=1;});
+  var catSel=document.getElementById('rp-loccat');
+  if(catSel){
+    catSel.innerHTML='<option value="">Të gjitha kategoritë</option>'+
+      Object.keys(cats).sort().map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('');
+  }
+  filterLocRep();
+}
+
+function renderLocRepFiltered(data){
+  // KPIs
+  var totalVisits=data.reduce(function(s,l){return s+l.visitCount;},0);
+  var activeLocs=data.filter(function(l){return l.visitCount>0;}).length;
+  var avg=activeLocs>0?(totalVisits/activeLocs).toFixed(1):0;
+  var top=data[0];
+  var el1=document.getElementById('lkv1');if(el1)el1.textContent=activeLocs;
+  var el2=document.getElementById('lkv2');if(el2)el2.textContent=totalVisits;
+  var el3=document.getElementById('lkv3');if(el3)el3.textContent=avg;
+  var el4=document.getElementById('lkv4');if(el4)el4.textContent=top?(top.name.substring(0,20)+(top.name.length>20?'…':'')+'  ('+top.visitCount+')') :'—';
+
+  // Chart: top 10
+  var top10=data.slice(0,10);
+  mkChart('ch-lk','bar',
+    top10.map(function(l){return l.name.length>15?l.name.substring(0,15)+'…':l.name;}),
+    top10.map(function(l){return l.visitCount;}),
+    'Vizita','#2d8bff'
+  );
+
+  // Chart: trend 30 ditë (top 3 lokacione)
+  var days30=[];for(var i=29;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);days30.push(d.toISOString().slice(0,10));}
+  var top3=data.slice(0,3);
+  var pal=['#05d9a0','#2d8bff','#9b5fff'];
+  var ctx=document.getElementById('ch-lkt');
+  if(ctx){
+    var ex=Chart.getChart(ctx);if(ex)ex.destroy();
+    new Chart(ctx,{type:'line',
+      data:{labels:days30.map(function(d){return d.slice(5);}),
+        datasets:top3.map(function(l,i){return{
+          label:l.name.substring(0,12),
+          data:l.trend,
+          borderColor:pal[i],backgroundColor:pal[i]+'22',tension:.3,fill:true
+        };})
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#5a6d8a',font:{size:10}}}},
+        scales:{x:{ticks:{color:'#5a6d8a',font:{size:9},maxRotation:0},grid:{color:'#18202e'}},
+                y:{ticks:{color:'#5a6d8a'},grid:{color:'#18202e'}}}}
+    });
+  }
+
+  // Tabela
+  var tbody=document.getElementById('lkrep');
+  if(!tbody)return;
+  tbody.innerHTML='';
+  data.forEach(function(l){
+    var tr=document.createElement('tr');
+    tr.style.cursor='pointer';
+    tr.onclick=function(){showLocHistory(l);};
+    tr.onmouseenter=function(){this.style.background='#0d1119';};
+    tr.onmouseleave=function(){this.style.background='';};
+
+    // Trend sparkline (mini bars)
+    var sparkMax=Math.max.apply(null,l.trend.concat([1]));
+    var sparkHtml='<div style="display:flex;align-items:flex-end;gap:1px;height:20px">';
+    l.trend.slice(-14).forEach(function(v){
+      var pct=Math.round((v/sparkMax)*100);
+      sparkHtml+='<div style="width:3px;background:'+(v>0?'#2d8bff':'#1c2740')+';height:'+Math.max(2,pct*0.2)+'px;border-radius:1px"></div>';
+    });
+    sparkHtml+='</div>';
+
+    var stars=l.avgRating?'★'.repeat(Math.round(l.avgRating))+'<span style="color:#3d5275">'+'★'.repeat(5-Math.round(l.avgRating))+'</span> '+l.avgRating:'—';
+
+    tr.innerHTML=
+      '<td><div style="font-weight:500;color:#dce6f5">'+l.name+'</div><div style="font-size:10px;color:#3d5275;font-family:monospace">'+l.status+'</div></td>'+
+      '<td><span class="badge info" style="font-size:9px">'+l.category+'</span></td>'+
+      '<td style="font-weight:700;font-size:16px;color:#05d9a0">'+l.visitCount+'</td>'+
+      '<td style="font-family:monospace">'+l.uniqueUsers+'</td>'+
+      '<td style="font-family:monospace;font-size:11px;color:#8da0bb">'+(l.lastVisit||'—')+'</td>'+
+      '<td><span style="font-size:11px">'+l.topCat+'</span></td>'+
+      '<td style="font-size:12px">'+stars+'</td>'+
+      '<td>'+sparkHtml+'</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function showLocHistory(loc){
+  var box=document.getElementById('lk-history-box');
+  var title=document.getElementById('lk-history-title');
+  var tbody=document.getElementById('lkhrep');
+  if(!box||!title||!tbody)return;
+
+  title.textContent='📋 Historiku: '+loc.name+' ('+loc.visitCount+' vizita)';
+  box.style.display='block';
+
+  // Sort vizita sipas datës desc
+  var sorted=loc.visits.slice().sort(function(a,b){
+    return((b.rec_date||'')+(b.rec_time||''))>((a.rec_date||'')+(a.rec_time||''))?1:-1;
+  });
+
+  tbody.innerHTML='';
+  sorted.forEach(function(v){
+    var tr=document.createElement('tr');
+    var stars=v.vleresimi?'<span style="color:#ffaa2e">'+'★'.repeat(v.vleresimi)+'</span><span style="color:#3d5275">'+'★'.repeat(5-v.vleresimi)+'</span>':'—';
+    tr.innerHTML=
+      '<td style="font-family:monospace;font-size:11px">'+(v.rec_date||'—')+'</td>'+
+      '<td style="font-family:monospace;font-size:11px;color:#8da0bb">'+(v.rec_time||'—')+'</td>'+
+      '<td style="font-size:12px">'+(v.user_name||v.user_email||'—')+'</td>'+
+      '<td>'+(v.qellim?'<span class="badge info" style="font-size:9px">'+v.qellim+'</span>':'—')+'</td>'+
+      '<td>'+stars+'</td>'+
+      '<td style="font-size:11px;color:#8da0bb;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(v.notes||'—')+'</td>';
+    tbody.appendChild(tr);
+  });
+
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function expLocCSV(){
+  if(!_locRepData.length){toast('warn','Nuk ka të dhëna');return;}
+  var rows=[['Lokacioni','Kategoria','Statusi','Vizita','Vizitorë unikë','Vizita e fundit','Top qëllim','Vlerësimi mesatar']];
+  _locRepData.forEach(function(l){
+    rows.push([l.name,l.category,l.status,l.visitCount,l.uniqueUsers,l.lastVisit||'—',l.topCat,l.avgRating||'—']);
+  });
+  var csv='﻿'+rows.map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('
+');
+  var b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='lokacionet_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  toast('ok','CSV eksportuar!');
+}
+
 function copyMobileLink(){
   var u=ls('su'),k=ls('sk');
   if(!u||!k){toast('warn','Konfiguro Supabase fillimisht');return;}
