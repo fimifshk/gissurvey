@@ -2353,6 +2353,14 @@ function renderCarousel(photoUrls,photoCount){
   slides.style.transform='translateX(0)';
 }
 
+function carSlide(dir){
+  var slides=document.getElementById('dp-slides');
+  if(!slides)return;
+  var count=slides.children.length;
+  if(!count)return;
+  _dpCarIdx=(_dpCarIdx+dir+count)%count;
+  slides.style.transform='translateX(-'+(_dpCarIdx*100)+'%)';
+}
 function carouselGo(i){
   var slides=document.getElementById('dp-slides');
   var photoUrls=[];
