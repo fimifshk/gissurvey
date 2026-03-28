@@ -2138,8 +2138,10 @@ var _dpCarIdx=0;
 var _dpStar=0;
 
 async function openRecById(id, trEl){
+  console.log('openRecById called with id:', id, 'allRecs count:', allRecs.length);
   // Kërko fillimisht në allRecs
   var rec = allRecs.find(function(r){ return String(r.id)===String(id); });
+  console.log('rec found in allRecs:', rec ? 'YES' : 'NO');
   if(!rec && SB){
     // Kërko direkt nga DB
     var{data,error}=await SB.from('survey_records')
@@ -2168,6 +2170,7 @@ async function openRecById(id, trEl){
 }
 
 function openPanel(b64){
+  console.log('openPanel called');
   var rec;
   try{rec=JSON.parse(decodeURIComponent(escape(atob(b64))));}
   catch(e){toast('err','Gabim panel');return;}
@@ -2245,7 +2248,8 @@ function openPanel(b64){
   try{if(rec.doc_urls)docPaths=JSON.parse(rec.doc_urls);}catch(e){}
   // Hap panelin - JS direct style
   var dpEl=document.getElementById('dpanel');
-  if(dpEl){dpEl.classList.add('open');var db=document.getElementById('dp-body');if(db)db.scrollTop=0;}
+  console.log('dpanel classList before:', dpEl.className);
+  if(dpEl){dpEl.classList.add('open');console.log('dpanel classList after:', dpEl.className);var db=document.getElementById('dp-body');if(db)db.scrollTop=0;}
   var ovEl=document.getElementById('dp-overlay');
   if(ovEl)ovEl.style.display='block';
 
@@ -3113,7 +3117,7 @@ function renderRT(){
     var offTag=r.synced===false?'<span class="badge warn" style="margin-left:4px;font-size:9px">offline</span>':'';
     var sid=String(r.id);var sidShort=sid.startsWith('OFF_')?sid.substring(4,18)+'…':sid;
     var recId=r.id;
-    return'<tr style="cursor:pointer" onclick="openRecById(\''+recId+'\',this)" onmouseenter="this.style.background=\'#0d1119\'" onmouseleave="this.style.background=\'\'">' +
+    return'<tr data-rid="'+recId+'" style="cursor:pointer" onclick="openRecById(this.dataset.rid,this)" onmouseenter="this.style.background=\'#0d1119\'" onmouseleave="this.style.background=\'\'">' +
       '<td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">#'+sidShort+'</td>' +
       '<td><div class="utag"><div class="mava" style="background:'+c+'22;color:'+c+'">'+ini+'</div>' +
         '<div><div style="font-size:12px;font-weight:500">'+nm+'</div>' +
