@@ -1427,40 +1427,160 @@ create trigger on_auth_user_created
   </div><!-- /pages -->
 </div><!-- /app -->
 <!-- DETAIL PANEL -->
-<div id="dpanel" style="position:fixed;top:0;right:-520px;width:500px;max-width:100vw;height:100vh;background:#0d1119;border-left:1px solid #1c2740;z-index:4000;transition:right .3s;overflow-y:auto;display:flex;flex-direction:column">
+<div id="dpanel" style="position:fixed;top:0;right:-560px;width:540px;max-width:100vw;height:100vh;background:#0d1119;border-left:1px solid #1c2740;z-index:4000;transition:right .3s ease;overflow:hidden;display:flex;flex-direction:column">
+
+  <!-- HEADER -->
   <div style="padding:14px 16px;border-bottom:1px solid #1c2740;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#0d1119;position:sticky;top:0;z-index:1">
-    <div>
-      <div style="font-size:15px;font-weight:700" id="dp-title">Detajet</div>
-      <div style="font-size:11px;color:#8da0bb;font-family:monospace" id="dp-sub"></div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="dp-title">Detajet</div>
+      <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-top:2px" id="dp-sub"></div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <span id="dp-status-badge"></span>
-      <button onclick="closeDp()" style="background:transparent;border:none;color:#3d5275;font-size:20px;cursor:pointer;padding:0 4px">✕</button>
+    <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;margin-left:10px">
+      <span id="dp-status-badge" class="badge"></span>
+      <button id="dp-edit-btn" onclick="dpStartEdit()" style="display:none;padding:5px 12px;background:#18202e;border:1px solid #253352;border-radius:7px;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer">✏️ Edito</button>
+      <button id="dp-save-btn" onclick="dpSave()" style="display:none;padding:5px 12px;background:#05d9a0;border:none;border-radius:7px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer">💾 Ruaj</button>
+      <button id="dp-cancel-btn" onclick="dpCancelEdit()" style="display:none;padding:5px 10px;background:transparent;border:1px solid #253352;border-radius:7px;color:#3d5275;font-family:monospace;font-size:11px;cursor:pointer">✕ Anulo</button>
+      <button id="dp-del-btn" onclick="dpDelete()" style="display:none;padding:5px 10px;background:transparent;border:1px solid #ff4d6d33;border-radius:7px;color:#ff4d6d;font-family:monospace;font-size:11px;cursor:pointer">🗑️</button>
+      <button onclick="closeDp()" style="background:transparent;border:none;color:#3d5275;font-size:20px;cursor:pointer;padding:0 4px;margin-left:4px">✕</button>
     </div>
   </div>
-  <div style="flex:1;overflow-y:auto;padding:16px" id="dp-body">
-    <div id="dp-carousel-wrap" style="margin-bottom:14px">
+
+  <!-- BODY -->
+  <div style="flex:1;overflow-y:auto" id="dp-body">
+
+    <!-- KARUSEL -->
+    <div id="dp-carousel-wrap" style="margin-bottom:0">
       <div class="carousel" id="dp-car-outer" style="display:none">
         <div class="carousel-inner" id="dp-slides"></div>
         <button class="cbtn left" onclick="carSlide(-1)">‹</button>
         <button class="cbtn right" onclick="carSlide(1)">›</button>
         <div id="dp-dots" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px"></div>
       </div>
-      <div id="dp-nophoto" style="display:none;padding:20px;text-align:center;color:#3d5275;font-family:monospace;font-size:11px;border:1px dashed #1c2740;border-radius:8px">Pa foto</div>
     </div>
-    <div id="dp-info"></div>
-    <div style="margin-top:14px">
-      <div style="font-size:10px;font-family:monospace;color:#3d5275;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="width:3px;height:12px;background:#2d8bff;border-radius:2px;display:inline-block"></span>DOKUMENTE</div>
-      <div id="dp-doclist"></div>
-      <label style="display:flex;align-items:center;gap:8px;margin-top:8px;padding:8px 12px;border:1px dashed #1c2740;border-radius:8px;cursor:pointer;font-family:monospace;font-size:11px;color:#3d5275">
-        <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:#3d5275;stroke-width:2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Ngarko dokument PDF
-        <input type="file" accept=".pdf,.doc,.docx" multiple onchange="processDocFiles(this.files)" style="display:none">
-      </label>
-      <div id="dp-uploading" style="display:none;font-family:monospace;font-size:11px;color:#ffaa2e;padding:6px">Duke ngarkuar...</div>
+
+    <div style="padding:16px">
+
+      <!-- SEKSIONI: INFO BAZË (vetëm lexim) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+        <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:10px">
+          <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">USER</div>
+          <div style="font-size:12px;color:#dce6f5" id="dp-user">—</div>
+        </div>
+        <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:10px">
+          <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">DATA / ORA</div>
+          <div style="font-size:12px;color:#dce6f5"><span id="dp-date">—</span> <span id="dp-time" style="color:#8da0bb">—</span></div>
+        </div>
+        <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:10px">
+          <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">GPS</div>
+          <div style="font-size:11px;color:#05d9a0;font-family:monospace" id="dp-gps">—</div>
+        </div>
+        <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:10px">
+          <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SAKTËSIA</div>
+          <div style="font-size:12px;color:#dce6f5" id="dp-acc">—</div>
+        </div>
+      </div>
+
+      <!-- HARTA MINI -->
+      <div style="margin-bottom:16px;border-radius:10px;overflow:hidden;border:1px solid #1c2740">
+        <div id="dp-map" style="height:160px;background:#07090f"></div>
+      </div>
+
+      <!-- SEKSIONI: FUSHAT EDITUESHME -->
+      <div style="border:1px solid #1c2740;border-radius:10px;overflow:hidden;margin-bottom:14px">
+        <div style="padding:10px 14px;background:#07090f;border-bottom:1px solid #1c2740;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">
+          Informacion i rekordeve
+        </div>
+        <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
+
+          <div class="ifield" style="margin:0">
+            <label>QËLLIMI I VËZHGIMIT</label>
+            <div id="dp-qellim-view" style="font-size:13px;color:#dce6f5;padding:4px 0"></div>
+            <select id="dp-qellim-edit" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #1c2740;border-radius:var(--r);color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option>Inspektim urban</option><option>Monitorim mjedisi</option>
+              <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
+              <option>Pyje dhe bimësi</option><option>Ujëra dhe liqene</option><option>Tjetër</option>
+            </select>
+          </div>
+
+          <div class="ifield" style="margin:0">
+            <label>KLASIFIKIMI</label>
+            <div id="dp-klasi-view" style="font-size:13px;color:#dce6f5;padding:4px 0"></div>
+            <select id="dp-klasi" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #1c2740;border-radius:var(--r);color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Pa klasifikim —</option>
+              <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
+              <option>Depo / Magazine</option><option>Objekt industrial</option>
+              <option>Infrastrukturë</option><option>Tokë bujqësore</option>
+              <option>Zonë e mbrojtur</option><option>Tjetër</option>
+            </select>
+          </div>
+
+          <div class="ifield" style="margin:0">
+            <label>STATUSI</label>
+            <div id="dp-statusi-view" style="font-size:13px;color:#dce6f5;padding:4px 0"></div>
+            <select id="dp-statusi" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #1c2740;border-radius:var(--r);color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="aktiv">✅ Aktiv</option>
+              <option value="ne_ndertim">🚧 Në ndërtim</option>
+              <option value="ne_rinovim">🔨 Në rinovim</option>
+              <option value="i_demtuar">⚠️ I dëmtuar</option>
+              <option value="i_braktisur">🚫 I braktisur</option>
+              <option value="i_demoluar">💥 I demoluar</option>
+              <option value="ne_investigim">🔍 Nën investigim</option>
+            </select>
+          </div>
+
+          <div class="ifield" style="margin:0">
+            <label>ADRESA</label>
+            <div id="dp-adresa-view" style="font-size:13px;color:#dce6f5;padding:4px 0"></div>
+            <input type="text" id="dp-adresa" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #1c2740;border-radius:var(--r);color:#dce6f5;font-size:12px;outline:none" placeholder="Adresa...">
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="ifield" style="margin:0">
+              <label>KATET</label>
+              <div id="dp-kate-view" style="font-size:13px;color:#dce6f5;padding:4px 0"></div>
+              <input type="number" id="dp-kate" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #1c2740;border-radius:var(--r);color:#dce6f5;font-size:12px;outline:none" placeholder="0">
+            </div>
+            <div class="ifield" style="margin:0">
+              <label>LARTËSIA (m)</label>
+              <div id="dp-lartesia-view" style="font-size:13px;color:#dce6f5;padding:4px 0"></div>
+              <input type="number" id="dp-lartesia" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #1c2740;border-radius:var(--r);color:#dce6f5;font-size:12px;outline:none" placeholder="0">
+            </div>
+          </div>
+
+          <div class="ifield" style="margin:0">
+            <label>SHËNIME</label>
+            <div id="dp-notes-view" style="font-size:13px;color:#8da0bb;padding:4px 0;line-height:1.5;min-height:20px"></div>
+            <textarea id="dp-notes-edit" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #1c2740;border-radius:var(--r);color:#dce6f5;font-size:12px;outline:none;min-height:80px;resize:vertical" placeholder="Shënime..."></textarea>
+          </div>
+
+          <!-- VLERËSIMI -->
+          <div class="ifield" style="margin:0">
+            <label>VLERËSIMI</label>
+            <div id="dp-stars" style="display:flex;gap:4px;font-size:22px;cursor:pointer"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- DOKUMENTET -->
+      <div style="border:1px solid #1c2740;border-radius:10px;overflow:hidden;margin-bottom:14px">
+        <div style="padding:10px 14px;background:#07090f;border-bottom:1px solid #1c2740;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">
+          Dokumentet
+        </div>
+        <div style="padding:12px">
+          <div id="dp-doclist"></div>
+          <label id="dp-doc-upload" style="display:none;flex;align-items:center;gap:8px;margin-top:8px;padding:8px 12px;border:1px dashed #1c2740;border-radius:8px;cursor:pointer;font-family:monospace;font-size:11px;color:#3d5275">
+            ↑ Ngarko dokument (PDF, DOC)
+            <input type="file" accept=".pdf,.doc,.docx" multiple onchange="processDocFiles(this.files)" style="display:none">
+          </label>
+          <div id="dp-uploading" style="display:none;font-family:monospace;font-size:11px;color:#ffaa2e;padding:6px">Duke ngarkuar...</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
+
 <div id="dp-overlay" style="display:none;position:fixed;inset:0;z-index:3999" onclick="closeDp()"></div>
 
 
@@ -1809,56 +1929,231 @@ var _dpStar=0;
 
 function openPanel(b64){
   var rec;
-  try{rec=JSON.parse(decodeURIComponent(escape(atob(b64))));}catch(e){toast('err','Gabim panel');return;}
-  _dpRec=rec;_dpDocs=[];_dpCarIdx=0;
+  try{rec=JSON.parse(decodeURIComponent(escape(atob(b64))));}
+  catch(e){toast('err','Gabim panel');return;}
+  _dpRec=rec;_dpCarIdx=0;
+  var isOwn=(CU&&rec.user_id===CU.id);
+  var role=CP?CP.role:'field';
 
-  // Titulli
-  document.getElementById('dp-title').textContent=(rec.qellim||'Rekord #'+rec.id);
-  document.getElementById('dp-id').textContent='#'+rec.id+' · '+rec.user_role;
+  // Header
+  document.getElementById('dp-title').textContent=(rec.qellim||'Vëzhgim #'+rec.id);
+  document.getElementById('dp-sub').textContent='#'+rec.id+' · '+(rec.user_name||rec.user_email||'?')+' · '+(rec.rec_date||'—');
 
   // Badge statusi
   var sb=document.getElementById('dp-status-badge');
-  var smap={aktiv:'ok',ne_ndertim:'warn',ne_rinovim:'warn',i_demtuar:'err',i_braktisur:'err',i_demoluar:'err',ne_investigim:'info'};
-  sb.className='badge '+(smap[rec.statusi]||'info');
-  sb.textContent=STATUS_LBL[rec.statusi]||rec.statusi||'—';
+  if(sb){var sm={aktiv:'ok',ne_ndertim:'warn',ne_rinovim:'warn',i_demtuar:'err',i_braktisur:'err',i_demoluar:'err',ne_investigim:'info'};
+  sb.className='badge '+(sm[rec.statusi]||'info');sb.textContent=STATUS_LBL[rec.statusi]||rec.statusi||'Aktiv';}
 
-  // Info bazë
-  document.getElementById('dp-user').textContent=(rec.user_name||rec.user_email||'—');
-  document.getElementById('dp-date').textContent=(rec.rec_date||'—');
-  document.getElementById('dp-time').textContent=(rec.rec_time||'—');
-  document.getElementById('dp-gps').textContent=(rec.lat&&rec.lng?rec.lat.toFixed(5)+', '+rec.lng.toFixed(5):'—');
-  document.getElementById('dp-qellim').textContent=(rec.qellim||'—');
-  document.getElementById('dp-notes').textContent=(rec.notes||'—');
+  // Info bazë (vetëm lexim)
+  document.getElementById('dp-user').textContent=rec.user_name||rec.user_email||'—';
+  document.getElementById('dp-date').textContent=rec.rec_date||'—';
+  document.getElementById('dp-time').textContent=rec.rec_time||'—';
+  document.getElementById('dp-gps').textContent=rec.lat&&rec.lng?rec.lat.toFixed(5)+', '+rec.lng.toFixed(5):'—';
+  document.getElementById('dp-acc').textContent=rec.accuracy?rec.accuracy.toFixed(0)+' m':'—';
 
-  // Fushat e detajuara
-  document.getElementById('dp-adresa').value=rec.adresa||'';
+  // Fushat view
+  document.getElementById('dp-qellim-view').textContent=rec.qellim||'—';
+  document.getElementById('dp-klasi-view').textContent=rec.klasifikimi||'—';
+  document.getElementById('dp-statusi-view').textContent=STATUS_LBL[rec.statusi]||rec.statusi||'—';
+  document.getElementById('dp-adresa-view').textContent=rec.adresa||'—';
+  document.getElementById('dp-kate-view').textContent=rec.kate||'—';
+  document.getElementById('dp-lartesia-view').textContent=rec.lartesia?rec.lartesia+' m':'—';
+  document.getElementById('dp-notes-view').textContent=rec.notes||'—';
+
+  // Fushat edit (vlerat)
+  var qSel=document.getElementById('dp-qellim-edit');if(qSel)qSel.value=rec.qellim||'';
   document.getElementById('dp-klasi').value=rec.klasifikimi||'';
   document.getElementById('dp-statusi').value=rec.statusi||'aktiv';
+  document.getElementById('dp-adresa').value=rec.adresa||'';
   document.getElementById('dp-kate').value=rec.kate||'';
   document.getElementById('dp-lartesia').value=rec.lartesia||'';
-  setStar(rec.vleresimi||0);
+  document.getElementById('dp-notes-edit').value=rec.notes||'';
 
-  // Dokumentet ekzistues
+  // Yjet
+  dpSetStars(rec.vleresimi||0, role==='field'&&!isOwn);
+
+  // Butonat sipas rolit
+  var canEdit=(role==='admin')||(role==='supervisor')||(role==='field'&&isOwn);
+  var canDelete=(role==='admin');
+  var editBtn=document.getElementById('dp-edit-btn');
+  var delBtn=document.getElementById('dp-del-btn');
+  if(editBtn)editBtn.style.display=canEdit?'block':'none';
+  if(delBtn)delBtn.style.display=canDelete?'block':'none';
+  document.getElementById('dp-save-btn').style.display='none';
+  document.getElementById('dp-cancel-btn').style.display='none';
+  dpCancelEdit(); // reset edit mode
+
+  // Upload doc - vetëm nëse mund të editojë
+  var upLabel=document.getElementById('dp-doc-upload');
+  if(upLabel)upLabel.style.display=canEdit?'flex':'none';
+
+  // Dokumentet
   var docPaths=[];
   try{if(rec.doc_urls)docPaths=JSON.parse(rec.doc_urls);}catch(e){}
   renderDocList(docPaths);
 
-  // Karusel fotosh — ngarko URL-et nga Storage nëse mungojnë
+  // Karusel
   var photoUrls=[];
   try{if(rec.photo_urls)photoUrls=JSON.parse(rec.photo_urls);}catch(e){}
   if(!photoUrls.length&&rec.photo_count>0&&SB&&CU){
-    // Kërko fotot nga Storage
-    fetchPhotoUrls(rec).then(function(urls){
-      if(urls.length){renderCarousel(urls,urls.length);}
-    });
+    fetchPhotoUrls(rec).then(function(urls){if(urls.length)renderCarousel(urls,urls.length);});
   }
   renderCarousel(photoUrls,rec.photo_count||0);
+
+  // Harta mini
+  dpInitMap(rec);
 
   // Hap panelin
   document.getElementById('dpanel').classList.add('open');
   document.getElementById('dp-overlay').style.display='block';
   document.body.style.overflow='hidden';
 }
+
+var _dpMapObj=null;
+function dpInitMap(rec){
+  setTimeout(function(){
+    var el=document.getElementById('dp-map');
+    if(!el)return;
+    if(_dpMapObj){_dpMapObj.remove();_dpMapObj=null;}
+    if(!rec.lat||!rec.lng){el.style.display='none';return;}
+    el.style.display='block';
+    _dpMapObj=L.map('dp-map',{zoomControl:false,attributionControl:false,dragging:true,scrollWheelZoom:false})
+      .setView([rec.lat,rec.lng],16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(_dpMapObj);
+    var ic=L.divIcon({className:'',html:'<div style="width:14px;height:14px;background:#05d9a0;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.5)"></div>',iconSize:[14,14],iconAnchor:[7,7]});
+    L.marker([rec.lat,rec.lng],{icon:ic}).addTo(_dpMapObj);
+    setTimeout(function(){if(_dpMapObj)_dpMapObj.invalidateSize();},300);
+  },200);
+}
+
+var _dpEditMode=false;
+function dpStartEdit(){
+  _dpEditMode=true;
+  var role=CP?CP.role:'field';
+  var isOwn=CU&&_dpRec&&_dpRec.user_id===CU.id;
+
+  // Fshi view, shfaq edit
+  var fields=['qellim','notes'];
+  if(role==='admin'||role==='supervisor'){fields=['qellim','klasi','statusi','adresa','kate','lartesia','notes'];}
+
+  fields.forEach(function(f){
+    var v=document.getElementById('dp-'+f+'-view');
+    var e=document.getElementById('dp-'+f+(f==='qellim'?'-edit':'')||'dp-'+f);
+    if(v)v.style.display='none';
+    // edit element
+    var eEl=document.getElementById('dp-'+f+'-edit')||document.getElementById('dp-'+f);
+    if(eEl&&eEl.id!=='dp-'+f+'-view'){eEl.style.display='block';}
+  });
+
+  // Butonat
+  document.getElementById('dp-edit-btn').style.display='none';
+  document.getElementById('dp-save-btn').style.display='block';
+  document.getElementById('dp-cancel-btn').style.display='block';
+  var delBtn=document.getElementById('dp-del-btn');
+  if(delBtn&&role==='admin')delBtn.style.display='block';
+}
+
+function dpCancelEdit(){
+  _dpEditMode=false;
+  // Kthe view
+  ['qellim-view','klasi-view','statusi-view','adresa-view','kate-view','lartesia-view','notes-view'].forEach(function(id){
+    var el=document.getElementById('dp-'+id);if(el)el.style.display='block';
+  });
+  ['qellim-edit','klasi','statusi','adresa','kate','lartesia','notes-edit'].forEach(function(id){
+    var el=document.getElementById('dp-'+id);if(el)el.style.display='none';
+  });
+  document.getElementById('dp-edit-btn').style.display='block';
+  document.getElementById('dp-save-btn').style.display='none';
+  document.getElementById('dp-cancel-btn').style.display='none';
+}
+
+async function dpSave(){
+  if(!SB||!_dpRec)return;
+  var role=CP?CP.role:'field';
+  var isOwn=CU&&_dpRec.user_id===CU.id;
+  var data={};
+
+  // Field mund të ndryshojë vetëm notes dhe foto të veta
+  if((role==='field'&&isOwn)||role==='supervisor'||role==='admin'){
+    data.notes=document.getElementById('dp-notes-edit').value||null;
+  }
+  // Supervisor dhe Admin mund të ndryshojnë të gjitha
+  if(role==='supervisor'||role==='admin'){
+    var qEl=document.getElementById('dp-qellim-edit');
+    if(qEl)data.qellim=qEl.value||null;
+    data.klasifikimi=document.getElementById('dp-klasi').value||null;
+    data.statusi=document.getElementById('dp-statusi').value||null;
+    data.adresa=document.getElementById('dp-adresa').value||null;
+    data.kate=parseInt(document.getElementById('dp-kate').value)||null;
+    data.lartesia=parseFloat(document.getElementById('dp-lartesia').value)||null;
+    data.vleresimi=_dpRec.vleresimi||null;
+  }
+
+  var{error}=await SB.from('survey_records').update(data).eq('id',_dpRec.id);
+  if(error){toast('err','Gabim: '+error.message);return;}
+
+  // Update _dpRec lokalisht
+  Object.assign(_dpRec,data);
+  // Update allRecs
+  var idx=allRecs.findIndex(function(r){return r.id===_dpRec.id;});
+  if(idx>=0)Object.assign(allRecs[idx],data);
+
+  toast('ok','✅ Rekord i përditësuar!');
+  dpCancelEdit();
+
+  // Rifresko view fields
+  document.getElementById('dp-qellim-view').textContent=_dpRec.qellim||'—';
+  document.getElementById('dp-klasi-view').textContent=_dpRec.klasifikimi||'—';
+  document.getElementById('dp-statusi-view').textContent=STATUS_LBL[_dpRec.statusi]||_dpRec.statusi||'—';
+  document.getElementById('dp-adresa-view').textContent=_dpRec.adresa||'—';
+  document.getElementById('dp-kate-view').textContent=_dpRec.kate||'—';
+  document.getElementById('dp-lartesia-view').textContent=_dpRec.lartesia?_dpRec.lartesia+' m':'—';
+  document.getElementById('dp-notes-view').textContent=_dpRec.notes||'—';
+
+  // Rifresko badge
+  var sb=document.getElementById('dp-status-badge');
+  if(sb){var sm={aktiv:'ok',ne_ndertim:'warn',ne_rinovim:'warn',i_demtuar:'err',i_braktisur:'err',i_demoluar:'err',ne_investigim:'info'};
+  sb.className='badge '+(sm[_dpRec.statusi]||'info');sb.textContent=STATUS_LBL[_dpRec.statusi]||_dpRec.statusi||'Aktiv';}
+
+  // Rifresko listën
+  filterR();
+}
+
+async function dpDelete(){
+  if(!_dpRec)return;
+  if(!confirm('Fshi këtë rekord? Kjo veprim nuk mund të kthehet.'))return;
+  var{error}=await SB.from('survey_records').delete().eq('id',_dpRec.id);
+  if(error){toast('err','Gabim: '+error.message);return;}
+  toast('ok','Rekord i fshirë');
+  closeDp();
+  allRecs=allRecs.filter(function(r){return r.id!==_dpRec.id;});
+  filterR();
+}
+
+function dpSetStars(val, readonly){
+  var el=document.getElementById('dp-stars');
+  if(!el)return;
+  el.innerHTML='';
+  for(var i=1;i<=5;i++){
+    var s=document.createElement('span');
+    s.textContent='★';
+    s.style.color=i<=val?'#ffaa2e':'#253352';
+    s.style.cursor=readonly?'default':'pointer';
+    s.style.transition='color .15s';
+    if(!readonly){
+      (function(n){
+        s.onmouseenter=function(){dpSetStars(n,false);};
+        s.onmouseleave=function(){dpSetStars(_dpRec?(_dpRec.vleresimi||0):0,false);};
+        s.onclick=function(){
+          if(_dpRec)_dpRec.vleresimi=n;
+          dpSetStars(n,false);
+        };
+      })(i);
+    }
+    el.appendChild(s);
+  }
+}
+
 
 function closePanel(){
   document.getElementById('dpanel').classList.remove('open');
@@ -2457,7 +2752,8 @@ function renderRT(){
     var c=RCOL[r.user_role]||'#05d9a0';
     var offTag=r.synced===false?'<span class="badge warn" style="margin-left:4px;font-size:9px">offline</span>':'';
     var sid=String(r.id);var sidShort=sid.startsWith('OFF_')?sid.substring(4,18)+'…':sid;
-    return'<tr>' +
+    var recB64=btoa(unescape(encodeURIComponent(JSON.stringify(r))));
+    return'<tr style="cursor:pointer" onclick="openPanel(\''+recB64+'\')" onmouseenter="this.style.background=\'#0d1119\'" onmouseleave="this.style.background=\'\'">' +
       '<td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">#'+sidShort+'</td>' +
       '<td><div class="utag"><div class="mava" style="background:'+c+'22;color:'+c+'">'+ini+'</div>' +
         '<div><div style="font-size:12px;font-weight:500">'+nm+'</div>' +
