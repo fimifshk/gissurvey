@@ -2464,28 +2464,73 @@ function filterLocs(){
 function renderLocList(){
   var el=document.getElementById('lk-list');
   if(!filteredLocs.length){
-    el.innerHTML='<div style="text-align:center;padding:30px 10px;color:var(--txt3);font-family:var(--mono);font-size:11px">Asnjë lokacion</div>';
+    el.innerHTML='';
+    var empty=document.createElement('div');
+    empty.style.cssText='text-align:center;padding:30px 10px;color:#3d5275;font-family:monospace;font-size:11px';
+    empty.textContent='Asnjë lokacion';
+    el.appendChild(empty);
     return;
   }
-  var statusColors={aktiv:'var(--acc)',ne_ndertim:'var(--warn)',i_mbyllur:'var(--txt3)',ne_investigim:'var(--acc2)'};
-  el.innerHTML=filteredLocs.map(function(l){
-    var sc=statusColors[l.status]||'var(--txt3)';
-    return'<div style="padding:10px 12px;border:1px solid var(--b1);border-radius:8px;margin-bottom:6px;background:var(--bg);cursor:pointer;transition:.15s" '+
-      'onmouseover="this.style.borderColor='var(--acc)'" onmouseout="this.style.borderColor='var(--b1)'"'+
-      ' onclick="zoomToLoc('+l.id+')">'+
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">'+
-        '<div style="font-size:12px;font-weight:600;flex:1;margin-right:8px">'+l.name+'</div>'+
-        '<div style="display:flex;gap:4px;flex-shrink:0">'+
-          '<button onclick="event.stopPropagation();openLocModal('+l.id+')" style="padding:3px 7px;background:var(--s3);border:1px solid var(--b2);border-radius:4px;color:var(--txt2);font-size:10px;cursor:pointer;font-family:var(--mono)">✏️</button>'+
-          '<button onclick="event.stopPropagation();deleteLoc('+l.id+')" style="padding:3px 7px;background:transparent;border:1px solid transparent;border-radius:4px;color:var(--txt3);font-size:10px;cursor:pointer" onmouseover="this.style.borderColor='var(--err)';this.style.color='var(--err)'" onmouseout="this.style.borderColor='transparent';this.style.color='var(--txt3)'">🗑️</button>'+
-        '</div>'+
-      '</div>'+
-      (l.category?'<div style="font-size:10px;color:var(--acc2);font-family:var(--mono);margin-bottom:3px">'+l.category+'</div>':'')+
-      (l.address?'<div style="font-size:10px;color:var(--txt3);margin-bottom:3px">📍 '+l.address+'</div>':'')+
-      (l.phone?'<div style="font-size:10px;color:var(--txt3)">📞 '+l.phone+'</div>':'')+
-      '<div style="font-size:10px;font-family:var(--mono);color:'+sc+';margin-top:4px">● '+(l.status||'aktiv')+'</div>'+
-    '</div>';
-  }).join('');
+  var sColors={aktiv:'#05d9a0',ne_ndertim:'#ffaa2e',i_mbyllur:'#8da0bb',ne_investigim:'#2d8bff'};
+  el.innerHTML='';
+  filteredLocs.forEach(function(l){
+    var card=document.createElement('div');
+    card.style.cssText='padding:10px 12px;border:1px solid #1c2740;border-radius:8px;margin-bottom:6px;background:#07090f;cursor:pointer;transition:border-color .15s';
+    card.onmouseenter=function(){this.style.borderColor='#05d9a0';};
+    card.onmouseleave=function(){this.style.borderColor='#1c2740';};
+    card.onclick=function(){zoomToLoc(l.id);};
+    var top=document.createElement('div');
+    top.style.cssText='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px';
+    var nameEl=document.createElement('div');
+    nameEl.style.cssText='font-size:12px;font-weight:600;flex:1;margin-right:8px;color:#dce6f5';
+    nameEl.textContent=l.name;
+    top.appendChild(nameEl);
+    var btns=document.createElement('div');
+    btns.style.cssText='display:flex;gap:4px;flex-shrink:0';
+    var eBtn=document.createElement('button');
+    eBtn.style.cssText='padding:3px 7px;background:#18202e;border:1px solid #253352;border-radius:4px;color:#8da0bb;font-size:10px;cursor:pointer';
+    eBtn.textContent='✏️';
+    eBtn.onclick=function(e){e.stopPropagation();openLocModal(l.id);};
+    btns.appendChild(eBtn);
+    var dBtn=document.createElement('button');
+    dBtn.style.cssText='padding:3px 7px;background:transparent;border:1px solid transparent;border-radius:4px;color:#3d5275;font-size:10px;cursor:pointer';
+    dBtn.textContent='🗑️';
+    dBtn.onmouseenter=function(){this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d';};
+    dBtn.onmouseleave=function(){this.style.borderColor='transparent';this.style.color='#3d5275';};
+    dBtn.onclick=function(e){e.stopPropagation();deleteLoc(l.id);};
+    btns.appendChild(dBtn);
+    top.appendChild(btns);
+    card.appendChild(top);
+    if(l.category){var c2=document.createElement('div');c2.style.cssText='font-size:10px;color:#2d8bff;font-family:monospace;margin-bottom:3px';c2.textContent=l.category;card.appendChild(c2);}
+    if(l.address){var a2=document.createElement('div');a2.style.cssText='font-size:10px;color:#3d5275;margin-bottom:3px';a2.textContent='📍 '+l.address;card.appendChild(a2);}
+    if(l.phone){var p2=document.createElement('div');p2.style.cssText='font-size:10px;color:#3d5275';p2.textContent='📞 '+l.phone;card.appendChild(p2);}
+    var st=document.createElement('div');
+    st.style.cssText='font-size:10px;font-family:monospace;margin-top:4px;color:'+(sColors[l.status]||'#8da0bb');
+    st.textContent='● '+(l.status||'aktiv');
+    card.appendChild(st);
+    el.appendChild(card);
+  });
+}
+  el.innerHTML='';
+  var sCol2={aktiv:'#05d9a0',ne_ndertim:'#ffaa2e',i_mbyllur:'#8da0bb',ne_investigim:'#2d8bff'};
+  filteredLocs.forEach(function(l){
+    var card=document.createElement('div');
+    card.style.cssText='padding:10px 12px;border:1px solid #1c2740;border-radius:8px;margin-bottom:6px;background:#07090f;cursor:pointer;transition:border-color .15s';
+    card.onmouseenter=function(){this.style.borderColor='#05d9a0';};
+    card.onmouseleave=function(){this.style.borderColor='#1c2740';};
+    card.onclick=function(){zoomToLoc(l.id);};
+    var top=document.createElement('div');top.style.cssText='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px';
+    var nm=document.createElement('div');nm.style.cssText='font-size:12px;font-weight:600;flex:1;margin-right:8px;color:#dce6f5';nm.textContent=l.name;top.appendChild(nm);
+    var btns=document.createElement('div');btns.style.cssText='display:flex;gap:4px;flex-shrink:0';
+    var eB=document.createElement('button');eB.style.cssText='padding:3px 7px;background:#18202e;border:1px solid #253352;border-radius:4px;color:#8da0bb;font-size:10px;cursor:pointer';eB.textContent='✏️';eB.onclick=function(e){e.stopPropagation();openLocModal(l.id);};btns.appendChild(eB);
+    var dB=document.createElement('button');dB.style.cssText='padding:3px 7px;background:transparent;border:1px solid transparent;border-radius:4px;color:#3d5275;font-size:10px;cursor:pointer';dB.textContent='🗑️';dB.onmouseenter=function(){this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d';};dB.onmouseleave=function(){this.style.borderColor='transparent';this.style.color='#3d5275';};dB.onclick=function(e){e.stopPropagation();deleteLoc(l.id);};btns.appendChild(dB);
+    top.appendChild(btns);card.appendChild(top);
+    if(l.category){var c3=document.createElement('div');c3.style.cssText='font-size:10px;color:#2d8bff;font-family:monospace;margin-bottom:3px';c3.textContent=l.category;card.appendChild(c3);}
+    if(l.address){var a3=document.createElement('div');a3.style.cssText='font-size:10px;color:#3d5275;margin-bottom:3px';a3.textContent='📍 '+l.address;card.appendChild(a3);}
+    if(l.phone){var p3=document.createElement('div');p3.style.cssText='font-size:10px;color:#3d5275';p3.textContent='📞 '+l.phone;card.appendChild(p3);}
+    var st2=document.createElement('div');st2.style.cssText='font-size:10px;font-family:monospace;margin-top:4px;color:'+(sCol2[l.status]||'#8da0bb');st2.textContent='● '+(l.status||'aktiv');card.appendChild(st2);
+    el.appendChild(card);
+  });
 }
 
 function initLkMap(){
@@ -2564,13 +2609,17 @@ function searchLocs(q){
   }).slice(0,8);
   if(!res.length){dd.style.display='none';return;}
   dd.style.display='block';
-  dd.innerHTML=res.map(function(l){
-    return'<div onclick="selectLoc('+l.id+')" style="padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--b1);transition:.1s" '+
-      'onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background=''">'+
-      '<div style="font-size:12px;font-weight:500">'+l.name+'</div>'+
-      (l.category||l.address?'<div style="font-size:10px;color:var(--txt3);font-family:var(--mono)">'+(l.category||'')+(l.category&&l.address?' · ':''+(l.address||''))+'</div>':'')+
-      '</div>';
-  }).join('');
+  dd.innerHTML='';
+  res.forEach(function(l){
+    var item=document.createElement('div');
+    item.style.cssText='padding:9px 12px;cursor:pointer;border-bottom:1px solid #1c2740;transition:background .1s';
+    item.onmouseenter=function(){this.style.background='#18202e';};
+    item.onmouseleave=function(){this.style.background='';};
+    item.onclick=function(){selectLoc(l.id);};
+    var nm=document.createElement('div');nm.style.cssText='font-size:12px;font-weight:500;color:#dce6f5';nm.textContent=l.name;item.appendChild(nm);
+    if(l.category||l.address){var sub=document.createElement('div');sub.style.cssText='font-size:10px;color:#3d5275;font-family:monospace';sub.textContent=(l.category||'')+(l.category&&l.address?' · ':'')+(l.address||'');item.appendChild(sub);}
+    dd.appendChild(item);
+  });
 }
 
 function selectLoc(id){
@@ -2901,7 +2950,7 @@ if(typeof supabase!=='undefined'){
       <div class="sec-hd" style="margin-bottom:12px">Dokumente (PDF, Word)</div>
       <div id="dp-doclist"></div>
       <div class="uzone" id="dp-dropzone" onclick="document.getElementById('dp-docinp').click()"
-           ondragover="event.preventDefault();this.style.borderColor='var(--acc2)'"
+           ondragover="event.preventDefault();this.style.borderColor='#2d8bff'"
            ondragleave="this.style.borderColor=''"
            ondrop="dpDropDoc(event)">
         📎 Kliko ose tërhiq dokumentin këtu<br>
