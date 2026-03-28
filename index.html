@@ -275,11 +275,12 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 .branch-btns{display:flex;gap:3px;flex-shrink:0}
 
 /* ── DETAIL PANEL (djathtas) ── */
+.dpanel{position:fixed;top:0;right:-520px;width:500px;max-width:100vw;height:100vh;background:var(--s1);border-left:1px solid var(--b1);z-index:4000;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,.4)}
+#dpanel{position:fixed;top:0;right:-560px;width:540px;max-width:100vw;height:100vh;background:#0d1119;border-left:1px solid #1c2740;z-index:4000;overflow:hidden;display:flex;flex-direction:column;transition:right .3s ease!important}
+#dpanel.open{right:0!important}
 
-#dpanel{transition:right .3s ease}
-
-
-.dpanel#dpanel.open{right:0!important;box-shadow:-4px 0 30px rgba(0,0,0,.5)}
+#dpanel.open,.dpanel.open{right:0!important}
+.dpanel#dpanel.open{right:0!important}
 .dpanel-hd{padding:18px 20px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .dpanel-title{font-size:15px;font-weight:700}
 .dpanel-body{flex:1;overflow-y:auto;padding:18px 20px}
@@ -352,18 +353,8 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
   .cgrid{grid-template-columns:1fr}
 }
 
-/* Map tooltip */
-.map-tooltip{
-  background:#0d1119!important;
-  border:1px solid #253352!important;
-  border-radius:8px!important;
-  padding:8px 12px!important;
-  box-shadow:0 4px 20px rgba(0,0,0,.5)!important;
-  color:#dce6f5!important;
-}
-.map-tooltip.leaflet-tooltip-top::before{
-  border-top-color:#253352!important;
-}
+.map-tooltip{background:#0d1119!important;border:1px solid #253352!important;border-radius:8px!important;padding:8px 12px!important;box-shadow:0 4px 20px rgba(0,0,0,.5)!important;color:#dce6f5!important;}
+.map-tooltip.leaflet-tooltip-top::before{border-top-color:#253352!important;}
 </style>
 </head>
 <body>
@@ -682,23 +673,28 @@ create trigger on_auth_user_created
                 <button class="btn sm" onclick="document.getElementById('phinp').click()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Ngarko</button>
               </div>
             </div>
-            <!-- DETAJE SHTESË -->
-            <div class="section" style="padding:0;overflow:hidden;border:1px solid var(--b1);border-radius:10px;margin-bottom:8px">
-              <button onclick="toggleSvDetails()" style="width:100%;padding:11px 16px;background:var(--s2);border:none;color:var(--txt2);font-family:var(--mono);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-align:left">
-                <span>📋 Detaje shtesë (plotëso tani ose më vonë)</span>
+            <!-- DETAJE SHTESË (accordion) -->
+            <div class="section" style="padding:0;overflow:hidden;border:1px solid #1c2740;border-radius:10px;margin-bottom:8px">
+              <button onclick="toggleSvDetails()" id="sv-det-btn"
+                style="width:100%;padding:11px 16px;background:#0d1119;border:none;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-align:left">
+                <span>📋 Detaje shtesë (opsionale)</span>
                 <span id="sv-det-arrow" style="transition:transform .2s">▼</span>
               </button>
-              <div id="sv-det-body" style="display:none;padding:14px;border-top:1px solid var(--b1);flex-direction:column;gap:10px">
+              <div id="sv-det-body" style="display:none;padding:14px;border-top:1px solid #1c2740;flex-direction:column;gap:10px">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                  <div class="ifield" style="margin:0"><label>KLASIFIKIMI</label>
-                    <select id="f-klasi" class="fi"><option value="">— Pa klasifikim —</option>
+                  <div class="ifield" style="margin:0">
+                    <label>KLASIFIKIMI</label>
+                    <select id="f-klasi" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:12px;outline:none">
+                      <option value="">— Pa klasifikim —</option>
                       <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
                       <option>Depo / Magazine</option><option>Objekt industrial</option>
                       <option>Infrastrukturë</option><option>Tokë bujqësore</option>
                       <option>Zonë e mbrojtur</option><option>Tjetër</option>
-                    </select></div>
-                  <div class="ifield" style="margin:0"><label>STATUSI</label>
-                    <select id="f-statusi" class="fi">
+                    </select>
+                  </div>
+                  <div class="ifield" style="margin:0">
+                    <label>STATUSI</label>
+                    <select id="f-statusi" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:12px;outline:none">
                       <option value="aktiv">✅ Aktiv</option>
                       <option value="ne_ndertim">🚧 Në ndërtim</option>
                       <option value="ne_rinovim">🔨 Në rinovim</option>
@@ -706,57 +702,43 @@ create trigger on_auth_user_created
                       <option value="i_braktisur">🚫 I braktisur</option>
                       <option value="i_demoluar">💥 I demoluar</option>
                       <option value="ne_investigim">🔍 Nën investigim</option>
-                    </select></div>
+                    </select>
+                  </div>
                 </div>
-                <div class="ifield" style="margin:0"><label>ADRESA</label>
-                  <input type="text" id="f-adresa" class="fi" placeholder="Adresa e plotë..."></div>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-                  <div class="ifield" style="margin:0"><label>KATET</label>
-                    <input type="number" id="f-kate" class="fi" placeholder="0" min="0"></div>
-                  <div class="ifield" style="margin:0"><label>LARTËSIA (m)</label>
-                    <input type="number" id="f-lartesia" class="fi" placeholder="0" min="0"></div>
-                  <div class="ifield" style="margin:0"><label>SIPËRFAQJA (m²)</label>
-                    <input type="number" id="f-siperfaqe" class="fi" placeholder="0" min="0"></div>
+                <div class="ifield" style="margin:0">
+                  <label>ADRESA</label>
+                  <input type="text" id="f-adresa" placeholder="Adresa e objektit..." style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:12px;outline:none">
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                  <div class="ifield" style="margin:0"><label>NR. INVENTAR</label>
-                    <input type="text" id="f-inventar" class="fi" placeholder="p.sh. INV-001"></div>
-                  <div class="ifield" style="margin:0"><label>VITI NDËRTIMIT</label>
-                    <input type="number" id="f-viti" class="fi" placeholder="2000" min="1800" max="2030"></div>
+                  <div class="ifield" style="margin:0">
+                    <label>KATET</label>
+                    <input type="number" id="f-kate" placeholder="0" min="0" max="200" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:12px;outline:none">
+                  </div>
+                  <div class="ifield" style="margin:0">
+                    <label>LARTËSIA (m)</label>
+                    <input type="number" id="f-lartesia" placeholder="0" min="0" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:12px;outline:none">
+                  </div>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                  <div class="ifield" style="margin:0"><label>PRONËSIA</label>
-                    <select id="f-pronesia" class="fi"><option value="">— Zgjidh —</option>
-                      <option>Publike - Shtet</option><option>Publike - Bashki</option>
-                      <option>Private</option><option>Të përziera</option>
-                    </select></div>
-                  <div class="ifield" style="margin:0"><label>ZONA / LAGJA</label>
-                    <input type="text" id="f-zona" class="fi" placeholder="p.sh. Bllok..."></div>
-                </div>
-                <div class="ifield" style="margin:0"><label>KUSHTET E SIGURISË</label>
-                  <select id="f-siguria" class="fi"><option value="">— Zgjidh —</option>
-                    <option value="shume_mire">✅ Shumë mirë</option>
-                    <option value="mire">🟢 Mirë</option>
-                    <option value="mesatare">🟡 Mesatare</option>
-                    <option value="dobete">🟠 Dobët</option>
-                    <option value="rrezik">🔴 Rrezik i lartë</option>
-                    <option value="jo_aplikueshme">➖ Jo aplikueshme</option>
-                  </select></div>
-                <div class="ifield" style="margin:0"><label>VLERËSIMI</label>
+                <div class="ifield" style="margin:0">
+                  <label>VLERËSIMI</label>
                   <div id="f-stars" style="display:flex;gap:6px;font-size:26px;cursor:pointer;padding:4px 0"></div>
-                  <input type="hidden" id="f-vleresimi" value="0"></div>
+                  <input type="hidden" id="f-vleresimi" value="0">
+                </div>
               </div>
             </div>
 
-
-            <div class="section" style="padding:0;overflow:hidden;border:1px solid var(--b1);border-radius:10px;margin-bottom:8px">
-              <button onclick="toggleSvAttach()" style="width:100%;padding:11px 16px;background:var(--s2);border:none;color:var(--txt2);font-family:var(--mono);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+            <!-- ATTACH SKEDAR -->
+            <div class="section" style="padding:0;overflow:hidden;border:1px solid #1c2740;border-radius:10px;margin-bottom:8px">
+              <button onclick="toggleSvAttach()" id="sv-att-btn"
+                style="width:100%;padding:11px 16px;background:#0d1119;border:none;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
                 <span>📎 Bashkëngjit skedar (opsionale)</span>
                 <span id="sv-att-arrow" style="transition:transform .2s">▼</span>
               </button>
-              <div id="sv-att-body" style="display:none;padding:12px;border-top:1px solid var(--b1)">
-                <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px dashed var(--b1);border-radius:8px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--txt3)">
-                  ↑ Klikoni për të zgjedhur skedar (PDF, DOC, XLS, IMG)
+              <div id="sv-att-body" style="display:none;padding:12px;border-top:1px solid #1c2740">
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px dashed #1c2740;border-radius:8px;cursor:pointer;font-family:monospace;font-size:11px;color:#3d5275;transition:.15s"
+                  onmouseenter="this.style.borderColor='#2d8bff'" onmouseleave="this.style.borderColor='#1c2740'">
+                  <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#2d8bff;stroke-width:2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>Klikoni për të zgjedhur skedar (PDF, DOC, XLS, IMG)</span>
                   <input type="file" id="sv-attach-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="onSvAttachChange(this)" style="display:none">
                 </label>
                 <div id="sv-attach-list" style="margin-top:8px"></div>
@@ -764,27 +746,38 @@ create trigger on_auth_user_created
             </div>
 
             <!-- SHTO DETYRË -->
-            <div class="section" style="padding:0;overflow:hidden;border:1px solid var(--b1);border-radius:10px;margin-bottom:8px">
-              <button onclick="toggleSvTask()" style="width:100%;padding:11px 16px;background:var(--s2);border:none;color:var(--txt2);font-family:var(--mono);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+            <div class="section" style="padding:0;overflow:hidden;border:1px solid #1c2740;border-radius:10px;margin-bottom:8px">
+              <button onclick="toggleSvTask()" id="sv-task-btn"
+                style="width:100%;padding:11px 16px;background:#0d1119;border:none;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
                 <span>✅ Shto detyrë pas survey (opsionale)</span>
                 <span id="sv-task-arrow" style="transition:transform .2s">▼</span>
               </button>
-              <div id="sv-task-body" style="display:none;padding:14px;border-top:1px solid var(--b1);flex-direction:column;gap:8px">
-                <div class="ifield" style="margin:0"><label>TITULLI I DETYRËS *</label>
-                  <input type="text" id="sv-task-title" class="fi" placeholder="p.sh. Verifikim dokumentesh..." oninput="updateSvTaskPreview()"></div>
+              <div id="sv-task-body" style="display:none;padding:14px;border-top:1px solid #1c2740;display:flex;flex-direction:column;gap:8px">
+                <div class="ifield" style="margin:0">
+                  <label>TITULLI I DETYRËS *</label>
+                  <input type="text" id="sv-task-title" placeholder="p.sh. Verifikim i dokumenteve, Inspektim pasues..." oninput="updateSvTaskPreview()">
+                </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                  <div class="ifield" style="margin:0"><label>AFATI</label>
-                    <input type="date" id="sv-task-deadline" class="fi" onchange="updateSvTaskPreview()"></div>
-                  <div class="ifield" style="margin:0"><label>PRIORITETI</label>
-                    <select id="sv-task-priority" class="fi">
+                  <div class="ifield" style="margin:0">
+                    <label>AFATI</label>
+                    <input type="date" id="sv-task-deadline" onchange="updateSvTaskPreview()">
+                  </div>
+                  <div class="ifield" style="margin:0">
+                    <label>PRIORITETI</label>
+                    <select id="sv-task-priority" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:12px;outline:none">
                       <option value="i_ulet">🟢 I ulët</option>
                       <option value="mesem" selected>🟡 Mesëm</option>
                       <option value="i_larte">🟠 I lartë</option>
                       <option value="kritik">🔴 Kritik</option>
-                    </select></div>
+                    </select>
+                  </div>
                 </div>
-                <div class="ifield" style="margin:0"><label>PERSONI PËRGJEGJËS</label>
-                  <select id="sv-task-assigned" class="fi"><option value="">— Zgjidh —</option></select></div>
+                <div class="ifield" style="margin:0">
+                  <label>PERSONI PËRGJEGJËS</label>
+                  <select id="sv-task-assigned" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:12px;outline:none">
+                    <option value="">— Zgjidh —</option>
+                  </select>
+                </div>
                 <div id="sv-task-preview" style="display:none;padding:8px 12px;background:rgba(5,217,160,.06);border:1px solid rgba(5,217,160,.2);border-radius:8px;font-family:monospace;font-size:11px;color:#05d9a0"></div>
               </div>
             </div>
@@ -1550,7 +1543,7 @@ create trigger on_auth_user_created
   </div><!-- /pages -->
 </div><!-- /app -->
 <!-- DETAIL PANEL -->
-<div id="dpanel" style="position:fixed;top:0;right:-560px;width:540px;max-width:100vw;height:100vh;background:#0d1119;border-left:3px solid #05d9a0;z-index:9999;overflow:hidden;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-8px 0 40px rgba(0,0,0,.8)">
+<div id="dpanel">
 
   <!-- HEADER -->
   <div style="padding:14px 16px;border-bottom:1px solid #1c2740;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#0d1119;position:sticky;top:0;z-index:1">
@@ -1610,111 +1603,72 @@ create trigger on_auth_user_created
       </div>
 
       <!-- FUSHAT EDITUESHME -->
-            <div style="border:1px solid #1c2740;border-radius:10px;margin-bottom:14px;overflow:hidden">
+      <div style="border:1px solid #1c2740;border-radius:10px;margin-bottom:14px;overflow:hidden">
         <div style="padding:10px 14px;background:#07090f;border-bottom:1px solid #1c2740;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">Informacion i rekordeve</div>
-        <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
+        <div style="padding:14px;display:flex;flex-direction:column;gap:12px">
 
-          <!-- Kompania/Dega -->
-          <div style="background:rgba(5,217,160,.06);border:1px solid rgba(5,217,160,.15);border-radius:8px;padding:10px">
-            <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KOMPANIA / DEGA</div>
-            <div id="dp-company-view" style="font-size:13px;color:#05d9a0;font-weight:600">—</div>
+          <div>
+            <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">QËLLIMI</div>
+            <div id="dp-qellim-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+            <select id="dp-qellim-edit" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option>Inspektim urban</option><option>Monitorim mjedisi</option>
+              <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
+              <option>Pyje dhe bimësi</option><option>Ujëra dhe hidrologji</option><option>Tjetër</option>
+            </select>
           </div>
 
-          <!-- Qëllimi + Statusi -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">QËLLIMI</div>
-              <div id="dp-qellim-view" style="font-size:13px;color:#dce6f5"></div>
-              <select id="dp-qellim-edit" style="display:none;width:100%;padding:7px;background:#07090f;border:1px solid #253352;border-radius:6px;color:#dce6f5;font-size:12px;outline:none">
-                <option value="">—</option><option>Inspektim urban</option><option>Monitorim mjedisi</option>
-                <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
-                <option>Pyje dhe bimësi</option><option>Ujëra dhe hidrologji</option><option>Tjetër</option>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KLASIFIKIMI</div>
+              <div id="dp-klasi-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+              <select id="dp-klasi" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+                <option value="">— Pa klasifikim —</option>
+                <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
+                <option>Depo / Magazine</option><option>Objekt industrial</option>
+                <option>Infrastrukturë</option><option>Tokë bujqësore</option>
+                <option>Zonë e mbrojtur</option><option>Tjetër</option>
               </select>
             </div>
             <div>
               <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">STATUSI</div>
-              <div id="dp-statusi-view" style="font-size:13px;color:#dce6f5"></div>
-              <select id="dp-statusi" style="display:none;width:100%;padding:7px;background:#07090f;border:1px solid #253352;border-radius:6px;color:#dce6f5;font-size:12px;outline:none">
-                <option value="aktiv">✅ Aktiv</option><option value="ne_ndertim">🚧 Në ndërtim</option>
-                <option value="ne_rinovim">🔨 Në rinovim</option><option value="i_demtuar">⚠️ I dëmtuar</option>
-                <option value="i_braktisur">🚫 I braktisur</option><option value="i_demoluar">💥 I demoluar</option>
+              <div id="dp-statusi-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+              <select id="dp-statusi" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+                <option value="aktiv">✅ Aktiv</option>
+                <option value="ne_ndertim">🚧 Në ndërtim</option>
+                <option value="ne_rinovim">🔨 Në rinovim</option>
+                <option value="i_demtuar">⚠️ I dëmtuar</option>
+                <option value="i_braktisur">🚫 I braktisur</option>
+                <option value="i_demoluar">💥 I demoluar</option>
                 <option value="ne_investigim">🔍 Nën investigim</option>
               </select>
             </div>
           </div>
 
-          <!-- Klasifikimi + Pronësia -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KLASIFIKIMI</div>
-              <div id="dp-klasi-view" style="font-size:13px;color:#dce6f5"></div>
-              <select id="dp-klasi" style="display:none;width:100%;padding:7px;background:#07090f;border:1px solid #253352;border-radius:6px;color:#dce6f5;font-size:12px;outline:none">
-                <option value="">—</option><option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
-                <option>Depo / Magazine</option><option>Objekt industrial</option><option>Infrastrukturë</option>
-                <option>Tokë bujqësore</option><option>Zonë e mbrojtur</option><option>Tjetër</option>
-              </select>
-            </div>
-            <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">PRONËSIA</div>
-              <div id="dp-pronesia-view" style="font-size:13px;color:#dce6f5"></div>
-            </div>
-          </div>
-
-          <!-- Adresa -->
           <div>
             <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ADRESA</div>
-            <div id="dp-adresa-view" style="font-size:13px;color:#dce6f5"></div>
-            <input id="dp-adresa" type="text" style="display:none;width:100%;padding:7px;background:#07090f;border:1px solid #253352;border-radius:6px;color:#dce6f5;font-size:12px;outline:none;box-sizing:border-box">
+            <div id="dp-adresa-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+            <input type="text" id="dp-adresa" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-size:12px;outline:none;box-sizing:border-box" placeholder="Adresa...">
           </div>
 
-          <!-- Katet + Lartësia + Sipërfaqja -->
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div>
               <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KATET</div>
-              <div id="dp-kate-view" style="font-size:13px;color:#dce6f5"></div>
-              <input id="dp-kate" type="number" style="display:none;width:100%;padding:7px;background:#07090f;border:1px solid #253352;border-radius:6px;color:#dce6f5;font-size:12px;outline:none">
+              <div id="dp-kate-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+              <input type="number" id="dp-kate" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-size:12px;outline:none" placeholder="0">
             </div>
             <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">LARTËSIA</div>
-              <div id="dp-lartesia-view" style="font-size:13px;color:#dce6f5"></div>
-              <input id="dp-lartesia" type="number" style="display:none;width:100%;padding:7px;background:#07090f;border:1px solid #253352;border-radius:6px;color:#dce6f5;font-size:12px;outline:none">
-            </div>
-            <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SIPËRFAQJA</div>
-              <div id="dp-siperfaqe-view" style="font-size:13px;color:#dce6f5"></div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">LARTËSIA (m)</div>
+              <div id="dp-lartesia-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+              <input type="number" id="dp-lartesia" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-size:12px;outline:none" placeholder="0">
             </div>
           </div>
 
-          <!-- Nr.Inventar + Viti + Zona -->
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-            <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">NR. INVENTAR</div>
-              <div id="dp-inventar-view" style="font-size:13px;color:#dce6f5"></div>
-            </div>
-            <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">VITI NDËRTIMIT</div>
-              <div id="dp-viti-view" style="font-size:13px;color:#dce6f5"></div>
-            </div>
-            <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ZONA</div>
-              <div id="dp-zona-view" style="font-size:13px;color:#dce6f5"></div>
-            </div>
-          </div>
-
-          <!-- Siguria -->
-          <div>
-            <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KUSHTET E SIGURISË</div>
-            <div id="dp-siguria-view" style="font-size:13px;color:#dce6f5"></div>
-          </div>
-
-          <!-- Shënime -->
           <div>
             <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SHËNIME</div>
-            <div id="dp-notes-view" style="font-size:13px;color:#8da0bb;line-height:1.5"></div>
+            <div id="dp-notes-view" style="font-size:13px;color:#8da0bb;min-height:20px;line-height:1.5"></div>
             <textarea id="dp-notes-edit" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-size:12px;outline:none;min-height:70px;resize:vertical;box-sizing:border-box"></textarea>
           </div>
 
-          <!-- Vlerësimi -->
           <div>
             <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:6px">VLERËSIMI</div>
             <div id="dp-stars" style="display:flex;gap:4px;font-size:24px;cursor:pointer"></div>
@@ -1722,6 +1676,7 @@ create trigger on_auth_user_created
 
         </div>
       </div>
+
       <!-- DETYRAT E LIDHURA -->
       <div id="dp-tasks-wrap" style="border:1px solid #1c2740;border-radius:10px;margin-bottom:14px;overflow:hidden;display:none">
         <div style="padding:10px 14px;background:#07090f;border-bottom:1px solid #1c2740;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">Detyrat e lidhura</div>
@@ -1744,7 +1699,7 @@ create trigger on_auth_user_created
     </div>
   </div>
 </div>
-<div id="dp-overlay" style="display:none;position:fixed;inset:0;z-index:5000" onclick="closeDp()"></div>
+<div id="dp-overlay" style="display:none;position:fixed;inset:0;z-index:3999" onclick="closeDp()"></div>
 
 
 <div class="toastwrap" id="toasts"></div>
@@ -1767,73 +1722,116 @@ var charts={};
 /* ═══════════════════════════════════════
    BOOT — called after Supabase SDK loads
 ═══════════════════════════════════════ */
-function openEditModal(){
-  if(!_dpRec)return;
-  var r=_dpRec;
+var _rmRec=null,_rmMap=null,_rmCarIdx=0,_rmUrls=[];
+function openRecModalById(id){
+  var r=allRecs.find(function(x){return String(x.id)===String(id);});
+  if(r){openRecModal(r);return;}
+  if(!SB)return;
+  SB.from('survey_records').select('*,locations(id,name,company_id)').eq('id',id).single().then(function(res){
+    if(!res.error&&res.data){
+      var d=res.data;
+      if(d.locations&&d.locations.name){d.location_name=d.locations.name;var c=allCompanies.find(function(x){return x.id===d.locations.company_id;});if(c){d.company_name=c.name;d.location_display=c.name+' > '+d.location_name;}if(!d.location_display)d.location_display=d.location_name;}
+      delete d.locations;openRecModal(d);
+    }
+  });
+}
+function openRecModal(rec){
+  _rmRec=rec;_rmCarIdx=0;_rmUrls=[];
   var role=CP?CP.role:'field';
-  var isOwn=CU&&(r.user_id===CU.id||r.user_email===CU.email);
-  if(!(role==='admin'||role==='supervisor'||(role==='field'&&isOwn))){toast('warn','Nuk keni leje editimi');return;}
-  document.getElementById('em-id').textContent='#'+r.id;
-  document.getElementById('em-qellim').value=r.qellim||'';
-  document.getElementById('em-statusi').value=r.statusi||'aktiv';
-  document.getElementById('em-klasi').value=r.klasifikimi||'';
-  document.getElementById('em-pronesia').value=r.pronesia||'';
-  document.getElementById('em-adresa').value=r.adresa||'';
-  document.getElementById('em-kate').value=r.kate||'';
-  document.getElementById('em-lartesia').value=r.lartesia||'';
-  document.getElementById('em-siperfaqe').value=r.siperfaqe_m2||'';
-  document.getElementById('em-inventar').value=r.nr_inventar||'';
-  document.getElementById('em-siguria').value=r.siguria_punesimit||'';
-  document.getElementById('em-viti').value=r.viti_ndertimit||'';
-  document.getElementById('em-zona').value=r.zona||'';
-  document.getElementById('em-notes').value=r.notes||'';
-  var emStars=document.getElementById('em-stars');
-  emStars.innerHTML='';var sv=r.vleresimi||0;
-  for(var i=1;i<=5;i++){
-    var s=document.createElement('span');s.textContent='★';
-    s.style.color=i<=sv?'#ffaa2e':'#253352';s.style.cursor='pointer';
-    (function(n){s.onclick=function(){sv=n;for(var j=0;j<emStars.children.length;j++)emStars.children[j].style.color=j<n?'#ffaa2e':'#253352';};s.onmouseenter=function(){for(var j=0;j<emStars.children.length;j++)emStars.children[j].style.color=j<n?'#ffaa2e':'#253352';};s.onmouseleave=function(){for(var j=0;j<emStars.children.length;j++)emStars.children[j].style.color=j<sv?'#ffaa2e':'#253352';};})(i);
-    emStars.appendChild(s);
+  var sc={aktiv:'#05d9a0',ne_ndertim:'#ffaa2e',ne_rinovim:'#ffaa2e',i_demtuar:'#ff4d6d',i_braktisur:'#ff4d6d',i_demoluar:'#ff4d6d',ne_investigim:'#2d8bff'}[rec.statusi]||'#05d9a0';
+  var dot=document.getElementById('rm-dot');if(dot)dot.style.background=sc;
+  document.getElementById('rm-title').textContent=rec.qellim||('Vezhgim #'+rec.id);
+  document.getElementById('rm-sub').textContent='#'+rec.id+' - '+(rec.user_name||rec.user_email||'?')+' - '+(rec.rec_date||'-');
+  var badge=document.getElementById('rm-badge');
+  if(badge){badge.textContent=STATUS_LBL[rec.statusi]||rec.statusi||'Aktiv';badge.style.cssText='padding:4px 12px;border-radius:20px;font-size:11px;font-family:monospace;font-weight:600;white-space:nowrap;color:'+sc+';border:1px solid '+sc+'55;background:'+sc+'11';}
+  var eb=document.getElementById('rm-edit-btn');
+  if(eb){var ce=(role==='admin'||role==='supervisor'||(CU&&(rec.user_id===CU.id||rec.user_email===CU.email)));eb.style.display=ce?'inline-block':'none';}
+  document.getElementById('rm-user').textContent=rec.user_name||rec.user_email||'-';
+  document.getElementById('rm-role').textContent=rec.user_role||'-';
+  document.getElementById('rm-date').textContent=rec.rec_date||'-';
+  document.getElementById('rm-time').textContent=rec.rec_time||'-';
+  document.getElementById('rm-gps').textContent=(rec.lat&&rec.lng)?rec.lat.toFixed(5)+', '+rec.lng.toFixed(5):'-';
+  document.getElementById('rm-acc').textContent=rec.accuracy?rec.accuracy.toFixed(0)+' m':'-';
+  document.getElementById('rm-company').textContent=rec.location_display||rec.company_name||(rec.location_name?rec.location_name:'-');
+  document.getElementById('rm-qellim').textContent=rec.qellim||'-';
+  document.getElementById('rm-klasi').textContent=rec.klasifikimi||'-';
+  document.getElementById('rm-statusi').textContent=STATUS_LBL[rec.statusi]||rec.statusi||'-';
+  document.getElementById('rm-adresa').textContent=rec.adresa||'-';
+  document.getElementById('rm-kate').textContent=rec.kate?rec.kate+' kate':'-';
+  document.getElementById('rm-lartesia').textContent=rec.lartesia?rec.lartesia+' m':'-';
+  document.getElementById('rm-siperfaqe').textContent=rec.siperfaqe_m2?rec.siperfaqe_m2+' m2':'-';
+  document.getElementById('rm-inventar').textContent=rec.nr_inventar||'-';
+  document.getElementById('rm-viti').textContent=rec.viti_ndertimit||'-';
+  document.getElementById('rm-pronesia').textContent=rec.pronesia||'-';
+  document.getElementById('rm-zona').textContent=rec.zona||'-';
+  var sgm={shume_mire:'Shume mire',mire:'Mire',mesatare:'Mesatare',dobete:'Dobet',rrezik:'Rrezik i larte',jo_aplikueshme:'Jo aplikueshme'};
+  document.getElementById('rm-siguria').textContent=sgm[rec.siguria_punesimit]||rec.siguria_punesimit||'-';
+  document.getElementById('rm-notes').textContent=rec.notes||'-';
+  var stEl=document.getElementById('rm-stars');
+  if(stEl){var sv=rec.vleresimi||0;stEl.innerHTML='';for(var i=1;i<=5;i++){var s=document.createElement('span');s.textContent='*';s.style.cssText='font-size:22px;color:'+(i<=sv?'#ffaa2e':'#253352');stEl.appendChild(s);}}
+  var pu=[];try{if(rec.photo_urls)pu=JSON.parse(rec.photo_urls);}catch(e){}
+  _rmUrls=pu;
+  var pb=document.getElementById('rm-photobar'),cw=document.getElementById('rm-car-wrap');
+  if(pu.length>0){
+    if(pb){pb.style.display='block';document.getElementById('rm-pcount').textContent=pu.length;}
+    if(cw)cw.style.display='block';
+    var sl=document.getElementById('rm-slides');
+    if(sl)sl.innerHTML=pu.map(function(u){return'<img src="'+u+'" style="min-width:100%;height:240px;object-fit:cover">';}).join('');
+    var dt=document.getElementById('rm-dots');
+    if(dt)dt.innerHTML=pu.map(function(_,i){return'<div onclick="rmCarGo('+i+')" style="width:8px;height:8px;border-radius:50%;cursor:pointer;background:'+(i===0?'#fff':'rgba(255,255,255,.4)')+'"></div>';}).join('');
+    rmCarGo(0);
+  } else {if(pb)pb.style.display='none';if(cw)cw.style.display='none';}
+  var ts=document.getElementById('rm-tasks-sec'),tl=document.getElementById('rm-tasks-list');
+  if(ts&&tl){
+    var rt=(allTasks||[]).filter(function(t){return String(t.survey_record_id)===String(rec.id);});
+    if(rt.length>0){
+      ts.style.display='block';
+      tl.innerHTML=rt.map(function(t){
+        var pc={i_ulet:'#05d9a0',mesem:'#ffaa2e',i_larte:'#ff8c42',kritik:'#ff4d6d'}[t.prioriteti]||'#8da0bb';
+        var dl='';if(t.deadline){var d2=new Date(t.deadline),df=Math.ceil((d2-new Date())/86400000);dl=' - '+(df>0?df+' dite mbetur':'afati kaloi');}
+        return'<div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+pc+'"></div><div style="flex:1"><div style="font-size:12px;color:#dce6f5">'+t.title+'</div><div style="font-size:10px;color:#3d5275;font-family:monospace;margin-top:2px">'+(t.deadline||'Pa afat')+dl+'</div></div><div style="font-size:10px;padding:2px 8px;border-radius:10px;background:'+pc+'22;color:'+pc+';border:1px solid '+pc+'44">'+(t.statusi_detyre||'aktive')+'</div></div>';
+      }).join('');
+    } else ts.style.display='none';
   }
-  document.getElementById('edit-modal').style.display='block';
+  var ds=document.getElementById('rm-docs-sec'),dl=document.getElementById('rm-docs-list');
+  if(ds&&dl){
+    var du=[];try{if(rec.doc_urls)du=JSON.parse(rec.doc_urls);}catch(e){}
+    if(du.length>0){
+      ds.style.display='block';
+      dl.innerHTML=du.map(function(u){var fn=u.split('/').pop().split('?')[0];return'<a href="'+u+'" target="_blank" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#8da0bb;text-decoration:none;font-family:monospace;font-size:11px">'+fn+'</a>';}).join('');
+    } else ds.style.display='none';
+  }
+  setTimeout(function(){
+    var me=document.getElementById('rm-map');
+    if(me&&rec.lat&&rec.lng){
+      if(_rmMap){try{_rmMap.remove();}catch(e){}_rmMap=null;}
+      me.innerHTML='';
+      _rmMap=L.map('rm-map',{zoomControl:true,attributionControl:false}).setView([rec.lat,rec.lng],15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(_rmMap);
+      L.circleMarker([rec.lat,rec.lng],{radius:10,color:'#05d9a0',fillColor:'#05d9a0',fillOpacity:.9,weight:3}).addTo(_rmMap);
+      setTimeout(function(){if(_rmMap)_rmMap.invalidateSize();},300);
+    }
+  },200);
+  var m=document.getElementById('rec-modal');
+  if(m){m.style.display='block';m.scrollTop=0;}
   document.body.style.overflow='hidden';
 }
-function closeEditModal(){
-  document.getElementById('edit-modal').style.display='none';
+function closeRecModal(){
+  var m=document.getElementById('rec-modal');if(m)m.style.display='none';
   document.body.style.overflow='';
+  if(_rmMap){try{_rmMap.remove();}catch(e){}_rmMap=null;}
+  _rmRec=null;
 }
-async function saveEditModal(){
-  if(!_dpRec||!SB)return;
-  var stars=document.getElementById('em-stars');
-  var sv=0;for(var i=0;i<stars.children.length;i++)if(stars.children[i].style.color==='rgb(255, 170, 46)')sv=i+1;
-  var u={
-    qellim:document.getElementById('em-qellim').value||null,
-    statusi:document.getElementById('em-statusi').value||null,
-    klasifikimi:document.getElementById('em-klasi').value||null,
-    pronesia:document.getElementById('em-pronesia').value||null,
-    adresa:document.getElementById('em-adresa').value||null,
-    kate:parseInt(document.getElementById('em-kate').value)||null,
-    lartesia:parseFloat(document.getElementById('em-lartesia').value)||null,
-    siperfaqe_m2:parseFloat(document.getElementById('em-siperfaqe').value)||null,
-    nr_inventar:document.getElementById('em-inventar').value||null,
-    siguria_punesimit:document.getElementById('em-siguria').value||null,
-    viti_ndertimit:parseInt(document.getElementById('em-viti').value)||null,
-    zona:document.getElementById('em-zona').value||null,
-    notes:document.getElementById('em-notes').value||null,
-    vleresimi:sv||null
-  };
-  var{error}=await SB.from('survey_records').update(u).eq('id',_dpRec.id);
-  if(error){toast('err','Gabim: '+error.message);return;}
-  Object.assign(_dpRec,u);
-  var idx=allRecs.findIndex(function(r){return r.id===_dpRec.id;});
-  if(idx>=0)Object.assign(allRecs[idx],u);
-  toast('ok','✅ Rekord #'+_dpRec.id+' u përditësua!');
-  closeEditModal();
-  var b64=btoa(unescape(encodeURIComponent(JSON.stringify(_dpRec))));
-  openPanel(b64);
-  filterR();
+function openEditFromModal(){
+  if(!_rmRec)return;_dpRec=_rmRec;closeRecModal();openEditModal();
 }
-
+function rmCarGo(i){
+  _rmCarIdx=i;
+  var sl=document.getElementById('rm-slides');if(sl)sl.style.transform='translateX(-'+i*100+'%)';
+  var dt=document.getElementById('rm-dots');if(dt)Array.from(dt.children).forEach(function(d,j){d.style.background=j===i?'#fff':'rgba(255,255,255,.4)';});
+}
+function rmCarSlide(d){var n=_rmCarIdx+d;if(n<0)n=_rmUrls.length-1;if(n>=_rmUrls.length)n=0;rmCarGo(n);}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=document.getElementById('rec-modal');if(m&&m.style.display!=='none')closeRecModal();}});
 
 function boot(){
   // Config nga URL params (për celular)
@@ -2214,9 +2212,6 @@ function openPanel(b64){
   document.getElementById('dp-acc').textContent=rec.accuracy?rec.accuracy.toFixed(0)+' m':'—';
 
   // Fushat view
-  // Kompania/Dega
-  var _dco=document.getElementById('dp-company-view');
-  if(_dco)_dco.textContent=rec.location_display||rec.company_name||(rec.location_name?'🏢 '+rec.location_name:'—');
   document.getElementById('dp-qellim-view').textContent=rec.qellim||'—';
   document.getElementById('dp-klasi-view').textContent=rec.klasifikimi||'—';
   document.getElementById('dp-statusi-view').textContent=STATUS_LBL[rec.statusi]||rec.statusi||'—';
@@ -2224,19 +2219,6 @@ function openPanel(b64){
   document.getElementById('dp-kate-view').textContent=rec.kate||'—';
   document.getElementById('dp-lartesia-view').textContent=rec.lartesia?rec.lartesia+' m':'—';
   document.getElementById('dp-notes-view').textContent=rec.notes||'—';
-  // Yjet
-  var dpSt=document.getElementById('dp-stars');
-  if(dpSt){dpSt.innerHTML='';var sv=rec.vleresimi||0;
-  for(var si=1;si<=5;si++){var ss=document.createElement('span');ss.textContent='★';
-  ss.style.color=si<=sv?'#ffaa2e':'#253352';dpSt.appendChild(ss);}}
-  var _dsp=document.getElementById('dp-siperfaqe-view');if(_dsp)_dsp.textContent=rec.siperfaqe_m2?rec.siperfaqe_m2+' m²':'—';
-  var _din=document.getElementById('dp-inventar-view');if(_din)_din.textContent=rec.nr_inventar||'—';
-  var _dvi=document.getElementById('dp-viti-view');if(_dvi)_dvi.textContent=rec.viti_ndertimit||'—';
-  var _dpr=document.getElementById('dp-pronesia-view');if(_dpr)_dpr.textContent=rec.pronesia||'—';
-  var _dzo=document.getElementById('dp-zona-view');if(_dzo)_dzo.textContent=rec.zona||'—';
-  var _dsi=document.getElementById('dp-siguria-view');
-  if(_dsi){var _sgm={shume_mire:'✅ Shumë mirë',mire:'🟢 Mirë',mesatare:'🟡 Mesatare',dobete:'🟠 Dobët',rrezik:'🔴 Rrezik i lartë',jo_aplikueshme:'➖ Jo aplikueshme'};
-  _dsi.textContent=_sgm[rec.siguria_punesimit]||rec.siguria_punesimit||'—';}
 
   // Fushat edit (vlerat)
   var qSel=document.getElementById('dp-qellim-edit');if(qSel)qSel.value=rec.qellim||'';
@@ -2274,7 +2256,7 @@ function openPanel(b64){
   try{if(rec.doc_urls)docPaths=JSON.parse(rec.doc_urls);}catch(e){}
   // Hap panelin - JS direct style
   var dpEl=document.getElementById('dpanel');
-  if(dpEl){dpEl.classList.add('open');dpEl.style.right='0';var db=document.getElementById('dp-body');if(db)db.scrollTop=0;}
+  if(dpEl){dpEl.classList.add('open');var db=document.getElementById('dp-body');if(db)db.scrollTop=0;}
   var ovEl=document.getElementById('dp-overlay');
   if(ovEl)ovEl.style.display='block';
 
@@ -2313,7 +2295,29 @@ function dpInitMap(rec){
 }
 
 var _dpEditMode=false;
-function dpStartEdit(){openEditModal();}
+function dpStartEdit(){
+  console.log('dpStartEdit called, role:', CP?CP.role:'?');
+  _dpEditMode=true;
+  var role=CP?CP.role:'field';
+
+  // Çift view/edit për çdo fushë
+  var allViewIds=['dp-qellim-view','dp-klasi-view','dp-statusi-view','dp-adresa-view','dp-kate-view','dp-lartesia-view','dp-notes-view'];
+  var allEditIds=['dp-qellim-edit','dp-klasi','dp-statusi','dp-adresa','dp-kate','dp-lartesia','dp-notes-edit'];
+
+  // Field mund ndryshojë vetëm notes
+  var editableEdits = (role==='admin'||role==='supervisor') ? allEditIds : ['dp-notes-edit'];
+  var editableViews = (role==='admin'||role==='supervisor') ? allViewIds : ['dp-notes-view'];
+
+  // Fshih view, shfaq edit për fushat editueshme
+  editableViews.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+  editableEdits.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='block';});
+
+  // Butonat
+  var eb=document.getElementById('dp-edit-btn');if(eb)eb.style.display='none';
+  var sb=document.getElementById('dp-save-btn');if(sb)sb.style.display='inline-block';
+  var cb=document.getElementById('dp-cancel-btn');if(cb)cb.style.display='inline-block';
+  var db=document.getElementById('dp-del-btn');if(db)db.style.display=(role==='admin')?'inline-block':'none';
+}
 
 function dpCancelEdit(){
   _dpEditMode=false;
@@ -2812,27 +2816,34 @@ async function addRec(){
   var rec={
     user_id:CU.id,
     location_id:parseInt(document.getElementById('f-loc-id').value)||null,
-    company_id:(function(){var cid=document.getElementById('f-company-sel').value;return cid&&!isNaN(parseInt(cid))?parseInt(cid):null;})(),
-    user_email:CP.email,user_name:CP.full_name||CP.email,user_role:CP.role||'field',
+    company_id:(function(){
+      var cid=document.getElementById('f-company-sel').value;
+      return cid&&!isNaN(parseInt(cid))?parseInt(cid):null;
+    })(),
+    user_email:CP.email,
+    user_name:CP.full_name||CP.email,
+    user_role:CP.role||'field',
     rec_date:document.getElementById('f-dt').value,
     rec_time:document.getElementById('f-tm').value,
-    lat:parseFloat(la),lng:parseFloat(ln),
+    lat:parseFloat(la),
+    lng:parseFloat(ln),
     accuracy:parseFloat(document.getElementById('f-acc').textContent)||0,
     qellim:document.getElementById('f-ql').value||null,
     notes:document.getElementById('f-nt').value||null,
-    klasifikimi:(document.getElementById('f-klasi')||{value:''}).value||null,
+    klasifikimi:document.getElementById('f-klasi').value||null,
+    statusi:document.getElementById('f-statusi').value||'aktiv',
+    adresa:document.getElementById('f-adresa').value||null,
+    kate:parseInt(document.getElementById('f-kate').value)||null,
+    lartesia:parseFloat(document.getElementById('f-lartesia').value)||null,
+    vleresimi:parseInt(document.getElementById('f-vleresimi').value)||null,
+    klasifikimi:(document.getElementById('f-klasi')||{value:null}).value||null,
     statusi:(document.getElementById('f-statusi')||{value:'aktiv'}).value||'aktiv',
-    adresa:(document.getElementById('f-adresa')||{value:''}).value||null,
+    adresa:(document.getElementById('f-adresa')||{value:null}).value||null,
     kate:parseInt((document.getElementById('f-kate')||{value:''}).value)||null,
     lartesia:parseFloat((document.getElementById('f-lartesia')||{value:''}).value)||null,
     vleresimi:parseInt((document.getElementById('f-vleresimi')||{value:'0'}).value)||null,
-    nr_inventar:(document.getElementById('f-inventar')||{value:''}).value||null,
-    siperfaqe_m2:parseFloat((document.getElementById('f-siperfaqe')||{value:''}).value)||null,
-    viti_ndertimit:parseInt((document.getElementById('f-viti')||{value:''}).value)||null,
-    pronesia:(document.getElementById('f-pronesia')||{value:''}).value||null,
-    zona:(document.getElementById('f-zona')||{value:''}).value||null,
-    siguria_punesimit:(document.getElementById('f-siguria')||{value:''}).value||null,
-    photo_count:photos.length,synced:true
+    photo_count:photos.length,
+    synced:true
   };
 
   log('info','Duke insertuar: user='+rec.user_email+' lat='+rec.lat+' lng='+rec.lng);
@@ -2970,45 +2981,83 @@ function addMkr(rec){
   if(rec.statusi==='i_demtuar')statusEmoji='⚠';
   else if(rec.statusi==='i_braktisur')statusEmoji='🚫';
   else if(rec.statusi==='ne_ndertim')statusEmoji='🚧';
-
   var ic=L.divIcon({
     className:'',
-    html:'<div style="position:relative;width:16px;height:16px">'+
-         '<div style="width:16px;height:16px;background:'+c+';border:2px solid #07090f;border-radius:50%;box-shadow:0 0 0 3px '+c+'44;cursor:pointer"></div>'+
-         (statusEmoji?'<div style="position:absolute;top:-8px;left:10px;font-size:10px">'+statusEmoji+'</div>':'')+
+    html:'<div style="position:relative;width:14px;height:14px">'+
+         '<div style="width:14px;height:14px;background:'+c+';border:2px solid #07090f;border-radius:50%;box-shadow:0 0 0 3px '+c+'44"></div>'+
+         (statusEmoji?'<div style="position:absolute;top:-8px;left:8px;font-size:10px">'+statusEmoji+'</div>':'')+
          '</div>',
-    iconSize:[16,16],iconAnchor:[8,8]
+    iconSize:[14,14],iconAnchor:[7,7]
   });
-
   var m=L.marker([rec.lat,rec.lng],{icon:ic});
+
+  // Ruaj rec si data attribute për ta përdorur në onclick
   var recId=rec.id;
 
-  // Klikim → hap panel i plotë direkt (pa popup)
-  m.on('click',function(e){
-    L.DomEvent.stopPropagation(e);
-    openRecById(recId);
+  // Popup i thjeshtë dhe i sigurt
+  var starsHtml='';
+  if(rec.vleresimi){
+    for(var s=1;s<=5;s++){
+      starsHtml+='<span style="color:'+(s<=rec.vleresimi?'#ffaa2e':'#3d5275')+'">★</span>';
+    }
+  }
+
+  var popupDiv=document.createElement('div');
+  popupDiv.className='lpopup';
+  popupDiv.style.minWidth='220px';
+
+  // Header
+  var hdr=document.createElement('div');
+  hdr.style.cssText='font-weight:600;margin-bottom:8px;color:'+c+';font-size:13px';
+  hdr.textContent=rec.qellim||'Vëzhgim GIS';
+  popupDiv.appendChild(hdr);
+
+  // Rows
+  var rows=[
+    ['STATUSI', STATUS_LBL[rec.statusi]||rec.statusi||'—'],
+    ['USER', rec.user_name||rec.user_email||'—'],
+    ['DATA', (rec.rec_date||'—')+' '+(rec.rec_time||'')],
+    ['LLOJI', rec.klasifikimi||'—'],
+    ['ADRESA', rec.adresa||'—'],
+    ['SHËNIME', rec.notes?(rec.notes.substring(0,80)+(rec.notes.length>80?'…':'')):null],
+  ];
+  rows.forEach(function(row){
+    if(!row[1]||row[1]==='—')return;
+    var div=document.createElement('div');
+    div.className='lpopup-row';
+    div.innerHTML='<span class="lpopup-lbl">'+row[0]+'</span><span class="lpopup-val">'+row[1]+'</span>';
+    popupDiv.appendChild(div);
   });
 
-  // Hover tooltip i vogël me info bazë
-  var compInfo=rec.location_display||rec.company_name||rec.location_name||'';
-  var tooltipHtml=
-    '<div style="font-family:monospace;font-size:11px;min-width:160px">'+
-    '<div style="font-weight:700;color:'+c+';margin-bottom:4px">'+(rec.qellim||'Vëzhgim #'+rec.id)+'</div>'+
-    (compInfo?'<div style="color:#8da0bb;font-size:10px">🏢 '+compInfo+'</div>':'')+
-    '<div style="color:#8da0bb;font-size:10px">'+(rec.rec_date||'')+'</div>'+
-    '<div style="margin-top:4px;color:#05d9a0;font-size:10px">▶ Kliko për detaje</div>'+
-    '</div>';
+  // Yjet
+  if(starsHtml){
+    var sd=document.createElement('div');
+    sd.style.margin='6px 0 4px';
+    sd.innerHTML=starsHtml;
+    popupDiv.appendChild(sd);
+  }
 
-  m.bindTooltip(tooltipHtml,{
-    permanent:false,
-    direction:'top',
-    offset:[0,-10],
-    className:'map-tooltip'
-  });
+  // Foto count
+  if(rec.photo_count>0){
+    var pd=document.createElement('div');
+    pd.style.cssText='font-size:10px;color:#8da0bb;font-family:monospace;margin-bottom:6px';
+    pd.textContent='📷 '+rec.photo_count+' foto';
+    popupDiv.appendChild(pd);
+  }
 
+  // Buton Detaje
+  var btn=document.createElement('button');
+  btn.style.cssText='width:100%;padding:8px;background:var(--acc);border:none;border-radius:6px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer;margin-top:6px';
+  btn.textContent='📋 Hap detajet →';
+  btn.onclick=function(){
+    m.closePopup();
+    openRecModal(rec);
+  };
+  popupDiv.appendChild(btn);
+
+  m.bindPopup(popupDiv,{maxWidth:290,className:'lpopup-wrap'});
   sMarkers.addLayer(m);
 }
-
 
 /* ═══════════════════════════════════════
    LOAD & FILTER RECORDS
@@ -3100,7 +3149,7 @@ function renderRT(){
     var offTag=r.synced===false?'<span class="badge warn" style="margin-left:4px;font-size:9px">offline</span>':'';
     var sid=String(r.id);var sidShort=sid.startsWith('OFF_')?sid.substring(4,18)+'…':sid;
     var recId=r.id;
-    return'<tr data-rid="'+recId+'" style="cursor:pointer" onclick="openRecById(this.dataset.rid,this)" onmouseenter="this.style.background=\'#0d1119\'" onmouseleave="this.style.background=\'\'">' +
+    return'<tr style="cursor:pointer" onclick="openRecById(\''+recId+'\',this)" onmouseenter="this.style.background=\'#0d1119\'" onmouseleave="this.style.background=\'\'">' +
       '<td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">#'+sidShort+'</td>' +
       '<td><div class="utag"><div class="mava" style="background:'+c+'22;color:'+c+'">'+ini+'</div>' +
         '<div><div style="font-size:12px;font-weight:500">'+nm+'</div>' +
@@ -3113,7 +3162,7 @@ function renderRT(){
       '<td><span class="badge '+(r.photo_count>0?'ok':'')+'">'+(r.photo_count||0)+'</span></td>' +
       '<td>'+(r.synced===false?'<span class="badge warn">offline</span>':'<span class="badge ok">✓ DB</span>')+'</td>' +
       '<td style="white-space:nowrap;text-align:right">' +
-        '<button onclick="openRecById(\''+recId+'\',this)" style="padding:4px 10px;background:#18202e;border:1px solid #253352;border-radius:6px;color:#8da0bb;font-family:monospace;font-size:10px;cursor:pointer">🔍 Detaje</button>' +
+        '<button data-rid="'+recId+'" onclick="openRecModalById(this.getAttribute(&quot;data-rid&quot;))" style="padding:4px 10px;background:#18202e;border:1px solid #253352;border-radius:6px;color:#8da0bb;font-family:monospace;font-size:10px;cursor:pointer">&#128269; Detaje</button>' +
         (CP&&CP.role==='admin'?'<button onclick="delRec(\''+r.id+'\')" style="padding:4px 8px;background:transparent;border:1px solid rgba(255,77,109,.3);border-radius:6px;color:#ff4d6d;font-family:monospace;font-size:10px;cursor:pointer;margin-left:4px" title="Fshi">🗑️</button>':'') +
       '</td></tr>';
   }).join('');
@@ -4320,7 +4369,7 @@ function openCompModal(id){
 function closeDp(){
   var dp=document.getElementById('dpanel');
   var ov=document.getElementById('dp-overlay');
-  if(dp){dp.classList.remove('open');dp.style.right='-560px';}
+  if(dp)dp.classList.remove('open');
   if(ov)ov.style.display='none';
   if(_dpMapObj){try{_dpMapObj.remove();}catch(e){}; _dpMapObj=null;}
   _dpRec=null;
@@ -4926,6 +4975,13 @@ function updateSvTaskPreview(){
   prev.textContent=rl.emoji+' '+rl.label+(days!==null?' · '+days+' ditë':'')+(dl?' · '+dl:'');
 }
 
+function toggleSvDetails(){
+  var body=document.getElementById('sv-det-body');
+  var arrow=document.getElementById('sv-det-arrow');
+  var isOpen=body.style.display==='flex';
+  body.style.display=isOpen?'none':'flex';
+  if(arrow)arrow.style.transform=isOpen?'':'rotate(180deg)';
+}
 
 // Yjet vlerësim në formular
 var _fStarVal=0;
@@ -5057,12 +5113,103 @@ function expPDF(){
   var total=_rpRecs.length||1;
   var catrows=Object.entries(qm).sort(function(a,b){return b[1]-a[1]}).map(function(e){return'<tr><td>'+e[0]+'</td><td style="text-align:center;font-weight:bold;color:#05d9a0">'+e[1]+'</td><td style="text-align:center">'+(e[1]/total*100).toFixed(1)+'%</td></tr>';}).join('');
   var urows=Object.entries(umap).sort(function(a,b){return b[1]-a[1]}).map(function(e){return'<tr><td>'+e[0]+'</td><td style="text-align:center;font-weight:bold;color:#05d9a0">'+e[1]+'</td></tr>';}).join('');
-  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>GIS Survey — Raport</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#333}h1{color:#05d9a0;border-bottom:2px solid #05d9a0;padding-bottom:8px}table{width:100%;border-collapse:collapse;margin-top:10px}th{background:#1e2838;color:#fff;padding:8px 12px;text-align:left}td{padding:7px 12px;border-bottom:1px solid #eee}.kpi{display:inline-block;margin:8px;padding:14px 20px;background:#f5f5f5;border-radius:8px;text-align:center}.kpi-v{font-size:28px;font-weight:bold;color:#05d9a0}.kpi-l{font-size:11px;color:#666}@media print{.noprint{display:none}}</style></head><body>');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>GIS Survey — Raport</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#333}h1{color:#05d9a0;border-bottom:2px solid #05d9a0;padding-bottom:8px}table{width:100%;border-collapse:collapse;margin-top:10px}th{background:#1e2838;color:#fff;padding:8px 12px;text-align:left}td{padding:7px 12px;border-bottom:1px solid #eee}.kpi{display:inline-block;margin:8px;padding:14px 20px;background:#f5f5f5;border-radius:8px;text-align:center}.kpi-v{font-size:28px;font-weight:bold;color:#05d9a0}.kpi-l{font-size:11px;color:#666}@media print{.noprint{display:none}}
+.map-tooltip{background:#0d1119!important;border:1px solid #253352!important;border-radius:8px!important;padding:8px 12px!important;box-shadow:0 4px 20px rgba(0,0,0,.5)!important;color:#dce6f5!important;}
+.map-tooltip.leaflet-tooltip-top::before{border-top-color:#253352!important;}
+</style></head><body>');
   w.document.write('<h1>GIS Survey Pro — Raport</h1><p style="color:#666">Data: '+today+' | Rekorde: '+_rpRecs.length+'</p>');
   w.document.write('<div><div class="kpi"><div class="kpi-l">REKORDE</div><div class="kpi-v">'+_rpRecs.length+'</div></div><div class="kpi"><div class="kpi-l">USERS</div><div class="kpi-v">'+Object.keys(umap).length+'</div></div></div>');
   w.document.write('<h2>Sipas Kategorisë</h2><table><thead><tr><th>Kategoria</th><th>Rekorde</th><th>%</th></tr></thead><tbody>'+catrows+'</tbody></table>');
   w.document.write('<h2>Sipas Përdoruesit</h2><table><thead><tr><th>Email</th><th>Rekorde</th></tr></thead><tbody>'+urows+'</tbody></table>');
-  w.document.write('<br><button class="noprint" onclick="window.print()" style="padding:10px 20px;background:#05d9a0;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨️ Printo / Ruaj PDF</button></body></html>');
+  w.document.write('<br><button class="noprint" onclick="window.print()" style="padding:10px 20px;background:#05d9a0;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨️ Printo / Ruaj PDF</button>
+<div id="rec-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);overflow-y:auto;padding:20px">
+  <div style="max-width:860px;margin:0 auto;background:#0a0e17;border:1px solid #1c2740;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)">
+    <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+        <div id="rm-dot" style="width:10px;height:10px;border-radius:50%;background:#05d9a0;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div id="rm-title" style="font-size:17px;font-weight:700;color:#dce6f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+          <div id="rm-sub" style="font-size:11px;color:#3d5275;font-family:monospace;margin-top:2px">—</div>
+        </div>
+        <div id="rm-badge" style="padding:4px 12px;border-radius:20px;font-size:11px;font-family:monospace;font-weight:600;white-space:nowrap">—</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button id="rm-edit-btn" onclick="openEditFromModal()" style="display:none;padding:7px 14px;background:#18202e;border:1px solid #253352;border-radius:8px;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer">&#9999;&#65039; Edito</button>
+        <button onclick="closeRecModal()" style="padding:6px 12px;background:#18202e;border:1px solid #253352;border-radius:8px;color:#8da0bb;font-size:18px;cursor:pointer;line-height:1">&#10005;</button>
+      </div>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="border-radius:10px;overflow:hidden;border:1px solid #1c2740">
+          <div id="rm-map" style="height:220px;background:#07090f"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:9px">
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">KRIJUAR NGA</div>
+              <div id="rm-user" style="font-size:12px;color:#dce6f5;font-weight:600">—</div>
+              <div id="rm-role" style="font-size:10px;color:#3d5275;font-family:monospace">—</div>
+            </div>
+            <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:9px">
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">DATA / ORA</div>
+              <div id="rm-date" style="font-size:12px;color:#dce6f5">—</div>
+              <div id="rm-time" style="font-size:10px;color:#3d5275;font-family:monospace">—</div>
+            </div>
+            <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:9px">
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">GPS</div>
+              <div id="rm-gps" style="font-size:11px;color:#05d9a0;font-family:monospace">—</div>
+            </div>
+            <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:9px">
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">SAKTESIA</div>
+              <div id="rm-acc" style="font-size:12px;color:#dce6f5">—</div>
+            </div>
+          </div>
+          <div style="background:rgba(5,217,160,.07);border:1px solid rgba(5,217,160,.2);border-radius:8px;padding:10px">
+            <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">KOMPANIA / DEGA</div>
+            <div id="rm-company" style="font-size:14px;color:#05d9a0;font-weight:700">—</div>
+          </div>
+          <div id="rm-photobar" style="display:none;background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:8px 12px;font-size:11px;font-family:monospace;color:#8da0bb">&#128247; <span id="rm-pcount">0</span> foto</div>
+        </div>
+      </div>
+      <div id="rm-car-wrap" style="display:none;border-radius:10px;overflow:hidden;border:1px solid #1c2740">
+        <div style="position:relative;height:240px;background:#07090f">
+          <div id="rm-slides" style="display:flex;height:100%;overflow:hidden;transition:transform .3s"></div>
+          <button onclick="rmCarSlide(-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px">&#8249;</button>
+          <button onclick="rmCarSlide(1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px">&#8250;</button>
+          <div id="rm-dots" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px"></div>
+        </div>
+      </div>
+      <div style="border:1px solid #1c2740;border-radius:12px;overflow:hidden">
+        <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:10px 16px;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">Detajet e objektit</div>
+        <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">QELLIMI</div><div id="rm-qellim" style="font-size:13px;color:#dce6f5;font-weight:600">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KLASIFIKIMI</div><div id="rm-klasi" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">STATUSI</div><div id="rm-statusi" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div style="grid-column:1/-1"><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ADRESA</div><div id="rm-adresa" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KATET</div><div id="rm-kate" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">LARTESIA (m)</div><div id="rm-lartesia" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SIPERFAQJA (m2)</div><div id="rm-siperfaqe" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">NR. INVENTAR</div><div id="rm-inventar" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">VITI NDERTIMIT</div><div id="rm-viti" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">PRONESIA</div><div id="rm-pronesia" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ZONA / LAGJA</div><div id="rm-zona" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SIGURIA NE PUNE</div><div id="rm-siguria" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div style="grid-column:1/-1"><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">VLERESIMI</div><div id="rm-stars" style="font-size:22px">—</div></div>
+          <div style="grid-column:1/-1"><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SHENIME</div><div id="rm-notes" style="font-size:13px;color:#8da0bb;line-height:1.6">—</div></div>
+        </div>
+      </div>
+      <div id="rm-tasks-sec" style="display:none;border:1px solid #1c2740;border-radius:12px;overflow:hidden">
+        <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:10px 16px;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase">Detyrat e lidhura</div>
+        <div id="rm-tasks-list" style="padding:12px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div id="rm-docs-sec" style="display:none;border:1px solid #1c2740;border-radius:12px;overflow:hidden">
+        <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:10px 16px;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase">Skedaret e bashkengjitur</div>
+        <div id="rm-docs-list" style="padding:12px;display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>');
   w.document.close();toast('ok','PDF gati!');
 }
 
@@ -5087,7 +5234,95 @@ function expXLS(){
   var tb='<table border="1" style="border-collapse:collapse"><thead><tr>'+k.map(function(f){return'<th style="background:#05d9a0;color:#021a10;padding:6px 10px;font-family:monospace">'+hdrs[f]+'</th>'}).join('')+'</tr></thead><tbody>';
   src.forEach(function(r){tb+='<tr>'+k.map(function(f){return'<td style="padding:5px 9px">'+(r[f]!==undefined?r[f]:'')+'</td>'}).join('')+'</tr>'});
   tb+='</tbody></table>';
-  var full='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>'+tb+'</body></html>';
+  var full='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>'+tb+'
+<div id="rec-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);overflow-y:auto;padding:20px">
+  <div style="max-width:860px;margin:0 auto;background:#0a0e17;border:1px solid #1c2740;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)">
+    <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+        <div id="rm-dot" style="width:10px;height:10px;border-radius:50%;background:#05d9a0;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div id="rm-title" style="font-size:17px;font-weight:700;color:#dce6f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+          <div id="rm-sub" style="font-size:11px;color:#3d5275;font-family:monospace;margin-top:2px">—</div>
+        </div>
+        <div id="rm-badge" style="padding:4px 12px;border-radius:20px;font-size:11px;font-family:monospace;font-weight:600;white-space:nowrap">—</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button id="rm-edit-btn" onclick="openEditFromModal()" style="display:none;padding:7px 14px;background:#18202e;border:1px solid #253352;border-radius:8px;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer">&#9999;&#65039; Edito</button>
+        <button onclick="closeRecModal()" style="padding:6px 12px;background:#18202e;border:1px solid #253352;border-radius:8px;color:#8da0bb;font-size:18px;cursor:pointer;line-height:1">&#10005;</button>
+      </div>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="border-radius:10px;overflow:hidden;border:1px solid #1c2740">
+          <div id="rm-map" style="height:220px;background:#07090f"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:9px">
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">KRIJUAR NGA</div>
+              <div id="rm-user" style="font-size:12px;color:#dce6f5;font-weight:600">—</div>
+              <div id="rm-role" style="font-size:10px;color:#3d5275;font-family:monospace">—</div>
+            </div>
+            <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:9px">
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">DATA / ORA</div>
+              <div id="rm-date" style="font-size:12px;color:#dce6f5">—</div>
+              <div id="rm-time" style="font-size:10px;color:#3d5275;font-family:monospace">—</div>
+            </div>
+            <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:9px">
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">GPS</div>
+              <div id="rm-gps" style="font-size:11px;color:#05d9a0;font-family:monospace">—</div>
+            </div>
+            <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:9px">
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">SAKTESIA</div>
+              <div id="rm-acc" style="font-size:12px;color:#dce6f5">—</div>
+            </div>
+          </div>
+          <div style="background:rgba(5,217,160,.07);border:1px solid rgba(5,217,160,.2);border-radius:8px;padding:10px">
+            <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">KOMPANIA / DEGA</div>
+            <div id="rm-company" style="font-size:14px;color:#05d9a0;font-weight:700">—</div>
+          </div>
+          <div id="rm-photobar" style="display:none;background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:8px 12px;font-size:11px;font-family:monospace;color:#8da0bb">&#128247; <span id="rm-pcount">0</span> foto</div>
+        </div>
+      </div>
+      <div id="rm-car-wrap" style="display:none;border-radius:10px;overflow:hidden;border:1px solid #1c2740">
+        <div style="position:relative;height:240px;background:#07090f">
+          <div id="rm-slides" style="display:flex;height:100%;overflow:hidden;transition:transform .3s"></div>
+          <button onclick="rmCarSlide(-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px">&#8249;</button>
+          <button onclick="rmCarSlide(1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px">&#8250;</button>
+          <div id="rm-dots" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px"></div>
+        </div>
+      </div>
+      <div style="border:1px solid #1c2740;border-radius:12px;overflow:hidden">
+        <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:10px 16px;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">Detajet e objektit</div>
+        <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">QELLIMI</div><div id="rm-qellim" style="font-size:13px;color:#dce6f5;font-weight:600">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KLASIFIKIMI</div><div id="rm-klasi" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">STATUSI</div><div id="rm-statusi" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div style="grid-column:1/-1"><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ADRESA</div><div id="rm-adresa" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KATET</div><div id="rm-kate" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">LARTESIA (m)</div><div id="rm-lartesia" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SIPERFAQJA (m2)</div><div id="rm-siperfaqe" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">NR. INVENTAR</div><div id="rm-inventar" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">VITI NDERTIMIT</div><div id="rm-viti" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">PRONESIA</div><div id="rm-pronesia" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ZONA / LAGJA</div><div id="rm-zona" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SIGURIA NE PUNE</div><div id="rm-siguria" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div style="grid-column:1/-1"><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">VLERESIMI</div><div id="rm-stars" style="font-size:22px">—</div></div>
+          <div style="grid-column:1/-1"><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SHENIME</div><div id="rm-notes" style="font-size:13px;color:#8da0bb;line-height:1.6">—</div></div>
+        </div>
+      </div>
+      <div id="rm-tasks-sec" style="display:none;border:1px solid #1c2740;border-radius:12px;overflow:hidden">
+        <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:10px 16px;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase">Detyrat e lidhura</div>
+        <div id="rm-tasks-list" style="padding:12px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div id="rm-docs-sec" style="display:none;border:1px solid #1c2740;border-radius:12px;overflow:hidden">
+        <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:10px 16px;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase">Skedaret e bashkengjitur</div>
+        <div id="rm-docs-list" style="padding:12px;display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>';
   dl(full,'application/vnd.ms-excel;charset=utf-8;','survey_'+dt()+'.xls');
   toast('ok','Excel eksportuar ('+src.length+' rekorde)');
 }
@@ -5179,87 +5414,93 @@ if(typeof supabase!=='undefined'){
   setTimeout(function(){if(typeof supabase!=='undefined'){log('ok','SDK retry OK');boot();}},3000);
 }
 </script>
-<!-- EDIT MODAL -->
-<div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.7);overflow-y:auto">
-  <div style="max-width:600px;margin:40px auto;padding:16px">
-    <div style="background:#0d1119;border:1px solid #253352;border-radius:14px;overflow:hidden">
-      <div style="padding:16px 20px;border-bottom:1px solid #1c2740;display:flex;justify-content:space-between;align-items:center;background:#07090f">
-        <div style="font-size:16px;font-weight:700">✏️ Edito Rekord <span id="em-id" style="color:#3d5275;font-size:12px"></span></div>
-        <button onclick="closeEditModal()" style="background:transparent;border:none;color:#3d5275;font-size:22px;cursor:pointer">✕</button>
+
+<div id="rec-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);overflow-y:auto;padding:20px">
+  <div style="max-width:860px;margin:0 auto;background:#0a0e17;border:1px solid #1c2740;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)">
+    <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+        <div id="rm-dot" style="width:10px;height:10px;border-radius:50%;background:#05d9a0;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div id="rm-title" style="font-size:17px;font-weight:700;color:#dce6f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+          <div id="rm-sub" style="font-size:11px;color:#3d5275;font-family:monospace;margin-top:2px">—</div>
+        </div>
+        <div id="rm-badge" style="padding:4px 12px;border-radius:20px;font-size:11px;font-family:monospace;font-weight:600;white-space:nowrap">—</div>
       </div>
-      <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">QËLLIMI</label>
-            <select id="em-qellim" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="">— Zgjidh —</option>
-              <option>Inspektim urban</option><option>Monitorim mjedisi</option>
-              <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
-              <option>Pyje dhe bimësi</option><option>Ujëra dhe hidrologji</option><option>Tjetër</option>
-            </select></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">STATUSI</label>
-            <select id="em-statusi" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="aktiv">✅ Aktiv</option><option value="ne_ndertim">🚧 Në ndërtim</option>
-              <option value="ne_rinovim">🔨 Në rinovim</option><option value="i_demtuar">⚠️ I dëmtuar</option>
-              <option value="i_braktisur">🚫 I braktisur</option><option value="i_demoluar">💥 I demoluar</option>
-              <option value="ne_investigim">🔍 Nën investigim</option>
-            </select></div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button id="rm-edit-btn" onclick="openEditFromModal()" style="display:none;padding:7px 14px;background:#18202e;border:1px solid #253352;border-radius:8px;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer">&#9999;&#65039; Edito</button>
+        <button onclick="closeRecModal()" style="padding:6px 12px;background:#18202e;border:1px solid #253352;border-radius:8px;color:#8da0bb;font-size:18px;cursor:pointer;line-height:1">&#10005;</button>
+      </div>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="border-radius:10px;overflow:hidden;border:1px solid #1c2740">
+          <div id="rm-map" style="height:220px;background:#07090f"></div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KLASIFIKIMI</label>
-            <select id="em-klasi" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="">— Pa klasifikim —</option>
-              <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
-              <option>Depo / Magazine</option><option>Objekt industrial</option>
-              <option>Infrastrukturë</option><option>Tokë bujqësore</option>
-              <option>Zonë e mbrojtur</option><option>Tjetër</option>
-            </select></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">PRONËSIA</label>
-            <select id="em-pronesia" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="">— Zgjidh —</option>
-              <option>Publike - Shtet</option><option>Publike - Bashki</option>
-              <option>Private</option><option>Të përziera</option>
-            </select></div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:9px">
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">KRIJUAR NGA</div>
+              <div id="rm-user" style="font-size:12px;color:#dce6f5;font-weight:600">—</div>
+              <div id="rm-role" style="font-size:10px;color:#3d5275;font-family:monospace">—</div>
+            </div>
+            <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:9px">
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">DATA / ORA</div>
+              <div id="rm-date" style="font-size:12px;color:#dce6f5">—</div>
+              <div id="rm-time" style="font-size:10px;color:#3d5275;font-family:monospace">—</div>
+            </div>
+            <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:9px">
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">GPS</div>
+              <div id="rm-gps" style="font-size:11px;color:#05d9a0;font-family:monospace">—</div>
+            </div>
+            <div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:9px">
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">SAKTESIA</div>
+              <div id="rm-acc" style="font-size:12px;color:#dce6f5">—</div>
+            </div>
+          </div>
+          <div style="background:rgba(5,217,160,.07);border:1px solid rgba(5,217,160,.2);border-radius:8px;padding:10px">
+            <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:3px">KOMPANIA / DEGA</div>
+            <div id="rm-company" style="font-size:14px;color:#05d9a0;font-weight:700">—</div>
+          </div>
+          <div id="rm-photobar" style="display:none;background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:8px 12px;font-size:11px;font-family:monospace;color:#8da0bb">&#128247; <span id="rm-pcount">0</span> foto</div>
         </div>
-        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">ADRESA</label>
-          <input type="text" id="em-adresa" placeholder="Adresa e plotë..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none;box-sizing:border-box"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KATET</label>
-            <input type="number" id="em-kate" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">LARTËSIA (m)</label>
-            <input type="number" id="em-lartesia" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">SIPËRFAQJA (m²)</label>
-            <input type="number" id="em-siperfaqe" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+      </div>
+      <div id="rm-car-wrap" style="display:none;border-radius:10px;overflow:hidden;border:1px solid #1c2740">
+        <div style="position:relative;height:240px;background:#07090f">
+          <div id="rm-slides" style="display:flex;height:100%;overflow:hidden;transition:transform .3s"></div>
+          <button onclick="rmCarSlide(-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px">&#8249;</button>
+          <button onclick="rmCarSlide(1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px">&#8250;</button>
+          <div id="rm-dots" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px"></div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">NR. INVENTAR</label>
-            <input type="text" id="em-inventar" placeholder="INV-001" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KUSHTET E SIGURISË</label>
-            <select id="em-siguria" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="">— Zgjidh —</option>
-              <option value="shume_mire">✅ Shumë mirë</option><option value="mire">🟢 Mirë</option>
-              <option value="mesatare">🟡 Mesatare</option><option value="dobete">🟠 Dobët</option>
-              <option value="rrezik">🔴 Rrezik i lartë</option>
-              <option value="jo_aplikueshme">➖ Jo aplikueshme</option>
-            </select></div>
+      </div>
+      <div style="border:1px solid #1c2740;border-radius:12px;overflow:hidden">
+        <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:10px 16px;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">Detajet e objektit</div>
+        <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">QELLIMI</div><div id="rm-qellim" style="font-size:13px;color:#dce6f5;font-weight:600">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KLASIFIKIMI</div><div id="rm-klasi" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">STATUSI</div><div id="rm-statusi" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div style="grid-column:1/-1"><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ADRESA</div><div id="rm-adresa" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KATET</div><div id="rm-kate" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">LARTESIA (m)</div><div id="rm-lartesia" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SIPERFAQJA (m2)</div><div id="rm-siperfaqe" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">NR. INVENTAR</div><div id="rm-inventar" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">VITI NDERTIMIT</div><div id="rm-viti" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">PRONESIA</div><div id="rm-pronesia" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ZONA / LAGJA</div><div id="rm-zona" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SIGURIA NE PUNE</div><div id="rm-siguria" style="font-size:13px;color:#dce6f5">—</div></div>
+          <div style="grid-column:1/-1"><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">VLERESIMI</div><div id="rm-stars" style="font-size:22px">—</div></div>
+          <div style="grid-column:1/-1"><div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SHENIME</div><div id="rm-notes" style="font-size:13px;color:#8da0bb;line-height:1.6">—</div></div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">VITI NDËRTIMIT</label>
-            <input type="number" id="em-viti" placeholder="2000" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">ZONA / LAGJA</label>
-            <input type="text" id="em-zona" placeholder="p.sh. Bllok..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-        </div>
-        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">SHËNIME</label>
-          <textarea id="em-notes" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none;min-height:70px;resize:vertical;box-sizing:border-box"></textarea></div>
-        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:6px">VLERËSIMI</label>
-          <div id="em-stars" style="display:flex;gap:6px;font-size:24px;cursor:pointer"></div></div>
-        <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px;border-top:1px solid #1c2740">
-          <button onclick="closeEditModal()" style="padding:9px 20px;background:#18202e;border:1px solid #253352;border-radius:8px;color:#8da0bb;font-family:monospace;font-size:12px;cursor:pointer">Anulo</button>
-          <button onclick="saveEditModal()" style="padding:9px 24px;background:#05d9a0;border:none;border-radius:8px;color:#021a10;font-family:monospace;font-size:12px;font-weight:600;cursor:pointer">💾 Ruaj ndryshimet</button>
-        </div>
+      </div>
+      <div id="rm-tasks-sec" style="display:none;border:1px solid #1c2740;border-radius:12px;overflow:hidden">
+        <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:10px 16px;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase">Detyrat e lidhura</div>
+        <div id="rm-tasks-list" style="padding:12px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div id="rm-docs-sec" style="display:none;border:1px solid #1c2740;border-radius:12px;overflow:hidden">
+        <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:10px 16px;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase">Skedaret e bashkengjitur</div>
+        <div id="rm-docs-list" style="padding:12px;display:flex;flex-direction:column;gap:6px"></div>
       </div>
     </div>
   </div>
 </div>
-
 </body>
 </html>
