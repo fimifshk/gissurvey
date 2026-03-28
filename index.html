@@ -697,6 +697,7 @@ create trigger on_auth_user_created
         <div class="fbar">
           <input type="text" id="fs-q" placeholder="🔍 Kërko..." oninput="filterR()">
           <select id="fs-u" onchange="filterR()"><option value="">Të gjithë users</option></select>
+          <select id="fs-loc" onchange="filterR()" style="font-family:var(--mono);font-size:11px"><option value="">Të gjitha lok.</option></select>
           <select id="fs-ql" onchange="filterR()">
             <option value="">Të gjithë qëllimet</option>
             <option>Inspektim urban</option><option>Monitorim mjedisi</option>
@@ -711,7 +712,7 @@ create trigger on_auth_user_created
         </div>
         <div class="tw">
           <table class="rt">
-            <thead><tr><th>#ID</th><th>Krijuar nga</th><th>Data / Ora</th><th>Koordinatat</th><th>Qëllimi</th><th>Shënime</th><th>Foto</th><th>Statusi</th><th></th></tr></thead>
+            <thead><tr><th>#ID</th><th>Krijuar nga</th><th>Lokacioni</th><th>Data / Ora</th><th>Koordinatat</th><th>Qëllimi</th><th>Shënime</th><th>Foto</th><th>Statusi</th><th></th></tr></thead>
             <tbody id="rtb"></tbody>
           </table>
           <div id="rc-empty" class="empty hidden"><div style="font-size:28px;margin-bottom:8px">◎</div>Asnjë rekord i gjetur</div>
@@ -2014,11 +2015,16 @@ async function loadRecs(showToast){
   if(!SB||!CU)return;
   log('info','Duke ngarkuar rekordet...');
   try{
-    var q=SB.from('survey_records').select('*').order('created_at',{ascending:false});
+    var q=SB.from('survey_records').select('*,locations(id,name)').order('created_at',{ascending:false});
     if(CP.role==='field')q=q.eq('user_id',CU.id);
     var{data,error}=await q;
     if(error)throw error;
-    allRecs=data||[];
+    allRecs=(data||[]).map(function(r){
+      // Ekstrakto location_name nga JOIN
+      if(r.locations&&r.locations.name){r.location_name=r.locations.name;}
+      delete r.locations;
+      return r;
+    });
     log('ok','Ngarkuar '+allRecs.length+' rekorde nga Supabase');
   }catch(e){
     log('err','loadRecs gabim: '+e.message);
@@ -2032,6 +2038,10 @@ async function loadRecs(showToast){
 
   // populate user filter
   var users={};allRecs.forEach(function(r){if(r.user_email)users[r.user_email]=r.user_name||r.user_email});
+  // Popullo filtrin e lokacioneve
+  var locNames={};allRecs.forEach(function(r){if(r.location_name)locNames[r.location_name]=1;});
+  var locSel=document.getElementById('fs-loc');
+  if(locSel){var lv=locSel.value;locSel.innerHTML='<option value="">Të gjitha lok.</option>'+Object.keys(locNames).sort().map(function(n){return'<option value="'+n+'">🏢 '+n+'</option>';}).join('');locSel.value=lv;}
   var sel=document.getElementById('fs-u');var cv=sel.value;
   sel.innerHTML='<option value="">Të gjithë users</option>';
   Object.entries(users).forEach(function(kv){sel.innerHTML+='<option value="'+kv[0]+'">'+kv[1]+'</option>'});
@@ -2052,9 +2062,11 @@ function filterR(){
   var ql=document.getElementById('fs-ql').value;
   var fr=document.getElementById('fs-fr').value;
   var to=document.getElementById('fs-to').value;
+  var fl=(document.getElementById('fs-loc')||{value:''}).value;
   filteredRecs=allRecs.filter(function(r){
     if(u&&r.user_email!==u)return false;
     if(ql&&r.qellim!==ql)return false;
+    if(fl&&r.location_name!==fl)return false;
     if(fr&&r.rec_date<fr)return false;
     if(to&&r.rec_date>to)return false;
     if(q){var h=((r.user_name||'')+' '+(r.user_email||'')+' '+(r.qellim||'')+' '+(r.notes||'')+' '+r.id).toLowerCase();if(!h.includes(q))return false}
@@ -2078,6 +2090,7 @@ function renderRT(){
       '<td><div class="utag"><div class="mava" style="background:'+c+'22;color:'+c+'">'+ini+'</div>' +
         '<div><div style="font-size:12px;font-weight:500">'+nm+'</div>' +
         '<div style="font-size:10px;color:var(--txt3);font-family:var(--mono)">'+r.user_email+'</div></div>'+offTag+'</div></td>' +
+      '<td style="font-size:11px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.location_name?'<span style="color:#2d8bff">🏢 '+r.location_name+'</span>':'<span style="color:#3d5275">—</span>')+'</td>' +
       '<td><div style="font-family:var(--mono);font-size:11px">'+(r.rec_date||'—')+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--txt3)">'+(r.rec_time||'—')+'</div></td>' +
       '<td><div style="font-family:var(--mono);font-size:11px;color:var(--acc)">'+(r.lat?r.lat.toFixed(5):'—')+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--acc)">'+(r.lng?r.lng.toFixed(5):'—')+'</div></td>' +
       '<td>'+(r.qellim?'<span class="badge info" style="font-size:10px">'+r.qellim+'</span>':'<span style="color:var(--txt3)">—</span>')+'</td>' +
@@ -2465,8 +2478,17 @@ var _locRepData=[];
 async function loadLocRep(){
   if(!SB)return;
   // Ngarko lokacionet + rekordet me location_id
-  var{data:locs}=await SB.from('locations').select('*').order('name');
-  var{data:recs}=await SB.from('survey_records').select('id,location_id,rec_date,rec_time,user_name,user_email,qellim,vleresimi,notes,created_at').not('location_id','is',null);
+  var locsRes=await SB.from('locations').select('*').order('name');
+  if(locsRes.error){
+    toast('err','Tabela "locations" nuk ekziston — ekzekutoni locations_table.sql');
+    log('err','loadLocRep: '+locsRes.error.message);
+    var tbody=document.getElementById('lkrep');
+    if(tbody)tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:#ff4d6d;font-family:monospace;font-size:12px">⚠️ Tabela "locations" nuk ekziston.<br>Ekzekutoni <b>locations_table.sql</b> në Supabase SQL Editor.</td></tr>';
+    return;
+  }
+  var recsRes=await SB.from('survey_records').select('id,location_id,rec_date,rec_time,user_name,user_email,qellim,vleresimi,notes,created_at').not('location_id','is',null);
+  var{data:locs}=locsRes;
+  var{data:recs}=recsRes;
 
   var locsArr=locs||[];
   var recsArr=recs||[];
@@ -2722,7 +2744,10 @@ var editLocId=null;
 async function loadLocs(){
   if(!SB)return;
   var{data,error}=await SB.from('locations').select('*').order('name');
-  if(error){log('err','loadLocs: '+error.message);return;}
+  if(error){
+    log('warn','loadLocs: '+error.message+' (ekzekutoni locations_table.sql)');
+    return; // Heshtas — tabela mund të mos ekzistojë akoma
+  }
   allLocs=data||[];
   log('ok','Ngarkuar '+allLocs.length+' lokacione');
   document.getElementById('lk-sub').textContent=allLocs.length+' lokacione të regjistruara';
