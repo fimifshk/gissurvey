@@ -5152,91 +5152,7 @@ function expPDF(){
   w.document.write('<div><div class="kpi"><div class="kpi-l">REKORDE</div><div class="kpi-v">'+_rpRecs.length+'</div></div><div class="kpi"><div class="kpi-l">USERS</div><div class="kpi-v">'+Object.keys(umap).length+'</div></div></div>');
   w.document.write('<h2>Sipas Kategorisë</h2><table><thead><tr><th>Kategoria</th><th>Rekorde</th><th>%</th></tr></thead><tbody>'+catrows+'</tbody></table>');
   w.document.write('<h2>Sipas Përdoruesit</h2><table><thead><tr><th>Email</th><th>Rekorde</th></tr></thead><tbody>'+urows+'</tbody></table>');
-  w.document.write('<br><button class="noprint" onclick="window.print()" style="padding:10px 20px;background:#05d9a0;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨️ Printo / Ruaj PDF</button>
-<!-- EDIT MODAL -->
-<div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.7);overflow-y:auto">
-  <div style="max-width:600px;margin:40px auto;padding:16px">
-    <div style="background:#0d1119;border:1px solid #253352;border-radius:14px;overflow:hidden">
-      <div style="padding:16px 20px;border-bottom:1px solid #1c2740;display:flex;justify-content:space-between;align-items:center;background:#07090f">
-        <div style="font-size:16px;font-weight:700">✏️ Edito Rekord <span id="em-id" style="color:#3d5275;font-size:12px"></span></div>
-        <button onclick="closeEditModal()" style="background:transparent;border:none;color:#3d5275;font-size:22px;cursor:pointer">✕</button>
-      </div>
-      <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">QËLLIMI</label>
-            <select id="em-qellim" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="">— Zgjidh —</option>
-              <option>Inspektim urban</option><option>Monitorim mjedisi</option>
-              <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
-              <option>Pyje dhe bimësi</option><option>Ujëra dhe hidrologji</option><option>Tjetër</option>
-            </select></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">STATUSI</label>
-            <select id="em-statusi" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="aktiv">✅ Aktiv</option><option value="ne_ndertim">🚧 Në ndërtim</option>
-              <option value="ne_rinovim">🔨 Në rinovim</option><option value="i_demtuar">⚠️ I dëmtuar</option>
-              <option value="i_braktisur">🚫 I braktisur</option><option value="i_demoluar">💥 I demoluar</option>
-              <option value="ne_investigim">🔍 Nën investigim</option>
-            </select></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KLASIFIKIMI</label>
-            <select id="em-klasi" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="">— Pa klasifikim —</option>
-              <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
-              <option>Depo / Magazine</option><option>Objekt industrial</option>
-              <option>Infrastrukturë</option><option>Tokë bujqësore</option>
-              <option>Zonë e mbrojtur</option><option>Tjetër</option>
-            </select></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">PRONËSIA</label>
-            <select id="em-pronesia" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="">— Zgjidh —</option>
-              <option>Publike - Shtet</option><option>Publike - Bashki</option>
-              <option>Private</option><option>Të përziera</option>
-            </select></div>
-        </div>
-        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">ADRESA</label>
-          <input type="text" id="em-adresa" placeholder="Adresa e plotë..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none;box-sizing:border-box"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KATET</label>
-            <input type="number" id="em-kate" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">LARTËSIA (m)</label>
-            <input type="number" id="em-lartesia" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">SIPËRFAQJA (m²)</label>
-            <input type="number" id="em-siperfaqe" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">NR. INVENTAR</label>
-            <input type="text" id="em-inventar" placeholder="INV-001" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">VITI NDËRTIMIT</label>
-            <input type="number" id="em-viti" placeholder="2000" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">ZONA / LAGJA</label>
-            <input type="text" id="em-zona" placeholder="p.sh. Bllok, Kombinat..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KUSHTET E SIGURISË</label>
-            <select id="em-siguria" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="">— Zgjidh —</option>
-              <option value="shume_mire">✅ Shumë mirë</option>
-              <option value="mire">🟢 Mirë</option>
-              <option value="mesatare">🟡 Mesatare</option>
-              <option value="dobete">🟠 Dobët</option>
-              <option value="rrezik">🔴 Rrezik i lartë</option>
-              <option value="jo_aplikueshme">➖ Jo aplikueshme</option>
-            </select></div>
-        </div>
-        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">SHËNIME</label>
-          <textarea id="em-notes" placeholder="Shënime..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none;min-height:80px;resize:vertical;box-sizing:border-box"></textarea></div>
-        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:6px">VLERËSIMI</label>
-          <div id="em-stars" style="display:flex;gap:6px;font-size:24px;cursor:pointer"></div></div>
-        <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px;border-top:1px solid #1c2740">
-          <button onclick="closeEditModal()" style="padding:9px 20px;background:#18202e;border:1px solid #253352;border-radius:8px;color:#8da0bb;font-family:monospace;font-size:12px;cursor:pointer">Anulo</button>
-          <button onclick="saveEditModal()" style="padding:9px 24px;background:#05d9a0;border:none;border-radius:8px;color:#021a10;font-family:monospace;font-size:12px;font-weight:600;cursor:pointer">💾 Ruaj ndryshimet</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-</body></html>');
+  w.document.write('<br><button class="noprint" onclick="window.print()" style="padding:10px 20px;background:#05d9a0;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨️ Printo / Ruaj PDF</button></html>');
   w.document.close();toast('ok','PDF gati!');
 }
 
@@ -5262,89 +5178,7 @@ function expXLS(){
   src.forEach(function(r){tb+='<tr>'+k.map(function(f){return'<td style="padding:5px 9px">'+(r[f]!==undefined?r[f]:'')+'</td>'}).join('')+'</tr>'});
   tb+='</tbody></table>';
   var full='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>'+tb+'
-<!-- EDIT MODAL -->
-<div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.7);overflow-y:auto">
-  <div style="max-width:600px;margin:40px auto;padding:16px">
-    <div style="background:#0d1119;border:1px solid #253352;border-radius:14px;overflow:hidden">
-      <div style="padding:16px 20px;border-bottom:1px solid #1c2740;display:flex;justify-content:space-between;align-items:center;background:#07090f">
-        <div style="font-size:16px;font-weight:700">✏️ Edito Rekord <span id="em-id" style="color:#3d5275;font-size:12px"></span></div>
-        <button onclick="closeEditModal()" style="background:transparent;border:none;color:#3d5275;font-size:22px;cursor:pointer">✕</button>
-      </div>
-      <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">QËLLIMI</label>
-            <select id="em-qellim" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="">— Zgjidh —</option>
-              <option>Inspektim urban</option><option>Monitorim mjedisi</option>
-              <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
-              <option>Pyje dhe bimësi</option><option>Ujëra dhe hidrologji</option><option>Tjetër</option>
-            </select></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">STATUSI</label>
-            <select id="em-statusi" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="aktiv">✅ Aktiv</option><option value="ne_ndertim">🚧 Në ndërtim</option>
-              <option value="ne_rinovim">🔨 Në rinovim</option><option value="i_demtuar">⚠️ I dëmtuar</option>
-              <option value="i_braktisur">🚫 I braktisur</option><option value="i_demoluar">💥 I demoluar</option>
-              <option value="ne_investigim">🔍 Nën investigim</option>
-            </select></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KLASIFIKIMI</label>
-            <select id="em-klasi" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="">— Pa klasifikim —</option>
-              <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
-              <option>Depo / Magazine</option><option>Objekt industrial</option>
-              <option>Infrastrukturë</option><option>Tokë bujqësore</option>
-              <option>Zonë e mbrojtur</option><option>Tjetër</option>
-            </select></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">PRONËSIA</label>
-            <select id="em-pronesia" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="">— Zgjidh —</option>
-              <option>Publike - Shtet</option><option>Publike - Bashki</option>
-              <option>Private</option><option>Të përziera</option>
-            </select></div>
-        </div>
-        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">ADRESA</label>
-          <input type="text" id="em-adresa" placeholder="Adresa e plotë..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none;box-sizing:border-box"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KATET</label>
-            <input type="number" id="em-kate" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">LARTËSIA (m)</label>
-            <input type="number" id="em-lartesia" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">SIPËRFAQJA (m²)</label>
-            <input type="number" id="em-siperfaqe" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">NR. INVENTAR</label>
-            <input type="text" id="em-inventar" placeholder="INV-001" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">VITI NDËRTIMIT</label>
-            <input type="number" id="em-viti" placeholder="2000" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">ZONA / LAGJA</label>
-            <input type="text" id="em-zona" placeholder="p.sh. Bllok, Kombinat..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
-          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KUSHTET E SIGURISË</label>
-            <select id="em-siguria" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option value="">— Zgjidh —</option>
-              <option value="shume_mire">✅ Shumë mirë</option>
-              <option value="mire">🟢 Mirë</option>
-              <option value="mesatare">🟡 Mesatare</option>
-              <option value="dobete">🟠 Dobët</option>
-              <option value="rrezik">🔴 Rrezik i lartë</option>
-              <option value="jo_aplikueshme">➖ Jo aplikueshme</option>
-            </select></div>
-        </div>
-        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">SHËNIME</label>
-          <textarea id="em-notes" placeholder="Shënime..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none;min-height:80px;resize:vertical;box-sizing:border-box"></textarea></div>
-        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:6px">VLERËSIMI</label>
-          <div id="em-stars" style="display:flex;gap:6px;font-size:24px;cursor:pointer"></div></div>
-        <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px;border-top:1px solid #1c2740">
-          <button onclick="closeEditModal()" style="padding:9px 20px;background:#18202e;border:1px solid #253352;border-radius:8px;color:#8da0bb;font-family:monospace;font-size:12px;cursor:pointer">Anulo</button>
-          <button onclick="saveEditModal()" style="padding:9px 24px;background:#05d9a0;border:none;border-radius:8px;color:#021a10;font-family:monospace;font-size:12px;font-weight:600;cursor:pointer">💾 Ruaj ndryshimet</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+
 </body></html>';
   dl(full,'application/vnd.ms-excel;charset=utf-8;','survey_'+dt()+'.xls');
   toast('ok','Excel eksportuar ('+src.length+' rekorde)');
@@ -5437,6 +5271,90 @@ if(typeof supabase!=='undefined'){
   setTimeout(function(){if(typeof supabase!=='undefined'){log('ok','SDK retry OK');boot();}},3000);
 }
 </script>
+<!-- EDIT MODAL -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.7);overflow-y:auto">
+  <div style="max-width:600px;margin:40px auto;padding:16px">
+    <div style="background:#0d1119;border:1px solid #253352;border-radius:14px;overflow:hidden">
+      <div style="padding:16px 20px;border-bottom:1px solid #1c2740;display:flex;justify-content:space-between;align-items:center;background:#07090f">
+        <div style="font-size:16px;font-weight:700">✏️ Edito Rekord <span id="em-id" style="color:#3d5275;font-size:12px"></span></div>
+        <button onclick="closeEditModal()" style="background:transparent;border:none;color:#3d5275;font-size:22px;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">QËLLIMI</label>
+            <select id="em-qellim" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Zgjidh —</option>
+              <option>Inspektim urban</option><option>Monitorim mjedisi</option>
+              <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
+              <option>Pyje dhe bimësi</option><option>Ujëra dhe hidrologji</option><option>Tjetër</option>
+            </select></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">STATUSI</label>
+            <select id="em-statusi" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="aktiv">✅ Aktiv</option><option value="ne_ndertim">🚧 Në ndërtim</option>
+              <option value="ne_rinovim">🔨 Në rinovim</option><option value="i_demtuar">⚠️ I dëmtuar</option>
+              <option value="i_braktisur">🚫 I braktisur</option><option value="i_demoluar">💥 I demoluar</option>
+              <option value="ne_investigim">🔍 Nën investigim</option>
+            </select></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KLASIFIKIMI</label>
+            <select id="em-klasi" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Pa klasifikim —</option>
+              <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
+              <option>Depo / Magazine</option><option>Objekt industrial</option>
+              <option>Infrastrukturë</option><option>Tokë bujqësore</option>
+              <option>Zonë e mbrojtur</option><option>Tjetër</option>
+            </select></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">PRONËSIA</label>
+            <select id="em-pronesia" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Zgjidh —</option>
+              <option>Publike - Shtet</option><option>Publike - Bashki</option>
+              <option>Private</option><option>Të përziera</option>
+            </select></div>
+        </div>
+        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">ADRESA</label>
+          <input type="text" id="em-adresa" placeholder="Adresa e plotë..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none;box-sizing:border-box"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KATET</label>
+            <input type="number" id="em-kate" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">LARTËSIA (m)</label>
+            <input type="number" id="em-lartesia" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">SIPËRFAQJA (m²)</label>
+            <input type="number" id="em-siperfaqe" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">NR. INVENTAR</label>
+            <input type="text" id="em-inventar" placeholder="INV-001" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">VITI NDËRTIMIT</label>
+            <input type="number" id="em-viti" placeholder="2000" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">ZONA / LAGJA</label>
+            <input type="text" id="em-zona" placeholder="p.sh. Bllok, Kombinat..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KUSHTET E SIGURISË</label>
+            <select id="em-siguria" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Zgjidh —</option>
+              <option value="shume_mire">✅ Shumë mirë</option>
+              <option value="mire">🟢 Mirë</option>
+              <option value="mesatare">🟡 Mesatare</option>
+              <option value="dobete">🟠 Dobët</option>
+              <option value="rrezik">🔴 Rrezik i lartë</option>
+              <option value="jo_aplikueshme">➖ Jo aplikueshme</option>
+            </select></div>
+        </div>
+        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">SHËNIME</label>
+          <textarea id="em-notes" placeholder="Shënime..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none;min-height:80px;resize:vertical;box-sizing:border-box"></textarea></div>
+        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:6px">VLERËSIMI</label>
+          <div id="em-stars" style="display:flex;gap:6px;font-size:24px;cursor:pointer"></div></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px;border-top:1px solid #1c2740">
+          <button onclick="closeEditModal()" style="padding:9px 20px;background:#18202e;border:1px solid #253352;border-radius:8px;color:#8da0bb;font-family:monospace;font-size:12px;cursor:pointer">Anulo</button>
+          <button onclick="saveEditModal()" style="padding:9px 24px;background:#05d9a0;border:none;border-radius:8px;color:#021a10;font-family:monospace;font-size:12px;font-weight:600;cursor:pointer">💾 Ruaj ndryshimet</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!-- EDIT MODAL -->
 <div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.7);overflow-y:auto">
@@ -5521,5 +5439,91 @@ if(typeof supabase!=='undefined'){
     </div>
   </div>
 </div>
+
+
+<!-- EDIT MODAL -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.7);overflow-y:auto">
+  <div style="max-width:600px;margin:40px auto;padding:16px">
+    <div style="background:#0d1119;border:1px solid #253352;border-radius:14px;overflow:hidden">
+      <div style="padding:16px 20px;border-bottom:1px solid #1c2740;display:flex;justify-content:space-between;align-items:center;background:#07090f">
+        <div style="font-size:16px;font-weight:700">✏️ Edito Rekord <span id="em-id" style="color:#3d5275;font-size:12px"></span></div>
+        <button onclick="closeEditModal()" style="background:transparent;border:none;color:#3d5275;font-size:22px;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">QËLLIMI</label>
+            <select id="em-qellim" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Zgjidh —</option>
+              <option>Inspektim urban</option><option>Monitorim mjedisi</option>
+              <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
+              <option>Pyje dhe bimësi</option><option>Ujëra dhe hidrologji</option><option>Tjetër</option>
+            </select></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">STATUSI</label>
+            <select id="em-statusi" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="aktiv">✅ Aktiv</option><option value="ne_ndertim">🚧 Në ndërtim</option>
+              <option value="ne_rinovim">🔨 Në rinovim</option><option value="i_demtuar">⚠️ I dëmtuar</option>
+              <option value="i_braktisur">🚫 I braktisur</option><option value="i_demoluar">💥 I demoluar</option>
+              <option value="ne_investigim">🔍 Nën investigim</option>
+            </select></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KLASIFIKIMI</label>
+            <select id="em-klasi" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Pa klasifikim —</option>
+              <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
+              <option>Depo / Magazine</option><option>Objekt industrial</option>
+              <option>Infrastrukturë</option><option>Tokë bujqësore</option>
+              <option>Zonë e mbrojtur</option><option>Tjetër</option>
+            </select></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">PRONËSIA</label>
+            <select id="em-pronesia" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Zgjidh —</option>
+              <option>Publike - Shtet</option><option>Publike - Bashki</option>
+              <option>Private</option><option>Të përziera</option>
+            </select></div>
+        </div>
+        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">ADRESA</label>
+          <input type="text" id="em-adresa" placeholder="Adresa e plotë..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none;box-sizing:border-box"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KATET</label>
+            <input type="number" id="em-kate" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">LARTËSIA (m)</label>
+            <input type="number" id="em-lartesia" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">SIPËRFAQJA (m²)</label>
+            <input type="number" id="em-siperfaqe" placeholder="0" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">NR. INVENTAR</label>
+            <input type="text" id="em-inventar" placeholder="INV-001" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">VITI NDËRTIMIT</label>
+            <input type="number" id="em-viti" placeholder="2000" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">ZONA / LAGJA</label>
+            <input type="text" id="em-zona" placeholder="p.sh. Bllok, Kombinat..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none"></div>
+          <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">KUSHTET E SIGURISË</label>
+            <select id="em-siguria" style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Zgjidh —</option>
+              <option value="shume_mire">✅ Shumë mirë</option>
+              <option value="mire">🟢 Mirë</option>
+              <option value="mesatare">🟡 Mesatare</option>
+              <option value="dobete">🟠 Dobët</option>
+              <option value="rrezik">🔴 Rrezik i lartë</option>
+              <option value="jo_aplikueshme">➖ Jo aplikueshme</option>
+            </select></div>
+        </div>
+        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:5px">SHËNIME</label>
+          <textarea id="em-notes" placeholder="Shënime..." style="width:100%;padding:9px;background:#07090f;border:1px solid #253352;border-radius:8px;color:#dce6f5;font-size:12px;outline:none;min-height:80px;resize:vertical;box-sizing:border-box"></textarea></div>
+        <div><label style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;display:block;margin-bottom:6px">VLERËSIMI</label>
+          <div id="em-stars" style="display:flex;gap:6px;font-size:24px;cursor:pointer"></div></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px;border-top:1px solid #1c2740">
+          <button onclick="closeEditModal()" style="padding:9px 20px;background:#18202e;border:1px solid #253352;border-radius:8px;color:#8da0bb;font-family:monospace;font-size:12px;cursor:pointer">Anulo</button>
+          <button onclick="saveEditModal()" style="padding:9px 24px;background:#05d9a0;border:none;border-radius:8px;color:#021a10;font-family:monospace;font-size:12px;font-weight:600;cursor:pointer">💾 Ruaj ndryshimet</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
