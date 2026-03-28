@@ -1846,19 +1846,21 @@ function openRecModal(rec){
   var pu=[];try{if(rec.photo_urls)pu=JSON.parse(rec.photo_urls);}catch(e){}
   var du=[];try{if(rec.doc_urls)du=JSON.parse(rec.doc_urls);}catch(e){}
 
-  // FIX: enricho kompanine nese mungon
-  if(!rec.location_display&&!rec.company_name&&rec.location_id&&allLocs&&allCompanies){
-    var _loc=allLocs.find(function(l){return l.id===rec.location_id;});
-    if(_loc){
-      rec.location_name=_loc.name;
-      var _comp=_loc.company_id?allCompanies.find(function(c){return c.id===_loc.company_id;}):null;
-      if(_comp){rec.company_name=_comp.name;rec.location_display=_comp.name+' › '+_loc.name;}
-      else{rec.location_display=_loc.name;}
+  // Enricho kompanine nese mungon — me null check
+  if(!rec.location_display&&!rec.company_name){
+    if(rec.location_id&&allLocs&&allLocs.length){
+      var _loc=allLocs.find(function(l){return l.id===rec.location_id;});
+      if(_loc){
+        rec.location_name=_loc.name;
+        var _comp=(_loc.company_id&&allCompanies)?allCompanies.find(function(c){return c.id===_loc.company_id;}):null;
+        if(_comp){rec.company_name=_comp.name;rec.location_display=_comp.name+' › '+_loc.name;}
+        else{rec.location_display=_loc.name;}
+      }
     }
-  }
-  if(!rec.location_display&&!rec.company_name&&rec.company_id&&allCompanies){
-    var _comp2=allCompanies.find(function(c){return c.id===rec.company_id;});
-    if(_comp2){rec.company_name=_comp2.name;rec.location_display=_comp2.name;}
+    if(!rec.location_display&&rec.company_id&&allCompanies&&allCompanies.length){
+      var _comp2=allCompanies.find(function(c){return c.id===rec.company_id;});
+      if(_comp2){rec.company_name=_comp2.name;rec.location_display=_comp2.name;}
+    }
   }
   document.getElementById('rm-company').textContent=rec.location_display||rec.company_name||(rec.location_name?rec.location_name:'-');
   var allMedia=pu.concat(du);
@@ -1895,52 +1897,10 @@ function openRecModal(rec){
   } else {if(pb)pb.style.display='none';if(cw)cw.style.display='none';}
   var ts=document.getElementById('rm-tasks-sec'),tl=document.getElementById('rm-tasks-list');
   if(ts&&tl){
-    // Filtro detyrat sipas location_id ose company_id (jo survey_record_id)
-    var rt=(allTasks||[]).filter(function(t){
-      if(t.status==='anuluar')return false;
-      if(rec.location_id&&t.location_id&&String(t.location_id)===String(rec.location_id))return true;
-      if(rec.company_id&&t.company_id&&String(t.company_id)===String(rec.company_id))return true;
-      return false;
-    });
-    if(rt.length>0){
-      ts.style.display='block';
-      var countEl=document.getElementById('rm-tasks-count');
-      if(countEl)countEl.textContent='('+rt.length+')';
-      tl.innerHTML=rt.map(function(t){
-        var risk=calcRisk(t.priority,t.deadline,t.status);
-        var rc={kritik:'#ff4d6d',i_larte:'#ffaa2e',mesem:'#2d8bff',i_ulet:'#05d9a0',perfunduar:'#3d5275'}[risk]||'#8da0bb';
-        var statusLbl={hapur:'Hapur',ne_progres:'Në progres',perfunduar:'Kryer',anuluar:'Anuluar'}[t.status]||t.status;
-        var prioEmoji={kritik:'🔴',i_larte:'🟠',mesem:'🟡',i_ulet:'🟢',perfunduar:'✅'}[risk]||'⚪';
-        var dr=t.deadline?daysRemaining(t.deadline):null;
-        var dlTxt='';
-        if(dr!==null){
-          if(dr<0)dlTxt='<span style="color:#ff4d6d;font-weight:700">⚠ '+Math.abs(dr)+' ditë vonesë</span>';
-          else if(dr===0)dlTxt='<span style="color:#ff4d6d;font-weight:700">🚨 Skadon SOT</span>';
-          else if(dr<=3)dlTxt='<span style="color:#ffaa2e">⏰ '+dr+' ditë</span>';
-          else dlTxt='<span style="color:#3d5275">'+dr+' ditë mbetur</span>';
-        }
-        var assignedTxt=t.assigned_name&&t.assigned_name!=='—'?
-          '<span style="color:#8da0bb">👤 '+t.assigned_name+'</span>':'';
-        var isDone=t.status==='perfunduar'||t.status==='anuluar';
-        return'<div style="background:#07090f;border:1px solid '+(isDone?'#1c2740':rc+'44')+';border-left:3px solid '+(isDone?'#253352':rc)+';border-radius:8px;padding:11px 13px">'+
-          '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">'+
-            '<div style="font-size:12px;font-weight:600;color:'+(isDone?'#3d5275':'#dce6f5')+'">'+(isDone?'<s>':'')+t.title+(isDone?'</s>':'')+'</div>'+
-            '<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:'+rc+'18;color:'+rc+';border:1px solid '+rc+'33;white-space:nowrap">'+prioEmoji+' '+statusLbl+'</span>'+
-          '</div>'+
-          (t.description?'<div style="font-size:11px;color:#5a6d8a;margin-bottom:6px;line-height:1.5">'+t.description.substring(0,100)+(t.description.length>100?'…':'')+'</div>':'')+
-          '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:10px;font-family:monospace">'+
-            (t.deadline?'<span style="color:#5a6d8a">📅 '+t.deadline+'</span>':'')+
-            dlTxt+
-            assignedTxt+
-          '</div>'+
-        '</div>';
-      }).join('');
-    } else {
-      ts.style.display='block';
-      var countEl2=document.getElementById('rm-tasks-count');
-      if(countEl2)countEl2.textContent='';
-      tl.innerHTML='<div style="font-size:11px;color:#3d5275;font-family:monospace;padding:4px 0">Nuk ka detyra për këtë lokacion.</div>';
-    }
+    ts.style.display='block';
+    tl.innerHTML='<div style="font-size:11px;color:#3d5275;font-family:monospace;padding:4px 0">Duke ngarkuar...</div>';
+    // Ngarko detyrat e lidhura me këtë rekord specifik
+    rmLoadTasksForRec(rec);
   }
   var ds=document.getElementById('rm-docs-sec'),dl2=document.getElementById('rm-docs-list');
   if(ds&&dl2){
@@ -1970,24 +1930,142 @@ function closeRecModal(){
   if(_rmMap){try{_rmMap.remove();}catch(e){}_rmMap=null;}
   _rmRec=null;
 }
+
+function rmRenderTasks(tasks,recId){
+  var tl=document.getElementById('rm-tasks-list');
+  var countEl=document.getElementById('rm-tasks-count');
+  if(!tl)return;
+  if(countEl)countEl.textContent=tasks.length?'('+tasks.length+')':'';
+  if(!tasks.length){
+    tl.innerHTML='<div style="font-size:11px;color:#3d5275;font-family:monospace;padding:4px 0">Asnjë detyrë e shtuar për këtë vëzhgim.</div>';
+    return;
+  }
+  tl.innerHTML=tasks.map(function(t){
+    var risk=calcRisk(t.priority,t.deadline,t.status);
+    var rc={kritik:'#ff4d6d',i_larte:'#ffaa2e',mesem:'#2d8bff',i_ulet:'#05d9a0',perfunduar:'#3d5275'}[risk]||'#8da0bb';
+    var prioEmoji={kritik:'🔴',i_larte:'🟠',mesem:'🟡',i_ulet:'🟢',perfunduar:'✅'}[risk]||'⚪';
+    var statusLbl={hapur:'Hapur',ne_progres:'Në progres',perfunduar:'Kryer',anuluar:'Anuluar'}[t.status]||t.status;
+    var dr=t.deadline?daysRemaining(t.deadline):null;
+    var dlTxt='';
+    if(dr!==null){
+      if(dr<0)dlTxt='<span style="color:#ff4d6d;font-weight:700">⚠ '+Math.abs(dr)+'d vonesë</span>';
+      else if(dr===0)dlTxt='<span style="color:#ff4d6d;font-weight:700">🚨 SOT</span>';
+      else if(dr<=3)dlTxt='<span style="color:#ffaa2e">⏰ '+dr+'d</span>';
+      else dlTxt='<span style="color:#3d5275">'+dr+'d mbetur</span>';
+    }
+    var isDone=t.status==='perfunduar'||t.status==='anuluar';
+    var tid=t.id;
+    return'<div style="background:#07090f;border:1px solid '+(isDone?'#1c2740':rc+'44')+';border-left:3px solid '+(isDone?'#253352':rc)+';border-radius:8px;padding:10px 12px;margin-bottom:6px">'+
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:'+(t.description||t.deadline?'6':'0')+'px">'+
+        '<div style="font-size:12px;font-weight:600;color:'+(isDone?'#3d5275':'#dce6f5')+'">'+(isDone?'<s>':'')+t.title+(isDone?'</s>':'')+'</div>'+
+        '<div style="display:flex;gap:5px;align-items:center;flex-shrink:0">'+
+          '<span style="font-size:10px;padding:2px 7px;border-radius:8px;background:'+rc+'18;color:'+rc+';border:1px solid '+rc+'33">'+prioEmoji+' '+statusLbl+'</span>'+
+          (!isDone?'<button onclick="rmQuickDone(\''+tid+'\','+recId+')" style="padding:2px 7px;background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);border-radius:5px;color:#05d9a0;font-size:10px;cursor:pointer;font-family:monospace" title="Shëno si kryer">✓</button>':'')+
+          '<button onclick="openTaskModal(\''+tid+'\')" style="padding:2px 7px;background:#18202e;border:1px solid #253352;border-radius:5px;color:#8da0bb;font-size:10px;cursor:pointer" title="Edito">✏️</button>'+
+        '</div>'+
+      '</div>'+
+      (t.description?'<div style="font-size:11px;color:#5a6d8a;margin-bottom:5px;line-height:1.5">'+t.description.substring(0,120)+(t.description.length>120?'…':'')+'</div>':'')+
+      ((t.deadline||t.assigned_name)?'<div style="display:flex;gap:10px;flex-wrap:wrap;font-size:10px;font-family:monospace">'+
+        (t.deadline?'<span style="color:#5a6d8a">📅 '+t.deadline+'</span>':'')+
+        dlTxt+
+        (t.assigned_name&&t.assigned_name!=='—'?'<span style="color:#5a6d8a">👤 '+t.assigned_name+'</span>':'')+
+      '</div>':'')+
+    '</div>';
+  }).join('');
+}
+
+async function rmLoadTasksForRec(rec){
+  var tl=document.getElementById('rm-tasks-list');
+  if(!tl)return;
+  // Kërko fillimisht në allTasks (cache)
+  var cached=(allTasks||[]).filter(function(t){
+    return String(t.survey_record_id)===String(rec.id);
+  });
+  if(cached.length){rmRenderTasks(cached,rec.id);return;}
+  // Nëse nuk janë në cache, ngarko nga DB
+  if(!SB){rmRenderTasks([],rec.id);return;}
+  try{
+    var{data,error}=await SB.from('tasks')
+      .select('*,profiles!tasks_assigned_to_fkey(full_name,email)')
+      .eq('survey_record_id',rec.id)
+      .order('created_at',{ascending:false});
+    if(error){
+      // Kolona survey_record_id mund të mos ekzistojë — shfaq mesazh SQL
+      if(error.message&&error.message.includes('survey_record_id')){
+        tl.innerHTML='<div style="background:rgba(255,170,46,.08);border:1px solid rgba(255,170,46,.3);border-radius:8px;padding:10px 12px;font-family:monospace;font-size:11px;color:#ffaa2e">'+
+          '⚠ Duhet të shtoni kolonën <b>survey_record_id</b> në tabelën tasks.<br>'+
+          '<span style="color:#3d5275">Ekzekutoni në Supabase SQL Editor:</span><br>'+
+          '<code style="color:#05d9a0;font-size:10px;display:block;margin-top:6px;background:#07090f;padding:6px;border-radius:4px">'+
+          'ALTER TABLE public.tasks\n  ADD COLUMN IF NOT EXISTS survey_record_id bigint\n  REFERENCES public.survey_records(id) ON DELETE SET NULL;'+
+          '</code>'+
+          '</div>';
+      } else {
+        rmRenderTasks([],rec.id);
+      }
+      return;
+    }
+    if(!data){rmRenderTasks([],rec.id);return;}
+    var tasks=data.map(function(t){
+      t.assigned_name=t.profiles?t.profiles.full_name||t.profiles.email:'—';
+      t.risk_level=calcRisk(t.priority,t.deadline,t.status);
+      t.days_remaining=daysRemaining(t.deadline);
+      delete t.profiles;
+      return t;
+    });
+    rmRenderTasks(tasks,rec.id);
+  }catch(e){rmRenderTasks([],rec.id);}
+}
+
+async function rmQuickDone(taskId,recId){
+  if(!SB)return;
+  var{error}=await SB.from('tasks').update({status:'perfunduar',completed_at:new Date().toISOString()}).eq('id',taskId);
+  if(error){toast('err','Gabim: '+error.message);return;}
+  toast('ok','✅ Detyrë e kryer!');
+  // Rifresko listën
+  if(_rmRec&&String(_rmRec.id)===String(recId)){
+    // Update cache
+    var idx=allTasks.findIndex(function(t){return String(t.id)===String(taskId);});
+    if(idx>=0){allTasks[idx].status='perfunduar';allTasks[idx].risk_level='perfunduar';}
+    await rmLoadTasksForRec(_rmRec);
+  }
+  // Rifresko edhe listën kryesore
+  loadTasks();
+}
+
 function rmOpenNewTask(){
   if(!_rmRec)return;
-  // Pre-plotëso task modal me kompanine/lokacionin e rekordeve
-  openTaskModal(null);
-  setTimeout(function(){
-    if(_rmRec.company_id){
-      var cs=document.getElementById('tkm-company');
-      if(cs){cs.value=_rmRec.company_id;onTkmCompanyChange(_rmRec.company_id,_rmRec.location_id);}
-    }
-    if(_rmRec.location_id){
-      setTimeout(function(){
-        var ls=document.getElementById('tkm-location');
-        if(ls)ls.value=_rmRec.location_id;
-        updateRiskPreview();
-      },100);
-    }
-  },50);
+  var rec=_rmRec;
+  // Hap task modal — do mbyllim modalin kryesor pastaj hapim task modal
   closeRecModal();
+  setTimeout(function(){
+    openTaskModal(null);
+    setTimeout(function(){
+      // Pre-plotëso me kompani/lokacion dhe lidhe me survey_record_id
+      if(rec.company_id){
+        var cs=document.getElementById('tkm-company');
+        if(cs){cs.value=rec.company_id;onTkmCompanyChange(rec.company_id,rec.location_id);}
+      }
+      if(rec.location_id){
+        setTimeout(function(){
+          var ls=document.getElementById('tkm-location');
+          if(ls)ls.value=rec.location_id;
+          updateRiskPreview();
+        },120);
+      }
+      // Ruaj survey_record_id si hidden value në modal
+      var modal=document.getElementById('task-modal');
+      if(modal){
+        var existing=modal.querySelector('#tkm-survey-rec-id');
+        if(!existing){
+          var inp=document.createElement('input');
+          inp.type='hidden';inp.id='tkm-survey-rec-id';inp.value=rec.id;
+          modal.appendChild(inp);
+        } else {
+          existing.value=rec.id;
+        }
+      }
+    },80);
+  },50);
 }
 function openEditFromModal(){
   if(!_rmRec)return;_dpRec=_rmRec;closeRecModal();openEditModal();
@@ -4491,6 +4569,7 @@ function setRiskFilter(risk){
 }
 
 function updateTaskKPIs(){
+  var active=allTasks.filter(function(t){return t.status!=='perfunduar'&&t.status!=='anuluar';});
   var counts={kritik:0,i_larte:0,mesem:0,i_ulet:0,perfunduar:0};
   allTasks.forEach(function(t){
     if(t.status==='perfunduar'||t.status==='anuluar') counts.perfunduar++;
@@ -4768,6 +4847,9 @@ async function saveTask(){
     var ae=document.getElementById('tkm-alert');ae.className='alert err';ae.textContent='Titulli është i detyrueshëm!';ae.classList.remove('hidden');return;
   }
   var status=document.getElementById('tkm-status').value;
+  // Kontrollo nëse jemi duke shtuar nga rec-modal (ka survey_record_id)
+  var survRecEl=document.getElementById('tkm-survey-rec-id');
+  var survRecId=survRecEl&&!editTaskId?parseInt(survRecEl.value)||null:null;
   var data={
     title:title,
     description:document.getElementById('tkm-desc').value||null,
@@ -4779,7 +4861,8 @@ async function saveTask(){
     status:status,
     notes:document.getElementById('tkm-notes').value||null,
     completed_at:status==='perfunduar'?new Date().toISOString():null,
-    created_by:CU.id
+    created_by:CU.id,
+    survey_record_id:survRecId
   };
   var res=editTaskId?
     await SB.from('tasks').update(data).eq('id',editTaskId):
@@ -4787,6 +4870,8 @@ async function saveTask(){
   if(res.error){
     var ae=document.getElementById('tkm-alert');ae.className='alert err';ae.textContent='Gabim: '+res.error.message;ae.classList.remove('hidden');return;
   }
+  // Pastro hidden field
+  if(survRecEl)survRecEl.value='';
   toast('ok',editTaskId?'Detyra u përditësua!':'Detyra u shtua!');
   closeTaskModal();
   await loadTasks();
