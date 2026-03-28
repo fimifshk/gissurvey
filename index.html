@@ -275,8 +275,8 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 .branch-btns{display:flex;gap:3px;flex-shrink:0}
 
 /* ── DETAIL PANEL (djathtas) ── */
-.dpanel{position:fixed;top:0;right:-520px;width:500px;max-width:100vw;height:100vh;background:var(--s1);border-left:1px solid var(--b1);z-index:4000;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,.4)}
-#dpanel{background:red!important;position:fixed;top:0;right:-560px;width:540px;max-width:100vw;height:100vh;background:#0d1119;border-left:1px solid #1c2740;z-index:4000;overflow:hidden;display:flex;flex-direction:column;transition:right .3s ease!important}
+
+#dpanel{transition:right .3s ease}
 
 
 .dpanel#dpanel.open{right:0!important;box-shadow:-4px 0 30px rgba(0,0,0,.5)}
@@ -1537,7 +1537,7 @@ create trigger on_auth_user_created
   </div><!-- /pages -->
 </div><!-- /app -->
 <!-- DETAIL PANEL -->
-<div id="dpanel" style="position:fixed;top:0;right:-560px;width:540px;max-width:100vw;height:100vh;background:#0d1119;border-left:1px solid #1c2740;z-index:4000;overflow:hidden;display:flex;flex-direction:column;transition:right .3s ease">
+<div id="dpanel" style="position:fixed;top:0;right:-560px;width:540px;max-width:100vw;height:100vh;background:#0d1119;border-left:3px solid #05d9a0;z-index:9999;overflow:hidden;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-8px 0 40px rgba(0,0,0,.8)">
 
   <!-- HEADER -->
   <div style="padding:14px 16px;border-bottom:1px solid #1c2740;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#0d1119;position:sticky;top:0;z-index:1">
@@ -1723,7 +1723,7 @@ create trigger on_auth_user_created
     </div>
   </div>
 </div>
-<div id="dp-overlay" style="display:none;position:fixed;inset:0;z-index:3999" onclick="closeDp()"></div>
+<div id="dp-overlay" style="display:none;position:fixed;inset:0;z-index:5000" onclick="closeDp()"></div>
 
 
 <div class="toastwrap" id="toasts"></div>
