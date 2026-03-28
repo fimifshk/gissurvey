@@ -2712,6 +2712,18 @@ async function addRec(){
     accuracy:parseFloat(document.getElementById('f-acc').textContent)||0,
     qellim:document.getElementById('f-ql').value||null,
     notes:document.getElementById('f-nt').value||null,
+    klasifikimi:document.getElementById('f-klasi').value||null,
+    statusi:document.getElementById('f-statusi').value||'aktiv',
+    adresa:document.getElementById('f-adresa').value||null,
+    kate:parseInt(document.getElementById('f-kate').value)||null,
+    lartesia:parseFloat(document.getElementById('f-lartesia').value)||null,
+    vleresimi:parseInt(document.getElementById('f-vleresimi').value)||null,
+    klasifikimi:(document.getElementById('f-klasi')||{value:null}).value||null,
+    statusi:(document.getElementById('f-statusi')||{value:'aktiv'}).value||'aktiv',
+    adresa:(document.getElementById('f-adresa')||{value:null}).value||null,
+    kate:parseInt((document.getElementById('f-kate')||{value:''}).value)||null,
+    lartesia:parseFloat((document.getElementById('f-lartesia')||{value:''}).value)||null,
+    vleresimi:parseInt((document.getElementById('f-vleresimi')||{value:'0'}).value)||null,
     photo_count:photos.length,
     synced:true
   };
