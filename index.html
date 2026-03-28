@@ -720,6 +720,61 @@ create trigger on_auth_user_created
               </div>
             </div>
 
+            <!-- ATTACH SKEDAR -->
+            <div class="section" style="padding:0;overflow:hidden;border:1px solid #1c2740;border-radius:10px;margin-bottom:8px">
+              <button onclick="toggleSvAttach()" id="sv-att-btn"
+                style="width:100%;padding:11px 16px;background:#0d1119;border:none;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+                <span>📎 Bashkëngjit skedar (opsionale)</span>
+                <span id="sv-att-arrow" style="transition:transform .2s">▼</span>
+              </button>
+              <div id="sv-att-body" style="display:none;padding:12px;border-top:1px solid #1c2740">
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px dashed #1c2740;border-radius:8px;cursor:pointer;font-family:monospace;font-size:11px;color:#3d5275;transition:.15s"
+                  onmouseenter="this.style.borderColor='#2d8bff'" onmouseleave="this.style.borderColor='#1c2740'">
+                  <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#2d8bff;stroke-width:2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>Klikoni për të zgjedhur skedar (PDF, DOC, XLS, IMG)</span>
+                  <input type="file" id="sv-attach-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="onSvAttachChange(this)" style="display:none">
+                </label>
+                <div id="sv-attach-list" style="margin-top:8px"></div>
+              </div>
+            </div>
+
+            <!-- SHTO DETYRË -->
+            <div class="section" style="padding:0;overflow:hidden;border:1px solid #1c2740;border-radius:10px;margin-bottom:8px">
+              <button onclick="toggleSvTask()" id="sv-task-btn"
+                style="width:100%;padding:11px 16px;background:#0d1119;border:none;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+                <span>✅ Shto detyrë pas survey (opsionale)</span>
+                <span id="sv-task-arrow" style="transition:transform .2s">▼</span>
+              </button>
+              <div id="sv-task-body" style="display:none;padding:14px;border-top:1px solid #1c2740;display:flex;flex-direction:column;gap:8px">
+                <div class="ifield" style="margin:0">
+                  <label>TITULLI I DETYRËS *</label>
+                  <input type="text" id="sv-task-title" placeholder="p.sh. Verifikim i dokumenteve, Inspektim pasues..." oninput="updateSvTaskPreview()">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <div class="ifield" style="margin:0">
+                    <label>AFATI</label>
+                    <input type="date" id="sv-task-deadline" onchange="updateSvTaskPreview()">
+                  </div>
+                  <div class="ifield" style="margin:0">
+                    <label>PRIORITETI</label>
+                    <select id="sv-task-priority" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:12px;outline:none">
+                      <option value="i_ulet">🟢 I ulët</option>
+                      <option value="mesem" selected>🟡 Mesëm</option>
+                      <option value="i_larte">🟠 I lartë</option>
+                      <option value="kritik">🔴 Kritik</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="ifield" style="margin:0">
+                  <label>PERSONI PËRGJEGJËS</label>
+                  <select id="sv-task-assigned" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:12px;outline:none">
+                    <option value="">— Zgjidh —</option>
+                  </select>
+                </div>
+                <div id="sv-task-preview" style="display:none;padding:8px 12px;background:rgba(5,217,160,.06);border:1px solid rgba(5,217,160,.2);border-radius:8px;font-family:monospace;font-size:11px;color:#05d9a0"></div>
+              </div>
+            </div>
+
             <div class="section">
               <div class="sec-hd">Veprime</div>
               <div class="brow">
@@ -2093,41 +2148,36 @@ var _dpEditMode=false;
 function dpStartEdit(){
   _dpEditMode=true;
   var role=CP?CP.role:'field';
-  var isOwn=CU&&_dpRec&&_dpRec.user_id===CU.id;
 
-  // Fshi view, shfaq edit
-  var fields=['qellim','notes'];
-  if(role==='admin'||role==='supervisor'){fields=['qellim','klasi','statusi','adresa','kate','lartesia','notes'];}
+  // Çift view/edit për çdo fushë
+  var allViewIds=['dp-qellim-view','dp-klasi-view','dp-statusi-view','dp-adresa-view','dp-kate-view','dp-lartesia-view','dp-notes-view'];
+  var allEditIds=['dp-qellim-edit','dp-klasi','dp-statusi','dp-adresa','dp-kate','dp-lartesia','dp-notes-edit'];
 
-  fields.forEach(function(f){
-    var v=document.getElementById('dp-'+f+'-view');
-    var e=document.getElementById('dp-'+f+(f==='qellim'?'-edit':'')||'dp-'+f);
-    if(v)v.style.display='none';
-    // edit element
-    var eEl=document.getElementById('dp-'+f+'-edit')||document.getElementById('dp-'+f);
-    if(eEl&&eEl.id!=='dp-'+f+'-view'){eEl.style.display='block';}
-  });
+  // Field mund ndryshojë vetëm notes
+  var editableEdits = (role==='admin'||role==='supervisor') ? allEditIds : ['dp-notes-edit'];
+  var editableViews = (role==='admin'||role==='supervisor') ? allViewIds : ['dp-notes-view'];
+
+  // Fshih view, shfaq edit për fushat editueshme
+  editableViews.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+  editableEdits.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='block';});
 
   // Butonat
   document.getElementById('dp-edit-btn').style.display='none';
   document.getElementById('dp-save-btn').style.display='block';
   document.getElementById('dp-cancel-btn').style.display='block';
   var delBtn=document.getElementById('dp-del-btn');
-  if(delBtn&&role==='admin')delBtn.style.display='block';
+  if(delBtn)delBtn.style.display=(role==='admin')?'block':'none';
 }
 
 function dpCancelEdit(){
   _dpEditMode=false;
-  // Kthe view
-  ['qellim-view','klasi-view','statusi-view','adresa-view','kate-view','lartesia-view','notes-view'].forEach(function(id){
-    var el=document.getElementById('dp-'+id);if(el)el.style.display='block';
-  });
-  ['qellim-edit','klasi','statusi','adresa','kate','lartesia','notes-edit'].forEach(function(id){
-    var el=document.getElementById('dp-'+id);if(el)el.style.display='none';
-  });
-  document.getElementById('dp-edit-btn').style.display='block';
-  document.getElementById('dp-save-btn').style.display='none';
-  document.getElementById('dp-cancel-btn').style.display='none';
+  var viewIds=['dp-qellim-view','dp-klasi-view','dp-statusi-view','dp-adresa-view','dp-kate-view','dp-lartesia-view','dp-notes-view'];
+  var editIds=['dp-qellim-edit','dp-klasi','dp-statusi','dp-adresa','dp-kate','dp-lartesia','dp-notes-edit'];
+  viewIds.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='block';});
+  editIds.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+  var eBtn=document.getElementById('dp-edit-btn');if(eBtn)eBtn.style.display='block';
+  var sBtn=document.getElementById('dp-save-btn');if(sBtn)sBtn.style.display='none';
+  var cBtn=document.getElementById('dp-cancel-btn');if(cBtn)cBtn.style.display='none';
 }
 
 async function dpSave(){
@@ -2596,6 +2646,10 @@ async function addRec(){
         }
       }
       showAddStatus('ok','✓ Rekord #'+rec.id+' u ruajt'+(photos.length?' + '+photos.length+' foto':'')+'!');
+    // Shto detyrë nëse ka
+    await svAddTaskIfNeeded(rec.id);
+    // Ngarko skedarë nëse ka
+    await svUploadAttachments(rec.id);
       toast('ok','Rekord #'+rec.id+' u ruajt!');
     }catch(e){
       log('warn','Supabase dështoi, ruhet lokalisht: '+e.message);
@@ -2620,6 +2674,62 @@ async function addRec(){
 
   // update record count badge
   document.getElementById('rc-sub').textContent=allRecs.length+' rekorde totale';
+}
+
+async function svAddTaskIfNeeded(recId){
+  var title=document.getElementById('sv-task-title').value.trim();
+  if(!title)return;
+  var compId=parseInt(document.getElementById('f-loc-id').value)||null;
+  var locId=null;
+  if(compId&&isNaN(compId))compId=null;
+  // Merr company_id nga lokacioni
+  if(compId){
+    var loc=allLocs.find(function(l){return l.id==compId;});
+    if(loc){locId=loc.id;compId=loc.company_id||null;}
+  }
+  var data={
+    title:title,
+    description:'Nga survey rekord #'+recId,
+    location_id:locId,
+    company_id:compId,
+    deadline:document.getElementById('sv-task-deadline').value||null,
+    priority:document.getElementById('sv-task-priority').value||'mesem',
+    assigned_to:document.getElementById('sv-task-assigned').value||CU.id,
+    created_by:CU.id,status:'hapur'
+  };
+  var{error}=await SB.from('tasks').insert(data);
+  if(error){log('warn','Task: '+error.message);}
+  else{
+    toast('ok','✅ Detyrë e shtuar: '+title);
+    log('ok','Task u shtua per rec #'+recId);
+    // Pastro fushat
+    document.getElementById('sv-task-title').value='';
+    document.getElementById('sv-task-deadline').value='';
+    document.getElementById('sv-task-priority').value='mesem';
+    document.getElementById('sv-task-preview').style.display='none';
+    // Rifresko tasks
+    if(typeof loadTasks==='function')loadTasks();
+  }
+}
+
+async function svUploadAttachments(recId){
+  if(!_svAttachFiles||!_svAttachFiles.length)return;
+  var existingPaths=[];
+  for(var i=0;i<_svAttachFiles.length;i++){
+    var f=_svAttachFiles[i];
+    var safeName=f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    var path=CU.id+'/att_'+recId+'_'+Date.now()+'_'+safeName;
+    var{error}=await SB.storage.from('survey-docs').upload(path,f,{upsert:true,contentType:f.type});
+    if(error){log('warn','Attach: '+error.message);}
+    else{existingPaths.push(path);log('ok','Attach ngarkuar: '+f.name);}
+  }
+  if(existingPaths.length){
+    await SB.from('survey_records').update({doc_urls:JSON.stringify(existingPaths)}).eq('id',recId);
+    toast('ok','📎 '+existingPaths.length+' skedar ngarkuar!');
+  }
+  _svAttachFiles=[];
+  var list=document.getElementById('sv-attach-list');if(list)list.innerHTML='';
+  var inp=document.getElementById('sv-attach-input');if(inp)inp.value='';
 }
 
 function showAddStatus(type,msg){
@@ -4451,6 +4561,62 @@ function onSvBranchChange(){
   }
 }
 
+function toggleSvAttach(){
+  var b=document.getElementById('sv-att-body');
+  var a=document.getElementById('sv-att-arrow');
+  var open=b.style.display==='flex'||b.style.display==='block';
+  b.style.display=open?'none':'block';
+  if(a)a.style.transform=open?'':'rotate(180deg)';
+}
+function toggleSvTask(){
+  var b=document.getElementById('sv-task-body');
+  var a=document.getElementById('sv-task-arrow');
+  var open=b.style.display==='flex'||b.style.display==='block';
+  b.style.display=open?'none':'flex';
+  if(a)a.style.transform=open?'':'rotate(180deg)';
+  if(!open) loadSvTaskUsers();
+}
+
+var _svAttachFiles=[];
+function onSvAttachChange(inp){
+  _svAttachFiles=Array.from(inp.files);
+  var list=document.getElementById('sv-attach-list');
+  if(!list)return;
+  list.innerHTML='';
+  _svAttachFiles.forEach(function(f){
+    var div=document.createElement('div');
+    div.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:#07090f;border:1px solid #1c2740;border-radius:6px;margin-bottom:4px;font-family:monospace;font-size:11px;color:#8da0bb';
+    div.innerHTML='📎 '+f.name+' <span style="color:#3d5275">('+Math.round(f.size/1024)+'KB)</span>';
+    list.appendChild(div);
+  });
+}
+
+async function loadSvTaskUsers(){
+  var sel=document.getElementById('sv-task-assigned');
+  if(!sel||sel.options.length>1)return;
+  var{data}=await SB.from('profiles').select('id,full_name,email').order('full_name');
+  (data||[]).forEach(function(p){
+    var opt=document.createElement('option');
+    opt.value=p.id;opt.textContent=p.full_name||p.email;
+    sel.appendChild(opt);
+  });
+}
+
+// Update risk preview kur ndryshon deadline ose priority
+function updateSvTaskPreview(){
+  var title=document.getElementById('sv-task-title').value;
+  var dl=document.getElementById('sv-task-deadline').value;
+  var pr=document.getElementById('sv-task-priority').value;
+  var prev=document.getElementById('sv-task-preview');
+  if(!prev)return;
+  if(!title){prev.style.display='none';return;}
+  var risk=calcRisk(pr,dl,'hapur');
+  var rl=RISK_LABELS[risk]||RISK_LABELS.mesem;
+  var days=dl?daysRemaining(dl):null;
+  prev.style.display='block';
+  prev.textContent=rl.emoji+' '+rl.label+(days!==null?' · '+days+' ditë':'')+(dl?' · '+dl:'');
+}
+
 function toggleSvDetails(){
   var body=document.getElementById('sv-det-body');
   var arrow=document.getElementById('sv-det-arrow');
@@ -4525,6 +4691,62 @@ function selectLoc(id){
   document.getElementById('f-loc-sel').style.display='block';
   document.getElementById('f-loc-dd').style.display='none';
   if(l.lat&&l.lng){document.getElementById('f-lat').textContent=l.lat.toFixed(6);document.getElementById('f-lng').textContent=l.lng.toFixed(6);document.getElementById('f-acc').textContent='Nga lokacioni';if(leafMap)leafMap.setView([l.lat,l.lng],17);toast('info','GPS nga lokacioni: '+l.name);}
+}
+
+function toggleSvAttach(){
+  var b=document.getElementById('sv-att-body');
+  var a=document.getElementById('sv-att-arrow');
+  var open=b.style.display==='flex'||b.style.display==='block';
+  b.style.display=open?'none':'block';
+  if(a)a.style.transform=open?'':'rotate(180deg)';
+}
+function toggleSvTask(){
+  var b=document.getElementById('sv-task-body');
+  var a=document.getElementById('sv-task-arrow');
+  var open=b.style.display==='flex'||b.style.display==='block';
+  b.style.display=open?'none':'flex';
+  if(a)a.style.transform=open?'':'rotate(180deg)';
+  if(!open) loadSvTaskUsers();
+}
+
+var _svAttachFiles=[];
+function onSvAttachChange(inp){
+  _svAttachFiles=Array.from(inp.files);
+  var list=document.getElementById('sv-attach-list');
+  if(!list)return;
+  list.innerHTML='';
+  _svAttachFiles.forEach(function(f){
+    var div=document.createElement('div');
+    div.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 10px;background:#07090f;border:1px solid #1c2740;border-radius:6px;margin-bottom:4px;font-family:monospace;font-size:11px;color:#8da0bb';
+    div.innerHTML='📎 '+f.name+' <span style="color:#3d5275">('+Math.round(f.size/1024)+'KB)</span>';
+    list.appendChild(div);
+  });
+}
+
+async function loadSvTaskUsers(){
+  var sel=document.getElementById('sv-task-assigned');
+  if(!sel||sel.options.length>1)return;
+  var{data}=await SB.from('profiles').select('id,full_name,email').order('full_name');
+  (data||[]).forEach(function(p){
+    var opt=document.createElement('option');
+    opt.value=p.id;opt.textContent=p.full_name||p.email;
+    sel.appendChild(opt);
+  });
+}
+
+// Update risk preview kur ndryshon deadline ose priority
+function updateSvTaskPreview(){
+  var title=document.getElementById('sv-task-title').value;
+  var dl=document.getElementById('sv-task-deadline').value;
+  var pr=document.getElementById('sv-task-priority').value;
+  var prev=document.getElementById('sv-task-preview');
+  if(!prev)return;
+  if(!title){prev.style.display='none';return;}
+  var risk=calcRisk(pr,dl,'hapur');
+  var rl=RISK_LABELS[risk]||RISK_LABELS.mesem;
+  var days=dl?daysRemaining(dl):null;
+  prev.style.display='block';
+  prev.textContent=rl.emoji+' '+rl.label+(days!==null?' · '+days+' ditë':'')+(dl?' · '+dl:'');
 }
 
 function toggleSvDetails(){
