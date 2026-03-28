@@ -277,10 +277,9 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 /* ── DETAIL PANEL (djathtas) ── */
 .dpanel{position:fixed;top:0;right:-520px;width:500px;max-width:100vw;height:100vh;background:var(--s1);border-left:1px solid var(--b1);z-index:4000;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,.4)}
 #dpanel{position:fixed;top:0;right:-560px;width:540px;max-width:100vw;height:100vh;background:#0d1119;border-left:1px solid #1c2740;z-index:4000;overflow:hidden;display:flex;flex-direction:column;transition:right .3s ease!important}
-#dpanel.open{right:0!important}
 
-#dpanel.open,.dpanel.open{right:0!important}
-.dpanel#dpanel.open{right:0!important}
+
+.dpanel#dpanel.open{right:0!important;box-shadow:-4px 0 30px rgba(0,0,0,.5)}
 .dpanel-hd{padding:18px 20px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .dpanel-title{font-size:15px;font-weight:700}
 .dpanel-body{flex:1;overflow-y:auto;padding:18px 20px}
@@ -670,125 +669,6 @@ create trigger on_auth_user_created
                 <button class="btn sm" onclick="document.getElementById('phinp').click()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Ngarko</button>
               </div>
             </div>
-            <!-- DETAJE SHTESË -->
-            <div class="section" style="padding:0;overflow:hidden;border:1px solid var(--b1);border-radius:10px;margin-bottom:8px">
-              <button onclick="toggleSvDetails()" style="width:100%;padding:11px 16px;background:var(--s2);border:none;color:var(--txt2);font-family:var(--mono);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-align:left">
-                <span>📋 Detaje shtesë (plotëso tani ose më vonë)</span>
-                <span id="sv-det-arrow" style="transition:transform .2s">▼</span>
-              </button>
-              <div id="sv-det-body" style="display:none;padding:14px;border-top:1px solid var(--b1);flex-direction:column;gap:10px">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                  <div class="ifield" style="margin:0"><label>KLASIFIKIMI</label>
-                    <select id="f-klasi" class="fi"><option value="">— Pa klasifikim —</option>
-                      <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
-                      <option>Depo / Magazine</option><option>Objekt industrial</option>
-                      <option>Infrastrukturë</option><option>Tokë bujqësore</option>
-                      <option>Zonë e mbrojtur</option><option>Tjetër</option>
-                    </select></div>
-                  <div class="ifield" style="margin:0"><label>STATUSI</label>
-                    <select id="f-statusi" class="fi">
-                      <option value="aktiv">✅ Aktiv</option>
-                      <option value="ne_ndertim">🚧 Në ndërtim</option>
-                      <option value="ne_rinovim">🔨 Në rinovim</option>
-                      <option value="i_demtuar">⚠️ I dëmtuar</option>
-                      <option value="i_braktisur">🚫 I braktisur</option>
-                      <option value="i_demoluar">💥 I demoluar</option>
-                      <option value="ne_investigim">🔍 Nën investigim</option>
-                    </select></div>
-                </div>
-                <div class="ifield" style="margin:0"><label>ADRESA</label>
-                  <input type="text" id="f-adresa" class="fi" placeholder="Adresa e plotë..."></div>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-                  <div class="ifield" style="margin:0"><label>KATET</label>
-                    <input type="number" id="f-kate" class="fi" placeholder="0" min="0"></div>
-                  <div class="ifield" style="margin:0"><label>LARTËSIA (m)</label>
-                    <input type="number" id="f-lartesia" class="fi" placeholder="0" min="0"></div>
-                  <div class="ifield" style="margin:0"><label>SIPËRFAQJA (m²)</label>
-                    <input type="number" id="f-siperfaqe" class="fi" placeholder="0" min="0"></div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                  <div class="ifield" style="margin:0"><label>NR. INVENTAR</label>
-                    <input type="text" id="f-inventar" class="fi" placeholder="p.sh. INV-001"></div>
-                  <div class="ifield" style="margin:0"><label>VITI NDËRTIMIT</label>
-                    <input type="number" id="f-viti" class="fi" placeholder="2000" min="1800" max="2030"></div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                  <div class="ifield" style="margin:0"><label>PRONËSIA</label>
-                    <select id="f-pronesia" class="fi"><option value="">— Zgjidh —</option>
-                      <option>Publike - Shtet</option><option>Publike - Bashki</option>
-                      <option>Private</option><option>Të përziera</option>
-                    </select></div>
-                  <div class="ifield" style="margin:0"><label>ZONA / LAGJA</label>
-                    <input type="text" id="f-zona" class="fi" placeholder="p.sh. Bllok..."></div>
-                </div>
-                <div class="ifield" style="margin:0"><label>KUSHTET E SIGURISË</label>
-                  <select id="f-siguria" class="fi"><option value="">— Zgjidh —</option>
-                    <option value="shume_mire">✅ Shumë mirë</option>
-                    <option value="mire">🟢 Mirë</option>
-                    <option value="mesatare">🟡 Mesatare</option>
-                    <option value="dobete">🟠 Dobët</option>
-                    <option value="rrezik">🔴 Rrezik i lartë</option>
-                    <option value="jo_aplikueshme">➖ Jo aplikueshme</option>
-                  </select></div>
-                <div class="ifield" style="margin:0"><label>VLERËSIMI</label>
-                  <div id="f-stars" style="display:flex;gap:6px;font-size:26px;cursor:pointer;padding:4px 0"></div>
-                  <input type="hidden" id="f-vleresimi" value="0"></div>
-              </div>
-            </div>
-            <!-- ATTACH SKEDAR -->
-            <div class="section" style="padding:0;overflow:hidden;border:1px solid #1c2740;border-radius:10px;margin-bottom:8px">
-              <button onclick="toggleSvAttach()" id="sv-att-btn"
-                style="width:100%;padding:11px 16px;background:#0d1119;border:none;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
-                <span>📎 Bashkëngjit skedar (opsionale)</span>
-                <span id="sv-att-arrow" style="transition:transform .2s">▼</span>
-              </button>
-              <div id="sv-att-body" style="display:none;padding:12px;border-top:1px solid #1c2740">
-                <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px dashed #1c2740;border-radius:8px;cursor:pointer;font-family:monospace;font-size:11px;color:#3d5275;transition:.15s"
-                  onmouseenter="this.style.borderColor='#2d8bff'" onmouseleave="this.style.borderColor='#1c2740'">
-                  <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#2d8bff;stroke-width:2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  <span>Klikoni për të zgjedhur skedar (PDF, DOC, XLS, IMG)</span>
-                  <input type="file" id="sv-attach-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="onSvAttachChange(this)" style="display:none">
-                </label>
-                <div id="sv-attach-list" style="margin-top:8px"></div>
-              </div>
-            </div>
-            <!-- SHTO DETYRË -->
-            <div class="section" style="padding:0;overflow:hidden;border:1px solid #1c2740;border-radius:10px;margin-bottom:8px">
-              <button onclick="toggleSvTask()" id="sv-task-btn"
-                style="width:100%;padding:11px 16px;background:#0d1119;border:none;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
-                <span>✅ Shto detyrë pas survey (opsionale)</span>
-                <span id="sv-task-arrow" style="transition:transform .2s">▼</span>
-              </button>
-              <div id="sv-task-body" style="display:none;padding:14px;border-top:1px solid #1c2740;display:flex;flex-direction:column;gap:8px">
-                <div class="ifield" style="margin:0">
-                  <label>TITULLI I DETYRËS *</label>
-                  <input type="text" id="sv-task-title" placeholder="p.sh. Verifikim i dokumenteve, Inspektim pasues..." oninput="updateSvTaskPreview()">
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                  <div class="ifield" style="margin:0">
-                    <label>AFATI</label>
-                    <input type="date" id="sv-task-deadline" onchange="updateSvTaskPreview()">
-                  </div>
-                  <div class="ifield" style="margin:0">
-                    <label>PRIORITETI</label>
-                    <select id="sv-task-priority" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:12px;outline:none">
-                      <option value="i_ulet">🟢 I ulët</option>
-                      <option value="mesem" selected>🟡 Mesëm</option>
-                      <option value="i_larte">🟠 I lartë</option>
-                      <option value="kritik">🔴 Kritik</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="ifield" style="margin:0">
-                  <label>PERSONI PËRGJEGJËS</label>
-                  <select id="sv-task-assigned" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:12px;outline:none">
-                    <option value="">— Zgjidh —</option>
-                  </select>
-                </div>
-                <div id="sv-task-preview" style="display:none;padding:8px 12px;background:rgba(5,217,160,.06);border:1px solid rgba(5,217,160,.2);border-radius:8px;font-family:monospace;font-size:11px;color:#05d9a0"></div>
-              </div>
-            </div>
-
             <!-- DETAJE SHTESË -->
             <div class="section" style="padding:0;overflow:hidden;border:1px solid var(--b1);border-radius:10px;margin-bottom:8px">
               <button onclick="toggleSvDetails()" style="width:100%;padding:11px 16px;background:var(--s2);border:none;color:var(--txt2);font-family:var(--mono);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-align:left">
@@ -1616,7 +1496,7 @@ create trigger on_auth_user_created
   </div><!-- /pages -->
 </div><!-- /app -->
 <!-- DETAIL PANEL -->
-<div id="dpanel">
+<div id="dpanel" style="position:fixed;top:0;right:-560px;width:540px;max-width:100vw;height:100vh;background:#0d1119;border-left:1px solid #1c2740;z-index:4000;overflow:hidden;display:flex;flex-direction:column;transition:right .3s ease">
 
   <!-- HEADER -->
   <div style="padding:14px 16px;border-bottom:1px solid #1c2740;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#0d1119;position:sticky;top:0;z-index:1">
@@ -5018,13 +4898,6 @@ function updateSvTaskPreview(){
   prev.textContent=rl.emoji+' '+rl.label+(days!==null?' · '+days+' ditë':'')+(dl?' · '+dl:'');
 }
 
-function toggleSvDetails(){
-  var body=document.getElementById('sv-det-body');
-  var arrow=document.getElementById('sv-det-arrow');
-  var isOpen=body.style.display==='flex';
-  body.style.display=isOpen?'none':'flex';
-  if(arrow)arrow.style.transform=isOpen?'':'rotate(180deg)';
-}
 
 // Yjet vlerësim në formular
 var _fStarVal=0;
