@@ -223,6 +223,46 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 .rpc-t{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
 #rmap{height:270px;border-radius:8px;overflow:hidden}
 
+/* ── TASKS ── */
+.risk-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:10px;font-family:monospace;font-weight:600;border:1px solid}
+.risk-i_ulet{background:rgba(5,217,160,.1);color:#05d9a0;border-color:rgba(5,217,160,.3)}
+.risk-mesem{background:rgba(45,139,255,.1);color:#2d8bff;border-color:rgba(45,139,255,.3)}
+.risk-i_larte{background:rgba(255,170,46,.1);color:#ffaa2e;border-color:rgba(255,170,46,.3)}
+.risk-kritik{background:rgba(255,77,109,.15);color:#ff4d6d;border-color:rgba(255,77,109,.4);animation:pulse-risk 1.5s infinite}
+.risk-perfunduar{background:rgba(61,82,117,.1);color:#3d5275;border-color:rgba(61,82,117,.2)}
+@keyframes pulse-risk{0%,100%{opacity:1}50%{opacity:.6}}
+.task-card{background:#07090f;border:1px solid #1c2740;border-radius:10px;padding:13px 15px;margin-bottom:8px;border-left:3px solid #1c2740;transition:border-color .15s,box-shadow .15s}
+.task-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.task-card.risk-i_ulet-border{border-left-color:#05d9a0}
+.task-card.risk-mesem-border{border-left-color:#2d8bff}
+.task-card.risk-i_larte-border{border-left-color:#ffaa2e}
+.task-card.risk-kritik-border{border-left-color:#ff4d6d;box-shadow:0 0 8px rgba(255,77,109,.2)}
+.task-card.done{opacity:.5}
+.deadline-bar{height:4px;border-radius:2px;background:#1c2740;margin-top:8px;overflow:hidden}
+.deadline-fill{height:100%;border-radius:2px;transition:width .3s}
+.notif-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;background:#ff4d6d;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:monospace;padding:0 4px;animation:pulse-risk 2s infinite}
+
+/* ── COMPANY HIERARCHY ── */
+.comp-header{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#07090f;border:1px solid #1c2740;border-radius:8px;margin-bottom:4px;cursor:pointer;transition:border-color .15s}
+.comp-header:hover{border-color:#2d8bff}
+.comp-header.open{border-color:#2d8bff;border-radius:8px 8px 0 0}
+.comp-icon{width:32px;height:32px;border-radius:50%;background:rgba(45,139,255,.15);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.comp-info{flex:1;min-width:0}
+.comp-name{font-size:13px;font-weight:600;color:#dce6f5}
+.comp-meta{font-size:10px;color:#3d5275;font-family:monospace;margin-top:2px}
+.comp-arrow{color:#3d5275;transition:transform .2s;font-size:12px}
+.comp-header.open .comp-arrow{transform:rotate(90deg)}
+.branches{display:none;border:1px solid #2d8bff;border-top:none;border-radius:0 0 8px 8px;margin-bottom:8px;overflow:hidden}
+.branches.open{display:block}
+.branch-item{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid #1c2740;cursor:pointer;transition:background .15s}
+.branch-item:last-child{border-bottom:none}
+.branch-item:hover{background:#0d1119}
+.branch-dot{width:8px;height:8px;border-radius:50%;background:#05d9a0;flex-shrink:0;margin-left:8px}
+.branch-info{flex:1;min-width:0}
+.branch-name{font-size:12px;color:#dce6f5}
+.branch-addr{font-size:10px;color:#3d5275;font-family:monospace;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.branch-btns{display:flex;gap:3px;flex-shrink:0}
+
 /* ── DETAIL PANEL (djathtas) ── */
 .dpanel{position:fixed;top:0;right:-520px;width:500px;max-width:100vw;height:100vh;background:var(--s1);border-left:1px solid var(--b1);z-index:4000;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,.4)}
 .dpanel.open{right:0}
@@ -521,7 +561,11 @@ create trigger on_auth_user_created
       <button class="nb" id="nav-rc" onclick="goPg('rc')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>Rekorde</button>
       <button class="nb" id="nav-us" onclick="goPg('us')"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Përdoruesit</button>
       <button class="nb" id="nav-rp" onclick="goPg('rp')"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Raporte</button>
-      <button class="nb hidden" id="nav-lk" onclick="goPg('lk')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Lokacionet</button>
+      <button class="nb hidden" id="nav-tk" onclick="goPg('tk')" style="position:relative">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Detyrat
+        <span id="task-badge" style="display:none" class="notif-badge">0</span>
+      </button>
+      <button class="nb hidden" id="nav-lk" onclick="goPg('lk')" style="position:relative"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Lokacionet</button>
     </div>
     <div class="ts"></div>
     <div style="display:flex;align-items:center;gap:5px;margin-right:10px">
@@ -957,6 +1001,138 @@ create trigger on_auth_user_created
 </div>
 </div>
 
+<!-- TASK MODAL -->
+<div class="mbg hidden" id="task-modal">
+  <div class="modal" style="width:540px">
+    <div class="mhd">
+      <span id="tkm-title">Detyrë e Re</span>
+      <span class="mcl" onclick="closeTaskModal()">✕</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="ifield" style="grid-column:1/-1">
+        <label>TITULLI *</label>
+        <input type="text" id="tkm-title-inp" placeholder="p.sh. Inspektim i strukturës, Verifikim dokumentesh...">
+      </div>
+      <div class="ifield" style="grid-column:1/-1">
+        <label>PËRSHKRIMI</label>
+        <textarea id="tkm-desc" placeholder="Detaje të detyrave që duhen kryer..." style="min-height:70px"></textarea>
+      </div>
+      <div class="ifield">
+        <label>KOMPANIA</label>
+        <select id="tkm-company" onchange="onTkmCompanyChange(null,null)">
+          <option value="">— Zgjidh —</option>
+        </select>
+      </div>
+      <div class="ifield">
+        <label>DEGA / LOKACIONI</label>
+        <select id="tkm-location">
+          <option value="">— Zgjidh kompaninë fillimisht —</option>
+        </select>
+      </div>
+      <div class="ifield">
+        <label>AFATI KOHOR (DEADLINE) *</label>
+        <input type="date" id="tkm-deadline" onchange="updateRiskPreview()" oninput="updateRiskPreview()">
+      </div>
+      <div class="ifield">
+        <label>PRIORITETI (RISKU FILLESTAR)</label>
+        <select id="tkm-priority" onchange="updateRiskPreview()">
+          <option value="i_ulet">🟢 I ulët</option>
+          <option value="mesem" selected>🟡 Mesëm</option>
+          <option value="i_larte">🟠 I lartë</option>
+          <option value="kritik">🔴 Kritik</option>
+        </select>
+      </div>
+      <div class="ifield">
+        <label>PERSONI PËRGJEGJËS</label>
+        <select id="tkm-assigned">
+          <option value="">— Zgjidh —</option>
+        </select>
+      </div>
+      <div class="ifield">
+        <label>STATUSI</label>
+        <select id="tkm-status" onchange="updateRiskPreview()">
+          <option value="hapur">📋 Hapur</option>
+          <option value="ne_progres">⚡ Në progres</option>
+          <option value="perfunduar">✅ Përfunduar</option>
+          <option value="anuluar">❌ Anuluar</option>
+        </select>
+      </div>
+      <div class="ifield" style="grid-column:1/-1">
+        <label>SHËNIME SHTESË</label>
+        <textarea id="tkm-notes" placeholder="Çdo informacion tjetër relevant..." style="min-height:55px"></textarea>
+      </div>
+    </div>
+    <!-- Risk preview -->
+    <div id="tkm-risk-preview" style="padding:10px 14px;background:#07090f;border:1px solid #1c2740;border-radius:8px;margin-bottom:14px;font-family:monospace;font-size:11px;display:flex;align-items:center;gap:10px">
+      <span style="color:#8da0bb">Risku i llogaritur:</span>
+      <span id="tkm-risk-val">—</span>
+      <span id="tkm-days-val" style="color:#3d5275"></span>
+    </div>
+    <div id="tkm-alert" class="alert err hidden"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeTaskModal()" class="btn">Anulo</button>
+      <button onclick="saveTask()" class="btn pri">
+        <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2"><path d="M9 11l3 3L22 4"/></svg>
+        Ruaj Detyrën
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- KOMPANI MODAL -->
+<div class="mbg hidden" id="comp-modal">
+  <div class="modal" style="width:480px">
+    <div class="mhd">
+      <span id="compm-title">Shto Kompani të Re</span>
+      <span class="mcl" onclick="closeCompModal()">✕</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="ifield" style="grid-column:1/-1">
+        <label>EMRI I KOMPANISË *</label>
+        <input type="text" id="compm-name" placeholder="p.sh. Bashkia Tiranë, OSHEE, ALBtelecom...">
+      </div>
+      <div class="ifield">
+        <label>KATEGORIA</label>
+        <select id="compm-cat">
+          <option value="">— Zgjidh —</option>
+          <option>Institucion publik</option>
+          <option>Kompani private</option>
+          <option>OJQ / Fondacion</option>
+          <option>Ndërmarrje shtetërore</option>
+          <option>Bashki / Komunë</option>
+          <option>Ministri</option>
+          <option>Spital / Klinikë</option>
+          <option>Shkollë / Universitet</option>
+          <option>Bankë / Financë</option>
+          <option>Media</option>
+          <option>Tjetër</option>
+        </select>
+      </div>
+      <div class="ifield">
+        <label>TELEFON</label>
+        <input type="tel" id="compm-tel" placeholder="+355 4 ...">
+      </div>
+      <div class="ifield">
+        <label>EMAIL</label>
+        <input type="email" id="compm-email" placeholder="info@...">
+      </div>
+      <div class="ifield">
+        <label>WEBSITE</label>
+        <input type="url" id="compm-web" placeholder="https://...">
+      </div>
+      <div class="ifield" style="grid-column:1/-1">
+        <label>SHËNIME</label>
+        <textarea id="compm-notes" placeholder="Informacion shtesë..." style="min-height:60px"></textarea>
+      </div>
+    </div>
+    <div id="compm-alert" class="alert err hidden"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button onclick="closeCompModal()" class="btn">Anulo</button>
+      <button onclick="saveComp()" class="btn pri">Ruaj Kompaninë</button>
+    </div>
+  </div>
+</div>
+
 <!-- LOKACION MODAL -->
 <div class="mbg hidden" id="lk-modal">
   <div class="modal" style="width:520px">
@@ -967,8 +1143,14 @@ create trigger on_auth_user_created
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="ifield" style="grid-column:1/-1">
-        <label>EMRI I KOMPANISË / LOKACIONIT *</label>
-        <input type="text" id="lkm-name" placeholder="p.sh. Bashkia Tiranë, Rektorati UT...">
+        <label>KOMPANIA (opsionale)</label>
+        <select id="lkm-company" onchange="onCompanyChange()">
+          <option value="">— Pa kompani (lokacion i pavarur) —</option>
+        </select>
+      </div>
+      <div class="ifield" style="grid-column:1/-1">
+        <label>EMRI I DEGËS / LOKACIONIT *</label>
+        <input type="text" id="lkm-name" placeholder="p.sh. Dega Qendrore, Zyra Nr.2, Objekti A...">
       </div>
       <div class="ifield">
         <label>KATEGORIA</label>
@@ -1014,11 +1196,23 @@ create trigger on_auth_user_created
       </div>
       <div class="ifield">
         <label>GJERËSI (LAT)</label>
-        <input type="number" id="lkm-lat" placeholder="41.3275" step="0.000001">
+        <input type="number" id="lkm-lat" placeholder="41.3275" step="0.000001" oninput="lkmMapMove()">
       </div>
       <div class="ifield">
         <label>GJATËSI (LNG)</label>
-        <input type="number" id="lkm-lng" placeholder="19.8187" step="0.000001">
+        <input type="number" id="lkm-lng" placeholder="19.8187" step="0.000001" oninput="lkmMapMove()">
+      </div>
+      <div class="ifield" style="grid-column:1/-1">
+        <label>VENDOS NGA HARTA — klikoni për të vendosur pozicionin</label>
+        <div style="position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--b1)">
+          <div id="lkm-map" style="height:260px;width:100%;background:#07090f"></div>
+          <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(7,9,15,.85);border:1px solid #1c2740;border-radius:6px;padding:5px 10px;font-family:monospace;font-size:10px;color:#8da0bb;pointer-events:none;white-space:nowrap">
+            🖱️ Klikoni ose zvarritni marker-in
+          </div>
+          <div id="lkm-coords-display" style="position:absolute;bottom:8px;left:8px;z-index:500;background:rgba(7,9,15,.85);border:1px solid #1c2740;border-radius:6px;padding:4px 10px;font-family:monospace;font-size:10px;color:#05d9a0;display:none">
+            —
+          </div>
+        </div>
       </div>
       <div class="ifield">
         <label>TELEFON</label>
@@ -1078,20 +1272,72 @@ create trigger on_auth_user_created
   <div id="role-body"></div></div>
 </div>
 
+    <!-- ══ DETYRAT PAGE ══ -->
+    <div class="page" id="page-tk">
+    <div style="display:flex;flex-direction:column;width:100%;height:100%;background:#07090f;overflow:hidden">
+
+      <!-- HEADER -->
+      <div style="padding:14px 20px 0;background:#0d1119;border-bottom:1px solid #1c2740;flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <div>
+            <div style="font-size:17px;font-weight:700">Detyrat & Afatet</div>
+            <div style="font-size:11px;color:#8da0bb;font-family:monospace" id="tk-sub">Menaxhimi i detyrave</div>
+          </div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+            <select id="tk-fstatus" onchange="filterTasks()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
+              <option value="">Të gjitha</option>
+              <option value="hapur">📋 Hapur</option>
+              <option value="ne_progres">⚡ Në progres</option>
+              <option value="perfunduar">✅ Përfunduar</option>
+            </select>
+            <select id="tk-frisk" onchange="filterTasks()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
+              <option value="">Të gjitha risqet</option>
+              <option value="kritik">🔴 Kritik</option>
+              <option value="i_larte">🟠 I lartë</option>
+              <option value="mesem">🟡 Mesëm</option>
+              <option value="i_ulet">🟢 I ulët</option>
+            </select>
+            <button onclick="openTaskModal()" style="padding:7px 14px;background:#05d9a0;border:none;border-radius:9px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer">+ Detyrë e re</button>
+          </div>
+        </div>
+        <!-- KPI Strip -->
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <div id="tk-kpi0" style="padding:6px 14px;background:#07090f;border:1px solid #ff4d6d;border-radius:7px;font-family:monospace;font-size:11px;color:#ff4d6d;cursor:pointer" onclick="setRiskFilter('kritik')">🔴 Kritik: <b id="tk-n-kritik">0</b></div>
+          <div id="tk-kpi1" style="padding:6px 14px;background:#07090f;border:1px solid #ffaa2e;border-radius:7px;font-family:monospace;font-size:11px;color:#ffaa2e;cursor:pointer" onclick="setRiskFilter('i_larte')">🟠 I lartë: <b id="tk-n-larte">0</b></div>
+          <div id="tk-kpi2" style="padding:6px 14px;background:#07090f;border:1px solid #2d8bff;border-radius:7px;font-family:monospace;font-size:11px;color:#2d8bff;cursor:pointer" onclick="setRiskFilter('mesem')">🟡 Mesëm: <b id="tk-n-mesem">0</b></div>
+          <div id="tk-kpi3" style="padding:6px 14px;background:#07090f;border:1px solid #05d9a0;border-radius:7px;font-family:monospace;font-size:11px;color:#05d9a0;cursor:pointer" onclick="setRiskFilter('i_ulet')">🟢 I ulët: <b id="tk-n-ulet">0</b></div>
+          <div style="padding:6px 14px;background:#07090f;border:1px solid #3d5275;border-radius:7px;font-family:monospace;font-size:11px;color:#3d5275">✅ Kryer: <b id="tk-n-done">0</b></div>
+          <div style="margin-left:auto;padding:6px 14px;background:#07090f;border:1px solid #1c2740;border-radius:7px;font-family:monospace;font-size:11px;color:#8da0bb">⏰ Skadon 7d: <b id="tk-n-soon" style="color:#ffaa2e">0</b></div>
+        </div>
+      </div>
+
+      <!-- LISTA -->
+      <div id="tk-list" style="flex:1;overflow-y:auto;padding:14px 20px"></div>
+    </div>
+    </div>
+
+
     <!-- ══ LOKACIONET PAGE ══ -->
     <div class="page" id="page-lk">
     <div style="display:flex;flex-direction:column;width:100%;height:100%;background:var(--bg);overflow:hidden">
-      <div style="padding:14px 20px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;flex-shrink:0">
-        <div>
-          <div style="font-size:17px;font-weight:700">Lokacionet & Kompanitë</div>
-          <div style="font-size:11px;color:var(--txt2);font-family:var(--mono)" id="lk-sub">Lista e lokacioneve të paracaktuara</div>
+      <!-- Header + Tabs -->
+      <div style="padding:14px 20px 0;background:#0d1119;border-bottom:1px solid #1c2740;flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <div>
+            <div style="font-size:17px;font-weight:700">Lokacionet & Kompanitë</div>
+            <div style="font-size:11px;color:#8da0bb;font-family:monospace" id="lk-sub">Hierarkia Kompani → Degë</div>
+          </div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap" id="lk-actions">
+            <input type="text" id="lk-search" placeholder="🔍 Kërko..." oninput="filterLocs()"
+              style="padding:7px 10px;background:#07090f;border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;width:150px">
+            <button id="lk-add-comp-btn" onclick="openCompModal()" style="padding:7px 14px;background:#0d1119;border:1px solid #2d8bff;border-radius:9px;color:#2d8bff;font-family:monospace;font-size:11px;cursor:pointer">+ Kompani</button>
+            <button id="lk-add-loc-btn" onclick="openLocModal()" style="padding:7px 14px;background:#05d9a0;border:none;border-radius:9px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer">+ Degë/Lokacion</button>
+          </div>
         </div>
-        <div style="display:flex;gap:7px;flex-wrap:wrap">
-          <input type="text" id="lk-search" placeholder="Kërko..." oninput="filterLocs()" style="padding:7px 10px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none;width:150px">
-          <select id="lk-fcat" onchange="filterLocs()" style="padding:7px 9px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none">
-            <option value="">Të gjitha</option>
-          </select>
-          <button onclick="openLocModal()" style="padding:7px 14px;background:var(--acc);border:none;border-radius:var(--r);color:#021a10;font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer">+ Shto</button>
+        <!-- Sub-tabs -->
+        <div style="display:flex;gap:0">
+          <button onclick="lkSubTab(0)" id="lkst0" style="padding:8px 16px;background:transparent;border:none;border-bottom:2px solid #05d9a0;color:#05d9a0;font-family:monospace;font-size:11px;cursor:pointer">🏢 Hierarkia</button>
+          <button onclick="lkSubTab(1)" id="lkst1" style="padding:8px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:#3d5275;font-family:monospace;font-size:11px;cursor:pointer">📍 Lista e degëve</button>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 340px;flex:1;overflow:hidden">
@@ -1101,11 +1347,23 @@ create trigger on_auth_user_created
             🖱️ Klikoni hartën për koordinata
           </div>
         </div>
-        <div style="background:var(--s1);border-left:1px solid var(--b1);overflow-y:auto;display:flex;flex-direction:column">
-          <div style="padding:10px 14px;border-bottom:1px solid var(--b1);font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:.08em;text-transform:uppercase">
-            Lokacionet (<span id="lk-cnt">0</span>)
+        <div style="background:#0d1119;border-left:1px solid #1c2740;overflow-y:auto;display:flex;flex-direction:column">
+          <!-- SUB-TAB 0: HIERARKIA -->
+          <div id="lksec0" style="flex:1;overflow-y:auto;padding:8px">
+            <div style="padding:6px 6px 10px;font-family:monospace;font-size:10px;color:#3d5275;letter-spacing:.08em;text-transform:uppercase">
+              Kompani (<span id="lk-comp-cnt">0</span>) · Degë (<span id="lk-cnt">0</span>)
+            </div>
+            <div id="lk-hierarchy"></div>
           </div>
-          <div id="lk-list" style="flex:1;overflow-y:auto;padding:8px"></div>
+          <!-- SUB-TAB 1: LISTA DEGËVE -->
+          <div id="lksec1" style="display:none;flex:1;overflow-y:auto;padding:8px">
+            <div style="padding:6px 6px 10px;display:flex;gap:6px;flex-wrap:wrap">
+              <select id="lk-fcat" onchange="filterLocs()" style="padding:6px 8px;background:#07090f;border:1px solid #1c2740;border-radius:7px;color:#dce6f5;font-family:monospace;font-size:10px;outline:none;flex:1">
+                <option value="">Të gjitha kategoritë</option>
+              </select>
+            </div>
+            <div id="lk-list"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1296,9 +1554,11 @@ function startApp(){
   // Nav visibility sipas rolit
   if(CP.role==='field'||CP.role==='viewer') document.getElementById('nav-us').classList.add('hidden');
   if(CP.role==='admin'||CP.role==='supervisor') document.getElementById('nav-lk').classList.remove('hidden');
+  document.getElementById('nav-tk').classList.remove('hidden'); // Të gjithë shohin detyrat
+  loadTasks(); // Ngarko detyrat + check njoftimet
   initBLL();offEvents();
   loadRecs(false);testConn();
-  loadLocs(); // ngarko lokacionet
+  loadLocs(); // ngarko lokacionet dhe kompanitë
   toast('ok','Mirë se vini, '+(CP.full_name||CP.email)+'!');
 }
 function updateTop(){
@@ -2681,6 +2941,341 @@ function expLocCSV(){
   toast('ok','CSV eksportuar!');
 }
 
+/* ═══════════════════════════════════════
+   TASKS — SISTEMI I DETYRAVE
+═══════════════════════════════════════ */
+var allTasks=[];
+var filteredTasks=[];
+var editTaskId=null;
+
+var RISK_LABELS={
+  i_ulet:  {label:'I ulët',  emoji:'🟢', cls:'i_ulet'},
+  mesem:   {label:'Mesëm',   emoji:'🟡', cls:'mesem'},
+  i_larte: {label:'I lartë', emoji:'🟠', cls:'i_larte'},
+  kritik:  {label:'KRITIK',  emoji:'🔴', cls:'kritik'},
+  perfunduar:{label:'Kryer', emoji:'✅', cls:'perfunduar'}
+};
+var PRIORITY_LABELS={
+  i_ulet:'🟢 I ulët', mesem:'🟡 Mesëm', i_larte:'🟠 I lartë', kritik:'🔴 Kritik'
+};
+var STATUS_LABELS={
+  hapur:'📋 Hapur', ne_progres:'⚡ Në progres',
+  perfunduar:'✅ Përfunduar', anuluar:'❌ Anuluar'
+};
+
+function calcRisk(priority, deadline, status){
+  if(status==='perfunduar'||status==='anuluar') return 'perfunduar';
+  if(!deadline) return priority;
+  var today=new Date(); today.setHours(0,0,0,0);
+  var dl=new Date(deadline); dl.setHours(0,0,0,0);
+  var days=Math.round((dl-today)/(1000*60*60*24));
+  if(days<0) return 'kritik'; // vonuar
+  if(days===0) return priority==='i_ulet'?'i_larte':'kritik';
+  if(days<=3){
+    if(priority==='i_ulet') return 'mesem';
+    if(priority==='mesem')  return 'i_larte';
+    return 'kritik';
+  }
+  if(days<=7){
+    if(priority==='i_larte'||priority==='kritik') return 'i_larte';
+    return priority;
+  }
+  return priority;
+}
+
+function daysRemaining(deadline){
+  if(!deadline) return null;
+  var today=new Date(); today.setHours(0,0,0,0);
+  var dl=new Date(deadline); dl.setHours(0,0,0,0);
+  return Math.round((dl-today)/(1000*60*60*24));
+}
+
+async function loadTasks(){
+  if(!SB) return;
+  var{data,error}=await SB.from('tasks')
+    .select('*,profiles!tasks_assigned_to_fkey(full_name,email),locations(name),companies(name)')
+    .order('deadline',{ascending:true,nullsFirst:false});
+  if(error){
+    log('warn','loadTasks: '+error.message+' (ekzekutoni tasks_table.sql)');
+    return;
+  }
+  allTasks=(data||[]).map(function(t){
+    t.assigned_name=t.profiles?t.profiles.full_name||t.profiles.email:'—';
+    t.location_name=t.locations?t.locations.name:'';
+    t.company_name=t.companies?t.companies.name:'';
+    t.risk_level=calcRisk(t.priority,t.deadline,t.status);
+    t.days_remaining=daysRemaining(t.deadline);
+    delete t.profiles; delete t.locations; delete t.companies;
+    return t;
+  });
+  filterTasks();
+  checkTaskNotifications();
+  log('ok','Ngarkuar '+allTasks.length+' detyra');
+}
+
+function filterTasks(){
+  var fStatus=document.getElementById('tk-fstatus')?document.getElementById('tk-fstatus').value:'';
+  var fRisk=document.getElementById('tk-frisk')?document.getElementById('tk-frisk').value:'';
+  filteredTasks=allTasks.filter(function(t){
+    if(fStatus&&t.status!==fStatus) return false;
+    if(fRisk&&t.risk_level!==fRisk) return false;
+    return true;
+  });
+  renderTaskList();
+  updateTaskKPIs();
+}
+
+function setRiskFilter(risk){
+  var sel=document.getElementById('tk-frisk');
+  if(sel){sel.value=risk;}
+  filterTasks();
+}
+
+function updateTaskKPIs(){
+  var active=allTasks.filter(function(t){return t.status!=='perfunduar'&&t.status!=='anuluar';});
+  var counts={kritik:0,i_larte:0,mesem:0,i_ulet:0,perfunduar:0};
+  allTasks.forEach(function(t){
+    if(t.status==='perfunduar'||t.status==='anuluar') counts.perfunduar++;
+    else counts[t.risk_level]=(counts[t.risk_level]||0)+1;
+  });
+  var soon=active.filter(function(t){return t.days_remaining!==null&&t.days_remaining<=7&&t.days_remaining>=0;}).length;
+  document.getElementById('tk-n-kritik')&&(document.getElementById('tk-n-kritik').textContent=counts.kritik);
+  document.getElementById('tk-n-larte')&&(document.getElementById('tk-n-larte').textContent=counts.i_larte);
+  document.getElementById('tk-n-mesem')&&(document.getElementById('tk-n-mesem').textContent=counts.mesem);
+  document.getElementById('tk-n-ulet')&&(document.getElementById('tk-n-ulet').textContent=counts.i_ulet);
+  document.getElementById('tk-n-done')&&(document.getElementById('tk-n-done').textContent=counts.perfunduar);
+  document.getElementById('tk-n-soon')&&(document.getElementById('tk-n-soon').textContent=soon);
+  document.getElementById('tk-sub')&&(document.getElementById('tk-sub').textContent=active.length+' detyra aktive · '+counts.perfunduar+' të kryera');
+  // Badge navbar
+  var urgentCount=counts.kritik+counts.i_larte;
+  var badge=document.getElementById('task-badge');
+  if(badge){
+    if(urgentCount>0){badge.style.display='flex';badge.textContent=urgentCount>9?'9+':urgentCount;}
+    else badge.style.display='none';
+  }
+}
+
+function checkTaskNotifications(){
+  // Njoftime brenda app — 7 ditë para skadimit
+  var today=new Date(); today.setHours(0,0,0,0);
+  var lastCheck=localStorage.getItem('task_notif_check');
+  var todayStr=today.toISOString().slice(0,10);
+  if(lastCheck===todayStr) return; // njëherë në ditë
+  localStorage.setItem('task_notif_check',todayStr);
+  var upcoming=allTasks.filter(function(t){
+    if(t.status==='perfunduar'||t.status==='anuluar') return false;
+    if(!t.deadline) return false;
+    return t.days_remaining>=0 && t.days_remaining<=7;
+  });
+  if(upcoming.length){
+    var overdue=upcoming.filter(function(t){return t.days_remaining<0;}).length;
+    var expiring=upcoming.filter(function(t){return t.days_remaining>=0&&t.days_remaining<=7;}).length;
+    setTimeout(function(){
+      if(overdue) toast('err','⚠️ '+overdue+' detyra të vonuara!');
+      else if(expiring) toast('warn','⏰ '+expiring+' detyra skadojnë brenda 7 ditëve');
+    },2000);
+  }
+}
+
+function renderTaskList(){
+  var el=document.getElementById('tk-list');
+  if(!el) return;
+  if(!filteredTasks.length){
+    el.innerHTML='<div style="text-align:center;padding:60px 20px;color:#3d5275;font-family:monospace;font-size:12px">Asnjë detyrë<br><br><button onclick="openTaskModal()" style="margin-top:10px;padding:8px 18px;background:#05d9a0;border:none;border-radius:8px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer">+ Shto detyrën e parë</button></div>';
+    return;
+  }
+  el.innerHTML='';
+
+  // Grupëzo sipas riskut
+  var groups={kritik:[],i_larte:[],mesem:[],i_ulet:[],perfunduar:[]};
+  filteredTasks.forEach(function(t){
+    var g=t.status==='perfunduar'||t.status==='anuluar'?'perfunduar':t.risk_level;
+    if(groups[g]) groups[g].push(t);
+    else groups.mesem.push(t);
+  });
+
+  ['kritik','i_larte','mesem','i_ulet','perfunduar'].forEach(function(rk){
+    if(!groups[rk].length) return;
+    var rl=RISK_LABELS[rk];
+    var grpHdr=document.createElement('div');
+    grpHdr.style.cssText='font-family:monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#3d5275;margin:10px 0 6px;display:flex;align-items:center;gap:8px';
+    grpHdr.innerHTML=rl.emoji+' '+rl.label+' <span style="color:#1c2740;font-size:20px">──</span> '+groups[rk].length+' detyrë';
+    el.appendChild(grpHdr);
+    groups[rk].forEach(function(t){ el.appendChild(buildTaskCard(t)); });
+  });
+}
+
+function buildTaskCard(t){
+  var rl=RISK_LABELS[t.risk_level]||RISK_LABELS.mesem;
+  var isDone=t.status==='perfunduar'||t.status==='anuluar';
+
+  var card=document.createElement('div');
+  card.className='task-card risk-'+rl.cls+'-border'+(isDone?' done':'');
+
+  // Deadline bar
+  var barPct=0, barColor='#05d9a0';
+  if(t.deadline&&!isDone){
+    var created=new Date(t.created_at); var dl=new Date(t.deadline); var now=new Date();
+    var total=Math.max(1,(dl-created)/(1000*60*60*24));
+    var elapsed=(now-created)/(1000*60*60*24);
+    barPct=Math.min(100,Math.max(0,Math.round(elapsed/total*100)));
+    barColor=t.risk_level==='kritik'?'#ff4d6d':t.risk_level==='i_larte'?'#ffaa2e':t.risk_level==='mesem'?'#2d8bff':'#05d9a0';
+  }
+
+  // Days label
+  var daysLbl='';
+  if(!isDone&&t.deadline){
+    if(t.days_remaining<0) daysLbl='<span style="color:#ff4d6d;font-weight:700">⚠️ '+Math.abs(t.days_remaining)+' ditë vonesë</span>';
+    else if(t.days_remaining===0) daysLbl='<span style="color:#ff4d6d;font-weight:700">🚨 Skadon SOT!</span>';
+    else if(t.days_remaining<=3) daysLbl='<span style="color:#ffaa2e">⏰ '+t.days_remaining+' ditë</span>';
+    else daysLbl='<span style="color:#8da0bb">'+t.days_remaining+' ditë mbetur</span>';
+  }
+
+  var compLoc=t.company_name?(t.company_name+(t.location_name?' › '+t.location_name:'')):t.location_name||'';
+
+  card.innerHTML=
+    '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:13px;font-weight:600;color:#dce6f5;margin-bottom:4px">'+(isDone?'<s>':'')+t.title+(isDone?'</s>':'')+'</div>'+
+        (compLoc?'<div style="font-size:10px;color:#2d8bff;font-family:monospace;margin-bottom:3px">🏢 '+compLoc+'</div>':'')+
+        (t.description?'<div style="font-size:11px;color:#8da0bb;margin-bottom:4px;line-height:1.5">'+t.description.substring(0,120)+(t.description.length>120?'…':'')+'</div>':'')+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">'+
+        '<span class="risk-badge risk-'+rl.cls+'">'+rl.emoji+' '+rl.label+'</span>'+
+        '<span style="font-size:10px;color:#3d5275;font-family:monospace">'+(STATUS_LABELS[t.status]||t.status)+'</span>'+
+      '</div>'+
+    '</div>'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">'+
+      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'+
+        (t.deadline?'<span style="font-family:monospace;font-size:10px;color:#8da0bb">📅 '+t.deadline+'</span>':'<span style="font-family:monospace;font-size:10px;color:#3d5275">Pa afat</span>')+
+        daysLbl+
+        '<span style="font-family:monospace;font-size:10px;color:#3d5275">👤 '+t.assigned_name+'</span>'+
+      '</div>'+
+      '<div style="display:flex;gap:4px">'+
+        (!isDone?'<button onclick="quickComplete('+t.id+')" style="padding:3px 8px;background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);border-radius:5px;color:#05d9a0;font-size:10px;cursor:pointer;font-family:monospace">✓ Kryej</button>':'')+
+        '<button onclick="openTaskModal('+t.id+')" style="padding:3px 8px;background:#18202e;border:1px solid #253352;border-radius:5px;color:#8da0bb;font-size:10px;cursor:pointer">✏️</button>'+
+        '<button onclick="deleteTask('+t.id+')" style="padding:3px 8px;background:transparent;border:1px solid transparent;border-radius:5px;color:#3d5275;font-size:10px;cursor:pointer" onmouseenter="this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d'" onmouseleave="this.style.borderColor='transparent';this.style.color='#3d5275'">🗑️</button>'+
+      '</div>'+
+    '</div>'+
+    (t.deadline&&!isDone?'<div class="deadline-bar"><div class="deadline-fill" style="width:'+barPct+'%;background:'+barColor+'"></div></div>':'');
+
+  return card;
+}
+
+async function quickComplete(id){
+  var{error}=await SB.from('tasks').update({status:'perfunduar',completed_at:new Date().toISOString()}).eq('id',id);
+  if(error){toast('err','Gabim: '+error.message);return;}
+  toast('ok','✅ Detyrë e kryyer!');
+  await loadTasks();
+}
+
+function openTaskModal(id){
+  editTaskId=id||null;
+  var t=id?allTasks.find(function(x){return x.id===id;}):null;
+  document.getElementById('tkm-title').textContent=t?'Edito Detyrën':'Detyrë e Re';
+  document.getElementById('tkm-title-inp').value=t?t.title:'';
+  document.getElementById('tkm-desc').value=t?t.description||'':'';
+  document.getElementById('tkm-deadline').value=t?t.deadline||'':'';
+  document.getElementById('tkm-priority').value=t?t.priority:'mesem';
+  document.getElementById('tkm-status').value=t?t.status:'hapur';
+  document.getElementById('tkm-notes').value=t?t.notes||'':'';
+
+  // Popullo dropdowns
+  var compSel=document.getElementById('tkm-company');
+  compSel.innerHTML='<option value="">— Zgjidh kompaninë —</option>'+
+    allCompanies.map(function(c){return'<option value="'+c.id+'"'+(t&&t.company_id===c.id?' selected':'')+'>'+c.name+'</option>';}).join('');
+
+  // Ngarko assigned users
+  loadProfilesForTask(t?t.assigned_to:null);
+
+  // Ngarko degët
+  if(t&&t.company_id) onTkmCompanyChange(t.company_id,t.location_id);
+  else onTkmCompanyChange('');
+
+  // Update risk preview
+  updateRiskPreview();
+  document.getElementById('tkm-alert').classList.add('hidden');
+  document.getElementById('task-modal').classList.remove('hidden');
+}
+
+function closeTaskModal(){document.getElementById('task-modal').classList.add('hidden');}
+
+async function loadProfilesForTask(selectedId){
+  var{data}=await SB.from('profiles').select('id,full_name,email').order('full_name');
+  var sel=document.getElementById('tkm-assigned');
+  sel.innerHTML='<option value="">— Zgjidh —</option>'+
+    (data||[]).map(function(p){
+      var name=p.full_name||p.email;
+      return'<option value="'+p.id+'"'+(selectedId&&p.id===selectedId?' selected':'')+'>'+name+'</option>';
+    }).join('');
+}
+
+function onTkmCompanyChange(presetCompId,presetLocId){
+  var cid=presetCompId!==undefined?presetCompId:document.getElementById('tkm-company').value;
+  var locSel=document.getElementById('tkm-location');
+  var locs=cid?allLocs.filter(function(l){return l.company_id==cid;}):allLocs;
+  locSel.innerHTML='<option value="">— Pa degë specifike —</option>'+
+    locs.map(function(l){return'<option value="'+l.id+'"'+(presetLocId&&l.id===presetLocId?' selected':'')+'>'+l.name+(l.address?' · '+l.address.substring(0,30):'')+'</option>';}).join('');
+  updateRiskPreview();
+}
+
+function updateRiskPreview(){
+  var priority=document.getElementById('tkm-priority').value;
+  var deadline=document.getElementById('tkm-deadline').value;
+  var status=document.getElementById('tkm-status').value;
+  var risk=calcRisk(priority,deadline,status);
+  var dr=deadline?daysRemaining(deadline):null;
+  var rl=RISK_LABELS[risk]||RISK_LABELS.mesem;
+  var prev=document.getElementById('tkm-risk-val');
+  var dval=document.getElementById('tkm-days-val');
+  if(prev)prev.innerHTML='<span class="risk-badge risk-'+rl.cls+'">'+rl.emoji+' '+rl.label+'</span>';
+  if(dval){
+    if(dr===null) dval.textContent='';
+    else if(dr<0) dval.textContent='⚠️ '+Math.abs(dr)+' ditë vonesë!';
+    else if(dr===0) dval.textContent='🚨 Skadon sot!';
+    else dval.textContent='📅 '+dr+' ditë mbetur';
+  }
+}
+
+async function saveTask(){
+  var title=document.getElementById('tkm-title-inp').value.trim();
+  if(!title){
+    var ae=document.getElementById('tkm-alert');ae.className='alert err';ae.textContent='Titulli është i detyrueshëm!';ae.classList.remove('hidden');return;
+  }
+  var status=document.getElementById('tkm-status').value;
+  var data={
+    title:title,
+    description:document.getElementById('tkm-desc').value||null,
+    company_id:parseInt(document.getElementById('tkm-company').value)||null,
+    location_id:parseInt(document.getElementById('tkm-location').value)||null,
+    assigned_to:document.getElementById('tkm-assigned').value||null,
+    deadline:document.getElementById('tkm-deadline').value||null,
+    priority:document.getElementById('tkm-priority').value,
+    status:status,
+    notes:document.getElementById('tkm-notes').value||null,
+    completed_at:status==='perfunduar'?new Date().toISOString():null,
+    created_by:CU.id
+  };
+  var res=editTaskId?
+    await SB.from('tasks').update(data).eq('id',editTaskId):
+    await SB.from('tasks').insert(data);
+  if(res.error){
+    var ae=document.getElementById('tkm-alert');ae.className='alert err';ae.textContent='Gabim: '+res.error.message;ae.classList.remove('hidden');return;
+  }
+  toast('ok',editTaskId?'Detyra u përditësua!':'Detyra u shtua!');
+  closeTaskModal();
+  await loadTasks();
+}
+
+async function deleteTask(id){
+  var t=allTasks.find(function(x){return x.id===id;});
+  if(!t||!confirm('Fshi detyrën "'+t.title+'"?')) return;
+  var{error}=await SB.from('tasks').delete().eq('id',id);
+  if(error){toast('err','Gabim: '+error.message);return;}
+  toast('ok','Detyra u fshi');
+  await loadTasks();
+}
+
 function copyMobileLink(){
   var u=ls('su'),k=ls('sk');
   if(!u||!k){toast('warn','Konfiguro Supabase fillimisht');return;}
@@ -2733,6 +3328,234 @@ function expPDF(){
   w.document.close();toast('ok','PDF gati!');
 }
 /* ═══════════════════════════════════════
+   KOMPANITË & HIERARKIA
+═══════════════════════════════════════ */
+var allCompanies=[];
+var editCompId=null;
+
+async function loadCompanies(){
+  if(!SB)return;
+  var{data,error}=await SB.from('companies').select('*').order('name');
+  if(error){log('warn','loadCompanies: '+error.message);return;}
+  allCompanies=data||[];
+  // Popullo dropdown në modal lokacioni
+  var sel=document.getElementById('lkm-company');
+  if(sel){
+    var cur=sel.value;
+    sel.innerHTML='<option value="">— Pa kompani (lokacion i pavarur) —</option>'+
+      allCompanies.map(function(c){return'<option value="'+c.id+'">'+c.name+(c.category?' · '+c.category:'')+'</option>';}).join('');
+    sel.value=cur;
+  }
+  document.getElementById('lk-comp-cnt')&&(document.getElementById('lk-comp-cnt').textContent=allCompanies.length);
+}
+
+function onCompanyChange(){
+  var cid=document.getElementById('lkm-company').value;
+  if(!cid)return;
+  var comp=allCompanies.find(function(c){return c.id==cid;});
+  if(comp&&comp.category){
+    var catSel=document.getElementById('lkm-cat');
+    if(catSel)catSel.value=comp.category||'';
+  }
+}
+
+function openCompModal(id){
+  editCompId=id||null;
+  var c=id?allCompanies.find(function(x){return x.id===id;}):null;
+  document.getElementById('compm-title').textContent=c?'Edito: '+c.name:'Shto Kompani të Re';
+  document.getElementById('compm-name').value=c?c.name:'';
+  document.getElementById('compm-cat').value=c?c.category||'':'';
+  document.getElementById('compm-tel').value=c?c.phone||'':'';
+  document.getElementById('compm-email').value=c?c.email||'':'';
+  document.getElementById('compm-web').value=c?c.website||'':'';
+  document.getElementById('compm-notes').value=c?c.notes||'':'';
+  document.getElementById('compm-alert').classList.add('hidden');
+  document.getElementById('comp-modal').classList.remove('hidden');
+}
+function closeCompModal(){document.getElementById('comp-modal').classList.add('hidden');}
+
+async function saveComp(){
+  var name=document.getElementById('compm-name').value.trim();
+  if(!name){
+    var ae=document.getElementById('compm-alert');
+    ae.className='alert err';ae.textContent='Emri është i detyrueshëm!';ae.classList.remove('hidden');return;
+  }
+  var data={
+    name:name,
+    category:document.getElementById('compm-cat').value||null,
+    phone:document.getElementById('compm-tel').value||null,
+    email:document.getElementById('compm-email').value||null,
+    website:document.getElementById('compm-web').value||null,
+    notes:document.getElementById('compm-notes').value||null,
+    created_by:CU.id
+  };
+  var res=editCompId?
+    await SB.from('companies').update(data).eq('id',editCompId):
+    await SB.from('companies').insert(data);
+  if(res.error){
+    var ae=document.getElementById('compm-alert');
+    ae.className='alert err';ae.textContent='Gabim: '+res.error.message;ae.classList.remove('hidden');return;
+  }
+  toast('ok',editCompId?'Kompania u përditësua!':'Kompania u shtua!');
+  closeCompModal();
+  await loadCompanies();
+  await loadLocs();
+}
+
+async function deleteComp(id){
+  var c=allCompanies.find(function(x){return x.id===id;});
+  if(!c)return;
+  var branches=allLocs.filter(function(l){return l.company_id===id;});
+  var msg='Fshi kompaninë "'+c.name+'"?';
+  if(branches.length)msg+='
+⚠️ Ka '+branches.length+' degë/lokacione — do mbeten pa kompani.';
+  if(!confirm(msg))return;
+  var{error}=await SB.from('companies').delete().eq('id',id);
+  if(error){toast('err','Gabim: '+error.message);return;}
+  toast('ok','Kompania u fshi');
+  await loadCompanies();await loadLocs();
+}
+
+function lkSubTab(n){
+  [0,1].forEach(function(i){
+    var sec=document.getElementById('lksec'+i);
+    var btn=document.getElementById('lkst'+i);
+    if(sec)sec.style.display=i===n?'flex':'none';
+    if(btn){
+      btn.style.color=i===n?'#05d9a0':'#3d5275';
+      btn.style.borderBottomColor=i===n?'#05d9a0':'transparent';
+    }
+  });
+  if(n===0)renderHierarchy();
+  else renderLocList();
+}
+
+function renderHierarchy(){
+  var el=document.getElementById('lk-hierarchy');
+  if(!el)return;
+  var q=(document.getElementById('lk-search')||{value:''}).value.toLowerCase();
+
+  // Grupëzo lokacionet sipas company_id
+  var byComp={};
+  allLocs.forEach(function(l){
+    var cid=l.company_id||'__none__';
+    if(!byComp[cid])byComp[cid]=[];
+    byComp[cid].push(l);
+  });
+
+  el.innerHTML='';
+
+  // ── Kompanitë me degët e tyre ──
+  allCompanies.forEach(function(c){
+    if(q&&!c.name.toLowerCase().includes(q))return;
+    var branches=byComp[c.id]||[];
+
+    var wrap=document.createElement('div');
+    wrap.style.marginBottom='6px';
+
+    // Header kompanie
+    var hdr=document.createElement('div');
+    hdr.className='comp-header';
+    hdr.onclick=function(){
+      this.classList.toggle('open');
+      var br=wrap.querySelector('.branches');
+      if(br)br.classList.toggle('open');
+    };
+    hdr.innerHTML=
+      '<div class="comp-icon">🏢</div>'+
+      '<div class="comp-info">'+
+        '<div class="comp-name">'+c.name+'</div>'+
+        '<div class="comp-meta">'+(c.category||'')+(branches.length?' · '+branches.length+' degë':'· Pa degë')+'</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:4px;align-items:center">'+
+        '<button onclick="event.stopPropagation();openLocModal(null,'+c.id+')" style="padding:2px 7px;background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);border-radius:4px;color:#05d9a0;font-size:10px;cursor:pointer;font-family:monospace">+Degë</button>'+
+        '<button onclick="event.stopPropagation();openCompModal('+c.id+')" style="padding:2px 7px;background:#18202e;border:1px solid #253352;border-radius:4px;color:#8da0bb;font-size:10px;cursor:pointer">✏️</button>'+
+        '<button onclick="event.stopPropagation();deleteComp('+c.id+')" style="padding:2px 7px;background:transparent;border:1px solid transparent;border-radius:4px;color:#3d5275;font-size:10px;cursor:pointer" onmouseenter="this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d'" onmouseleave="this.style.borderColor='transparent';this.style.color='#3d5275'">🗑️</button>'+
+        '<span class="comp-arrow">▶</span>'+
+      '</div>';
+    wrap.appendChild(hdr);
+
+    // Degët
+    var brDiv=document.createElement('div');
+    brDiv.className='branches';
+    if(branches.length){
+      branches.forEach(function(l){
+        var bi=document.createElement('div');
+        bi.className='branch-item';
+        bi.onclick=function(){zoomToLoc(l.id);};
+        bi.innerHTML=
+          '<div class="branch-dot"></div>'+
+          '<div class="branch-info">'+
+            '<div class="branch-name">'+l.name+'</div>'+
+            (l.address?'<div class="branch-addr">📍 '+l.address+'</div>':'')+
+          '</div>'+
+          '<div class="branch-btns">'+
+            '<button onclick="event.stopPropagation();useLoc('+l.id+')" style="padding:2px 7px;background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);border-radius:4px;color:#05d9a0;font-size:10px;cursor:pointer;font-family:monospace">▶</button>'+
+            '<button onclick="event.stopPropagation();openLocModal('+l.id+')" style="padding:2px 7px;background:#18202e;border:1px solid #253352;border-radius:4px;color:#8da0bb;font-size:10px;cursor:pointer">✏️</button>'+
+            '<button onclick="event.stopPropagation();deleteLoc('+l.id+')" style="padding:2px 7px;background:transparent;border:1px solid transparent;border-radius:4px;color:#3d5275;font-size:10px;cursor:pointer" onmouseenter="this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d'" onmouseleave="this.style.borderColor='transparent';this.style.color='#3d5275'">🗑️</button>'+
+          '</div>';
+        brDiv.appendChild(bi);
+      });
+    }else{
+      var empty=document.createElement('div');
+      empty.style.cssText='padding:10px 14px;font-family:monospace;font-size:11px;color:#3d5275;text-align:center';
+      empty.textContent='Pa degë — klikoni "+Degë" për të shtuar';
+      brDiv.appendChild(empty);
+    }
+    wrap.appendChild(brDiv);
+    el.appendChild(wrap);
+  });
+
+  // ── Lokacione pa kompani ──
+  var standalone=byComp['__none__']||[];
+  if(standalone.length){
+    var stWrap=document.createElement('div');
+    stWrap.style.marginBottom='6px';
+    var stHdr=document.createElement('div');
+    stHdr.className='comp-header';
+    stHdr.style.borderColor='#253352';
+    stHdr.onclick=function(){
+      this.classList.toggle('open');
+      stWrap.querySelector('.branches').classList.toggle('open');
+    };
+    stHdr.innerHTML=
+      '<div class="comp-icon" style="background:rgba(61,82,117,.2)">📍</div>'+
+      '<div class="comp-info">'+
+        '<div class="comp-name" style="color:#8da0bb">Lokacione të pavarura</div>'+
+        '<div class="comp-meta">'+standalone.length+' lokacione pa kompani</div>'+
+      '</div>'+
+      '<span class="comp-arrow" style="color:#3d5275">▶</span>';
+    stWrap.appendChild(stHdr);
+    var stBr=document.createElement('div');
+    stBr.className='branches';
+    stBr.style.borderColor='#253352';
+    standalone.forEach(function(l){
+      var bi=document.createElement('div');
+      bi.className='branch-item';
+      bi.onclick=function(){zoomToLoc(l.id);};
+      bi.innerHTML=
+        '<div class="branch-dot" style="background:#8da0bb"></div>'+
+        '<div class="branch-info">'+
+          '<div class="branch-name">'+l.name+'</div>'+
+          (l.address?'<div class="branch-addr">📍 '+l.address+'</div>':'')+
+        '</div>'+
+        '<div class="branch-btns">'+
+          '<button onclick="event.stopPropagation();useLoc('+l.id+')" style="padding:2px 7px;background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);border-radius:4px;color:#05d9a0;font-size:10px;cursor:pointer;font-family:monospace">▶</button>'+
+          '<button onclick="event.stopPropagation();openLocModal('+l.id+')" style="padding:2px 7px;background:#18202e;border:1px solid #253352;border-radius:4px;color:#8da0bb;font-size:10px;cursor:pointer">✏️</button>'+
+        '</div>';
+      stBr.appendChild(bi);
+    });
+    stWrap.appendChild(stBr);
+    el.appendChild(stWrap);
+  }
+
+  if(!allCompanies.length&&!standalone.length){
+    el.innerHTML='<div style="text-align:center;padding:40px 20px;color:#3d5275;font-family:monospace;font-size:12px">'+
+      'Asnjë kompani.<br><br>Klikoni <b>+ Kompani</b> për të filluar.</div>';
+  }
+}
+
+/* ═══════════════════════════════════════
    LOKACIONET
 ═══════════════════════════════════════ */
 var allLocs=[];
@@ -2740,15 +3563,22 @@ var filteredLocs=[];
 var lkMap=null;
 var lkMarkers=null;
 var editLocId=null;
+var lkmMap=null;
+var lkmMarker=null;
 
 async function loadLocs(){
   if(!SB)return;
-  var{data,error}=await SB.from('locations').select('*').order('name');
-  if(error){
-    log('warn','loadLocs: '+error.message+' (ekzekutoni locations_table.sql)');
-    return; // Heshtas — tabela mund të mos ekzistojë akoma
+  // Ngarko kompanitë dhe lokacionet paralel
+  var[locsRes,compsRes]=await Promise.all([
+    SB.from('locations').select('*').order('name'),
+    SB.from('companies').select('*').order('name')
+  ]);
+  if(locsRes.error){
+    log('warn','loadLocs: '+locsRes.error.message+' (ekzekutoni locations_table.sql)');
+    return;
   }
-  allLocs=data||[];
+  if(!compsRes.error)allCompanies=compsRes.data||[];
+  allLocs=locsRes.data||[];
   log('ok','Ngarkuar '+allLocs.length+' lokacione');
   document.getElementById('lk-sub').textContent=allLocs.length+' lokacione të regjistruara';
 
@@ -2761,6 +3591,15 @@ async function loadLocs(){
   catSel.value=curVal;
 
   filterLocs();
+  renderHierarchy();
+  // Popullo company dropdown
+  var compSel=document.getElementById('lkm-company');
+  if(compSel){
+    var cv=compSel.value;
+    compSel.innerHTML='<option value="">— Pa kompani (lokacion i pavarur) —</option>'+
+      allCompanies.map(function(c){return'<option value="'+c.id+'">'+c.name+(c.category?' · '+c.category:'')+'</option>';}).join('');
+    compSel.value=cv;
+  }
   initLkMap();
 }
 
@@ -2828,6 +3667,56 @@ function renderLocList(){
   });
 }
 
+function initLkmMap(){
+  // Inicializo hartën brenda modalit
+  setTimeout(function(){
+    if(lkmMap){lkmMap.invalidateSize();return;}
+    lkmMap=L.map('lkm-map',{zoomControl:true,attributionControl:false}).setView([41.3275,19.8187],10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20}).addTo(lkmMap);
+
+    // Marker i lëvizshëm
+    var mkIcon=L.divIcon({
+      className:'',
+      html:'<div style="width:20px;height:20px;background:#05d9a0;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.5);cursor:grab"></div>',
+      iconSize:[20,20],iconAnchor:[10,10]
+    });
+    lkmMarker=L.marker([41.3275,19.8187],{icon:mkIcon,draggable:true});
+    lkmMarker.addTo(lkmMap);
+
+    // Klik në hartë → zhvendos marker
+    lkmMap.on('click',function(e){
+      lkmMarker.setLatLng(e.latlng);
+      setLkmCoords(e.latlng.lat,e.latlng.lng);
+    });
+    // Drag marker
+    lkmMarker.on('dragend',function(){
+      var ll=lkmMarker.getLatLng();
+      setLkmCoords(ll.lat,ll.lng);
+    });
+  },150);
+}
+
+function setLkmCoords(lat,lng){
+  document.getElementById('lkm-lat').value=lat.toFixed(6);
+  document.getElementById('lkm-lng').value=lng.toFixed(6);
+  var disp=document.getElementById('lkm-coords-display');
+  if(disp){disp.style.display='block';disp.textContent=lat.toFixed(5)+', '+lng.toFixed(5);}
+}
+
+function lkmMapMove(){
+  // Kur user shkruan lat/lng manualisht → zhvendos marker
+  var lat=parseFloat(document.getElementById('lkm-lat').value);
+  var lng=parseFloat(document.getElementById('lkm-lng').value);
+  if(isNaN(lat)||isNaN(lng))return;
+  if(lat<-90||lat>90||lng<-180||lng>180)return;
+  if(lkmMap&&lkmMarker){
+    lkmMarker.setLatLng([lat,lng]);
+    lkmMap.setView([lat,lng],lkmMap.getZoom()<14?16:lkmMap.getZoom());
+    var disp=document.getElementById('lkm-coords-display');
+    if(disp){disp.style.display='block';disp.textContent=lat.toFixed(5)+', '+lng.toFixed(5);}
+  }
+}
+
 function initLkMap(){
   setTimeout(function(){
     if(!lkMap){
@@ -2883,7 +3772,9 @@ function useLoc(id){
   goPg('sv');
   document.getElementById('f-loc-id').value=l.id;
   document.getElementById('f-loc-search').value=l.name;
-  document.getElementById('f-loc-name').textContent=l.name+(l.category?' · '+l.category:'');
+  var compLabel='';
+  if(l.company_id){var sc=allCompanies.find(function(x){return x.id===l.company_id;});if(sc)compLabel=sc.name+' › ';}
+  document.getElementById('f-loc-name').textContent=compLabel+l.name+(l.category?' · '+l.category:'');
   document.getElementById('f-loc-sel').style.display='block';
   if(l.address){document.getElementById('dp-adresa')&&(document.getElementById('dp-adresa').value=l.address);}
   if(l.lat&&l.lng){
@@ -2899,9 +3790,12 @@ function searchLocs(q){
   var dd=document.getElementById('f-loc-dd');
   if(!q||q.length<1){dd.style.display='none';return;}
   var ql=q.toLowerCase();
+  // Kërko edhe në emrin e kompanisë
   var res=allLocs.filter(function(l){
-    return (l.name+' '+(l.address||'')+' '+(l.category||'')).toLowerCase().includes(ql);
-  }).slice(0,8);
+    var compName='';
+    if(l.company_id){var c=allCompanies.find(function(x){return x.id===l.company_id;});if(c)compName=c.name;}
+    return (l.name+' '+(l.address||'')+' '+(l.category||'')+' '+compName).toLowerCase().includes(ql);
+  }).slice(0,10);
   if(!res.length){dd.style.display='none';return;}
   dd.style.display='block';
   dd.innerHTML='';
@@ -2911,7 +3805,9 @@ function searchLocs(q){
     item.onmouseenter=function(){this.style.background='#18202e';};
     item.onmouseleave=function(){this.style.background='';};
     item.onclick=function(){selectLoc(l.id);};
-    var nm=document.createElement('div');nm.style.cssText='font-size:12px;font-weight:500;color:#dce6f5';nm.textContent=l.name;item.appendChild(nm);
+    var compN='';if(l.company_id){var sc2=allCompanies.find(function(x){return x.id===l.company_id;});if(sc2)compN=sc2.name;}
+    var nm=document.createElement('div');nm.style.cssText='font-size:12px;font-weight:500;color:#dce6f5';
+    nm.textContent=(compN?compN+' › ':'')+l.name;item.appendChild(nm);
     if(l.category||l.address){var sub=document.createElement('div');sub.style.cssText='font-size:10px;color:#3d5275;font-family:monospace';sub.textContent=(l.category||'')+(l.category&&l.address?' · ':'')+(l.address||'');item.appendChild(sub);}
     dd.appendChild(item);
   });
@@ -2948,11 +3844,13 @@ document.addEventListener('click',function(e){
   }
 });
 
-function openLocModal(id){
+function openLocModal(id,presetCompanyId){
   editLocId=id||null;
   var l=id?allLocs.find(function(x){return x.id===id;}):null;
   document.getElementById('lkm-title').textContent=l?'Edito: '+l.name:'Shto Lokacion të Ri';
   document.getElementById('lkm-name').value=l?l.name:'';
+  var compSel2=document.getElementById('lkm-company');
+  if(compSel2){compSel2.value=l?l.company_id||'':presetCompanyId||'';}
   document.getElementById('lkm-cat').value=l?l.category||'':'';
   document.getElementById('lkm-status').value=l?l.status||'aktiv':'aktiv';
   document.getElementById('lkm-addr').value=l?l.address||'':'';
@@ -2963,16 +3861,42 @@ function openLocModal(id){
   document.getElementById('lkm-notes').value=l?l.notes||'':'';
   document.getElementById('lkm-alert').classList.add('hidden');
   document.getElementById('lk-modal').classList.remove('hidden');
+  // Inicializo hartën e modalit
+  initLkmMap();
+  // Nëse ka koordinata, vendos marker-in
+  setTimeout(function(){
+    if(lkmMap&&lkmMarker){
+      var lat=parseFloat(document.getElementById('lkm-lat').value);
+      var lng=parseFloat(document.getElementById('lkm-lng').value);
+      if(!isNaN(lat)&&!isNaN(lng)){
+        lkmMarker.setLatLng([lat,lng]);
+        lkmMap.setView([lat,lng],16);
+        var disp=document.getElementById('lkm-coords-display');
+        if(disp){disp.style.display='block';disp.textContent=lat.toFixed(5)+', '+lng.toFixed(5);}
+      }else{
+        // Default: qendra e Shqipërisë
+        lkmMap.setView([41.3275,19.8187],8);
+        lkmMarker.setLatLng([41.3275,19.8187]);
+      }
+      lkmMap.invalidateSize();
+    }
+  },300);
 }
-function closeLkModal(){document.getElementById('lk-modal').classList.add('hidden');}
+function closeLkModal(){
+  document.getElementById('lk-modal').classList.add('hidden');
+  // Reset lkmMap për herën tjetër
+  if(lkmMap){lkmMap.remove();lkmMap=null;lkmMarker=null;}
+}
 
 async function saveLoc(){
   var name=document.getElementById('lkm-name').value.trim();
   if(!name){
     var ae=document.getElementById('lkm-alert');ae.className='alert err';ae.textContent='Emri është i detyrueshëm!';ae.classList.remove('hidden');return;
   }
+  var compId=parseInt(document.getElementById('lkm-company').value)||null;
   var data={
     name:name,
+    company_id:compId,
     category:document.getElementById('lkm-cat').value||null,
     status:document.getElementById('lkm-status').value||'aktiv',
     address:document.getElementById('lkm-addr').value||null,
@@ -3060,7 +3984,7 @@ function testConn(){
    PAGE NAV
 ═══════════════════════════════════════ */
 function goPg(nm){
-  ['sv','rc','us','rp','lk'].forEach(function(p){
+  ['sv','rc','us','rp','lk','tk'].forEach(function(p){
     var pg=document.getElementById('page-'+p);
     var nb=document.getElementById('nav-'+p);
     if(pg)pg.classList.remove('on');
@@ -3072,6 +3996,7 @@ function goPg(nm){
   if(nm==='us')loadUsers();
   if(nm==='rp'){loadRep();}
   if(nm==='lk')loadLocs();
+  if(nm==='tk')loadTasks();
 }
 function sptab(i){
   document.querySelectorAll('.ptab').forEach(function(t,j){t.classList.toggle('on',j===i)});
