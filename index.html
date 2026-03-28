@@ -4165,6 +4165,15 @@ function openCompModal(id){
   document.getElementById('compm-alert').classList.add('hidden');
   document.getElementById('comp-modal').classList.remove('hidden');
 }
+function closeDp(){
+  var dp=document.getElementById('dpanel');
+  var ov=document.getElementById('dp-overlay');
+  if(dp)dp.classList.remove('open');
+  if(ov)ov.style.display='none';
+  document.body.style.overflow='';
+  if(_dpMapObj){_dpMapObj.remove();_dpMapObj=null;}
+}
+
 function closeCompModal(){document.getElementById('comp-modal').classList.add('hidden');}
 
 async function saveComp(){
@@ -4971,6 +4980,7 @@ function testConn(){
    PAGE NAV
 ═══════════════════════════════════════ */
 function goPg(nm){
+  closeDp();
   ['sv','rc','us','rp','tk','lk'].forEach(function(p){
     var pg=document.getElementById('page-'+p);
     var nb=document.getElementById('nav-'+p);
@@ -4981,6 +4991,8 @@ function goPg(nm){
   var nb=document.getElementById('nav-'+nm);
   if(pg)pg.classList.add('on');
   if(nb)nb.classList.add('on');
+  // Mbyll panelin nëse është hapur
+  closeDp();
   if(nm==='rc')loadRecs(false);
   if(nm==='us')loadUsers();
   if(nm==='rp')loadRep();
