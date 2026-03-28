@@ -109,9 +109,9 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 .ava{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--mono);flex-shrink:0}
 .uname{font-size:12px;font-weight:600}
 .urole{font-size:10px;color:var(--txt2);font-family:var(--mono)}
-.pages{flex:1;overflow:hidden;min-height:0;position:relative}
+.pages{flex:1;overflow:hidden;min-height:0;position:relative;height:calc(100vh - 52px)}
 .page{position:absolute;inset:0;display:none;overflow:hidden;height:100%}.page#page-rp{overflow:visible}
-.page.on{display:block;pointer-events:auto}
+.page.on{display:block;pointer-events:auto;height:100%;width:100%}
 .page.on{display:flex}
 
 /* ── SURVEY LAYOUT ── */
@@ -232,7 +232,6 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 .mapw .leaflet-top,.mapw .leaflet-bottom,.mapw .leaflet-pane{z-index:auto}
 .mapw .leaflet-top{z-index:9}
 #map .leaflet-top,.map .leaflet-bottom{z-index:9!important}
-.topbar{}
 
 /* ── TASKS ── */
 .risk-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:10px;font-family:monospace;font-weight:600;border:1px solid}
