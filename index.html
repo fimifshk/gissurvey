@@ -276,6 +276,9 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 
 /* ── DETAIL PANEL (djathtas) ── */
 .dpanel{position:fixed;top:0;right:-520px;width:500px;max-width:100vw;height:100vh;background:var(--s1);border-left:1px solid var(--b1);z-index:4000;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,.4)}
+#dpanel{position:fixed;top:0;right:-560px;width:540px;max-width:100vw;height:100vh;background:#0d1119;border-left:1px solid #1c2740;z-index:4000;overflow:hidden;display:flex;flex-direction:column;transition:right .3s ease!important}
+#dpanel.open{right:0!important}
+
 #dpanel.open,.dpanel.open{right:0!important}
 .dpanel#dpanel.open{right:0!important}
 .dpanel-hd{padding:18px 20px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -1537,7 +1540,7 @@ create trigger on_auth_user_created
   </div><!-- /pages -->
 </div><!-- /app -->
 <!-- DETAIL PANEL -->
-<div id="dpanel" style="position:fixed;top:0;right:-560px;width:540px;max-width:100vw;height:100vh;background:#0d1119;border-left:1px solid #1c2740;z-index:4000;transition:right .3s ease;overflow:hidden;display:flex;flex-direction:column">
+<div id="dpanel">
 
   <!-- HEADER -->
   <div style="padding:14px 16px;border-bottom:1px solid #1c2740;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#0d1119;position:sticky;top:0;z-index:1">
@@ -2139,7 +2142,7 @@ function openPanel(b64){
   try{if(rec.doc_urls)docPaths=JSON.parse(rec.doc_urls);}catch(e){}
   // Hap panelin - JS direct style
   var dpEl=document.getElementById('dpanel');
-  if(dpEl){dpEl.style.right='0';var db=document.getElementById('dp-body');if(db)db.scrollTop=0;}
+  if(dpEl){dpEl.classList.add('open');var db=document.getElementById('dp-body');if(db)db.scrollTop=0;}
   var ovEl=document.getElementById('dp-overlay');
   if(ovEl)ovEl.style.display='block';
 
@@ -4252,7 +4255,7 @@ function openCompModal(id){
 function closeDp(){
   var dp=document.getElementById('dpanel');
   var ov=document.getElementById('dp-overlay');
-  if(dp)dp.style.right='-560px';
+  if(dp)dp.classList.remove('open');
   if(ov)ov.style.display='none';
   if(_dpMapObj){try{_dpMapObj.remove();}catch(e){}; _dpMapObj=null;}
   _dpRec=null;
