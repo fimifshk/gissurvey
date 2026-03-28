@@ -2139,7 +2139,7 @@ function openPanel(b64){
   try{if(rec.doc_urls)docPaths=JSON.parse(rec.doc_urls);}catch(e){}
   // Hap panelin - JS direct style
   var dpEl=document.getElementById('dpanel');
-  if(dpEl)dpEl.style.right='0';
+  if(dpEl){dpEl.style.right='0';var db=document.getElementById('dp-body');if(db)db.scrollTop=0;}
   var ovEl=document.getElementById('dp-overlay');
   if(ovEl)ovEl.style.display='block';
 
@@ -2442,6 +2442,18 @@ async function renderDocListAsync(docPaths){
     var p=docPaths[i];
     var name=p.split('/').pop().replace(/doc_\d+_\d+_/,'');
     var url='';
+    // Kontrollo nëse path ka @ (email i vjetër) - skip
+    if(p.includes('@')){
+      log('warn','Path i vjetër me email, skip: '+p);
+      // Shfaq emrin por jo link
+      var div2=document.createElement('div');
+      div2.className='doc-item';
+      div2.innerHTML='<span class="doc-icon">📄</span>'+
+        '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--mono);font-size:11px">'+name+'</span>'+
+        '<span style="color:#ffaa2e;font-size:10px;font-family:var(--mono)">⚠️ Ri-ngarko</span>';
+      el.appendChild(div2);
+      continue;
+    }
     if(p.startsWith('http')){
       url=p; // URL e vjetër
     }else if(SB){
