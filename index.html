@@ -666,6 +666,60 @@ create trigger on_auth_user_created
                 <button class="btn sm" onclick="document.getElementById('phinp').click()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Ngarko</button>
               </div>
             </div>
+            <!-- DETAJE SHTESË (accordion) -->
+            <div class="section" style="padding:0;overflow:hidden;border:1px solid #1c2740;border-radius:10px;margin-bottom:8px">
+              <button onclick="toggleSvDetails()" id="sv-det-btn"
+                style="width:100%;padding:11px 16px;background:#0d1119;border:none;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-align:left">
+                <span>📋 Detaje shtesë (opsionale)</span>
+                <span id="sv-det-arrow" style="transition:transform .2s">▼</span>
+              </button>
+              <div id="sv-det-body" style="display:none;padding:14px;border-top:1px solid #1c2740;display:flex;flex-direction:column;gap:10px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="ifield" style="margin:0">
+                    <label>KLASIFIKIMI</label>
+                    <select id="f-klasi" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:12px;outline:none">
+                      <option value="">— Pa klasifikim —</option>
+                      <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
+                      <option>Depo / Magazine</option><option>Objekt industrial</option>
+                      <option>Infrastrukturë</option><option>Tokë bujqësore</option>
+                      <option>Zonë e mbrojtur</option><option>Tjetër</option>
+                    </select>
+                  </div>
+                  <div class="ifield" style="margin:0">
+                    <label>STATUSI</label>
+                    <select id="f-statusi" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:12px;outline:none">
+                      <option value="aktiv">✅ Aktiv</option>
+                      <option value="ne_ndertim">🚧 Në ndërtim</option>
+                      <option value="ne_rinovim">🔨 Në rinovim</option>
+                      <option value="i_demtuar">⚠️ I dëmtuar</option>
+                      <option value="i_braktisur">🚫 I braktisur</option>
+                      <option value="i_demoluar">💥 I demoluar</option>
+                      <option value="ne_investigim">🔍 Nën investigim</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="ifield" style="margin:0">
+                  <label>ADRESA</label>
+                  <input type="text" id="f-adresa" placeholder="Adresa e objektit..." style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:12px;outline:none">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="ifield" style="margin:0">
+                    <label>KATET</label>
+                    <input type="number" id="f-kate" placeholder="0" min="0" max="200" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:12px;outline:none">
+                  </div>
+                  <div class="ifield" style="margin:0">
+                    <label>LARTËSIA (m)</label>
+                    <input type="number" id="f-lartesia" placeholder="0" min="0" style="width:100%;padding:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:12px;outline:none">
+                  </div>
+                </div>
+                <div class="ifield" style="margin:0">
+                  <label>VLERËSIMI</label>
+                  <div id="f-stars" style="display:flex;gap:6px;font-size:26px;cursor:pointer;padding:4px 0"></div>
+                  <input type="hidden" id="f-vleresimi" value="0">
+                </div>
+              </div>
+            </div>
+
             <div class="section">
               <div class="sec-hd">Veprime</div>
               <div class="brow">
@@ -1781,7 +1835,7 @@ function startApp(){
   document.getElementById('nav-tk').classList.remove('hidden'); // Të gjithë shohin detyrat
   loadTasks(); // Ngarko detyrat + check njoftimet
   initBLL();offEvents();
-  loadRecs(false);testConn();
+  loadRecs(false);testConn();initFStars();
   loadLocs(); // ngarko lokacionet dhe kompanitë
   toast('ok','Mirë se vini, '+(CP.full_name||CP.email)+'!');
 }
@@ -4323,6 +4377,11 @@ function onSvCompanyChange(){
   
   // Pastro zgjedhjen e mëparshme
   document.getElementById('f-loc-id').value='';
+  // Pastro fushat e detajeve
+  var flds=['f-klasi','f-statusi','f-adresa','f-kate','f-lartesia'];
+  flds.forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('f-vleresimi').value='0';_fStarVal=0;
+  var fst=document.getElementById('f-stars');if(fst)Array.from(fst.children).forEach(function(s){s.style.color='#253352';});
   document.getElementById('f-loc-name').textContent='';
   document.getElementById('f-loc-sel').style.display='none';
   
@@ -4370,6 +4429,11 @@ function onSvBranchChange(){
   var lid=document.getElementById('f-branch-sel').value;
   if(!lid){
     document.getElementById('f-loc-id').value='';
+  // Pastro fushat e detajeve
+  var flds=['f-klasi','f-statusi','f-adresa','f-kate','f-lartesia'];
+  flds.forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('f-vleresimi').value='0';_fStarVal=0;
+  var fst=document.getElementById('f-stars');if(fst)Array.from(fst.children).forEach(function(s){s.style.color='#253352';});
     document.getElementById('f-loc-sel').style.display='none';
     return;
   }
@@ -4393,8 +4457,42 @@ function onSvBranchChange(){
   }
 }
 
+function toggleSvDetails(){
+  var body=document.getElementById('sv-det-body');
+  var arrow=document.getElementById('sv-det-arrow');
+  var isOpen=body.style.display!=='none'&&body.style.display!=='';
+  body.style.display=isOpen?'none':'flex';
+  if(arrow)arrow.style.transform=isOpen?'':'rotate(180deg)';
+}
+
+// Yjet vlerësim në formular
+var _fStarVal=0;
+function initFStars(){
+  var el=document.getElementById('f-stars');
+  if(!el||el.children.length>0)return;
+  for(var i=1;i<=5;i++){
+    var s=document.createElement('span');
+    s.textContent='★';s.style.color='#253352';s.style.transition='color .1s';
+    (function(n){
+      s.onmouseenter=function(){fStarHover(n);};
+      s.onmouseleave=function(){fStarHover(_fStarVal);};
+      s.onclick=function(){_fStarVal=n;document.getElementById('f-vleresimi').value=n;fStarHover(n);};
+    })(i);
+    el.appendChild(s);
+  }
+}
+function fStarHover(val){
+  var stars=document.getElementById('f-stars').children;
+  for(var i=0;i<stars.length;i++)stars[i].style.color=i<val?'#ffaa2e':'#253352';
+}
+
 function clearLocSel(){
   document.getElementById('f-loc-id').value='';
+  // Pastro fushat e detajeve
+  var flds=['f-klasi','f-statusi','f-adresa','f-kate','f-lartesia'];
+  flds.forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('f-vleresimi').value='0';_fStarVal=0;
+  var fst=document.getElementById('f-stars');if(fst)Array.from(fst.children).forEach(function(s){s.style.color='#253352';});
   document.getElementById('f-loc-search').value='';
   document.getElementById('f-loc-sel').style.display='none';
   document.getElementById('f-company-sel').value='';
@@ -4433,6 +4531,35 @@ function selectLoc(id){
   document.getElementById('f-loc-sel').style.display='block';
   document.getElementById('f-loc-dd').style.display='none';
   if(l.lat&&l.lng){document.getElementById('f-lat').textContent=l.lat.toFixed(6);document.getElementById('f-lng').textContent=l.lng.toFixed(6);document.getElementById('f-acc').textContent='Nga lokacioni';if(leafMap)leafMap.setView([l.lat,l.lng],17);toast('info','GPS nga lokacioni: '+l.name);}
+}
+
+function toggleSvDetails(){
+  var body=document.getElementById('sv-det-body');
+  var arrow=document.getElementById('sv-det-arrow');
+  var isOpen=body.style.display!=='none'&&body.style.display!=='';
+  body.style.display=isOpen?'none':'flex';
+  if(arrow)arrow.style.transform=isOpen?'':'rotate(180deg)';
+}
+
+// Yjet vlerësim në formular
+var _fStarVal=0;
+function initFStars(){
+  var el=document.getElementById('f-stars');
+  if(!el||el.children.length>0)return;
+  for(var i=1;i<=5;i++){
+    var s=document.createElement('span');
+    s.textContent='★';s.style.color='#253352';s.style.transition='color .1s';
+    (function(n){
+      s.onmouseenter=function(){fStarHover(n);};
+      s.onmouseleave=function(){fStarHover(_fStarVal);};
+      s.onclick=function(){_fStarVal=n;document.getElementById('f-vleresimi').value=n;fStarHover(n);};
+    })(i);
+    el.appendChild(s);
+  }
+}
+function fStarHover(val){
+  var stars=document.getElementById('f-stars').children;
+  for(var i=0;i<stars.length;i++)stars[i].style.color=i<val?'#ffaa2e':'#253352';
 }
 
 function clearLocSel(){document.getElementById('f-loc-id').value='';document.getElementById('f-loc-search').value='';document.getElementById('f-loc-sel').style.display='none';}
