@@ -3224,8 +3224,8 @@ function expCvCSV(){
     rows.push([r.rec_date||'',r.rec_time||'',r.user_name||'',r.user_email||'',
       loc?loc.name:'',r.qellim||'',r.statusi||'',r.vleresimi||'',r.notes||'']);
   });
-  var csv='﻿'+rows.map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('
-');
+  var csv='\\uFEFF'+rows.map(function(r){return r.map(function(c){var s=String(c).replace(/"/g,'""');return'"'+s+'"';}).join(',');}).join('\\n');
+
   var b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   var a=document.createElement('a');a.href=URL.createObjectURL(b);
   a.download='vizitat_kompani_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
