@@ -22,7 +22,7 @@ window.clearAuthErr=function(){var e=document.getElementById('auth-alert');if(e)
   --r:9px;--mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--txt);font-size:14px}
+html,body{height:100%;overflow:hidden;font-family:var(--sans);background:var(--bg);color:var(--txt);font-size:14px}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
 input,select,textarea,button{font-family:inherit;pointer-events:all}
@@ -360,6 +360,8 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 
 .map-tooltip{background:#0d1119!important;border:1px solid #253352!important;border-radius:8px!important;padding:8px 12px!important;box-shadow:0 4px 20px rgba(0,0,0,.5)!important;color:#dce6f5!important;}
 .map-tooltip.leaflet-tooltip-top::before{border-top-color:#253352!important;}
+
+body{overflow:hidden}
 </style>
 </head>
 <body>
@@ -367,7 +369,7 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 <!-- ═══════════════════════════════════
      CONFIG SCREEN  
 ═══════════════════════════════════ -->
-<div id="scr-config" class="overlay">
+<div id="scr-config" class="overlay hidden">
 <div style="width:580px;max-width:100%">
   <div class="card-logo" style="font-family:var(--mono);font-size:11px;color:var(--acc);letter-spacing:.15em;margin-bottom:20px">◈ GIS_SURVEY_PRO <span style="color:var(--txt3)">/ KONFIGURIMI</span></div>
 
