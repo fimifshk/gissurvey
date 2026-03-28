@@ -1079,6 +1079,20 @@ create trigger on_auth_user_created
   </div>
 </div>
 
+<!-- LK HARTA MODAL -->
+<div class="mbg hidden" id="lk-map-modal">
+  <div class="modal" style="width:90vw;max-width:900px;height:80vh;display:flex;flex-direction:column;padding:0">
+    <div class="mhd" style="padding:14px 18px;flex-shrink:0">
+      Harta e Lokacioneve
+      <span class="mcl" onclick="closeLkMapModal()">✕</span>
+    </div>
+    <div style="font-family:monospace;font-size:11px;color:#8da0bb;padding:0 18px 10px;flex-shrink:0">
+      🖱️ Klikoni hartën për koordinata · Klikoni marker për detaje
+    </div>
+    <div id="lk-map" style="flex:1;min-height:300px"></div>
+  </div>
+</div>
+
 <!-- KOMPANI MODAL -->
 <div class="mbg hidden" id="comp-modal">
   <div class="modal" style="width:480px">
@@ -1330,6 +1344,7 @@ create trigger on_auth_user_created
           <div style="display:flex;gap:7px;flex-wrap:wrap" id="lk-actions">
             <input type="text" id="lk-search" placeholder="🔍 Kërko..." oninput="filterLocs()"
               style="padding:7px 10px;background:#07090f;border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;width:150px">
+            <button onclick="openLkMapModal()" style="padding:7px 14px;background:#0d1119;border:1px solid #3d5275;border-radius:9px;color:#8da0bb;font-family:monospace;font-size:11px;cursor:pointer">🗺️ Harta</button>
             <button id="lk-add-comp-btn" onclick="openCompModal()" style="padding:7px 14px;background:#0d1119;border:1px solid #2d8bff;border-radius:9px;color:#2d8bff;font-family:monospace;font-size:11px;cursor:pointer">+ Kompani</button>
             <button id="lk-add-loc-btn" onclick="openLocModal()" style="padding:7px 14px;background:#05d9a0;border:none;border-radius:9px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer">+ Degë/Lokacion</button>
           </div>
@@ -1340,9 +1355,8 @@ create trigger on_auth_user_created
           <button onclick="lkSubTab(1)" id="lkst1" style="padding:8px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:#3d5275;font-family:monospace;font-size:11px;cursor:pointer">📍 Lista e degëve</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:360px 1fr;flex:1;overflow:hidden;min-height:0">
-        <!-- PANEL MAJTAS: Hierarkia + Lista -->
-        <div style="background:#0d1119;border-right:1px solid #1c2740;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;flex:1;overflow:hidden">
+        <div style="background:#0d1119;width:100%;overflow:hidden;display:flex;flex-direction:column">
           <!-- SUB-TAB 0: HIERARKIA -->
           <div id="lksec0" style="flex:1;overflow-y:auto;padding:8px">
             <div style="padding:6px 6px 10px;font-family:monospace;font-size:10px;color:#3d5275;letter-spacing:.08em;text-transform:uppercase">
@@ -1360,12 +1374,7 @@ create trigger on_auth_user_created
             <div id="lk-list"></div>
           </div>
         </div>
-        <!-- HARTA DJATHTAS — placeholder, harta reale eshte fixed -->
-        <div id="lk-map-placeholder" style="position:relative;height:100%;min-height:400px;background:#07090f">
-          <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:10;background:rgba(13,17,25,.9);border:1px solid #1c2740;border-radius:8px;padding:6px 12px;font-family:monospace;font-size:10px;color:#8da0bb;white-space:nowrap;pointer-events:none">
-            🖱️ Klikoni hartën për koordinata
-          </div>
-        </div>
+
       </div>
     </div>
     </div>
@@ -3505,7 +3514,7 @@ async function loadLocs(){
   if(catSel){var cv=catSel.value;catSel.innerHTML='<option value="">Të gjitha</option>'+Object.keys(cats).sort().map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('');catSel.value=cv;}
   var compSel=document.getElementById('lkm-company');
   if(compSel){var cv2=compSel.value;compSel.innerHTML='<option value="">— Pa kompani —</option>'+allCompanies.map(function(c){return'<option value="'+c.id+'">'+c.name+'</option>';}).join('');compSel.value=cv2;}
-  filterLocs();renderHierarchy();initLkMap();
+  filterLocs();renderHierarchy();
 }
 
 function filterLocs(){
@@ -3543,22 +3552,16 @@ function renderLocList(){
   });
 }
 
-function positionLkMap(){
-  var ph=document.getElementById('lk-map-placeholder');
-  var el=document.getElementById('lk-map');
-  if(!ph||!el)return;
-  var r=ph.getBoundingClientRect();
-  el.style.left=r.left+'px';
-  el.style.top=r.top+'px';
-  el.style.width=r.width+'px';
-  el.style.height=r.height+'px';
-  el.style.display='block';
-  if(lkMap)lkMap.invalidateSize();
+function openLkMapModal(){
+  document.getElementById('lk-map-modal').classList.remove('hidden');
+  initLkMap();
+  setTimeout(function(){if(lkMap)lkMap.invalidateSize();},300);
 }
-function hideLkMap(){
-  var el=document.getElementById('lk-map');
-  if(el)el.style.display='none';
+function closeLkMapModal(){
+  document.getElementById('lk-map-modal').classList.add('hidden');
 }
+function positionLkMap(){if(lkMap)lkMap.invalidateSize();}
+function hideLkMap(){}
 function initLkMap(){
   setTimeout(function(){
     positionLkMap();
@@ -3859,8 +3862,5 @@ if(typeof supabase!=='undefined'){
   setTimeout(function(){if(typeof supabase!=='undefined'){log('ok','SDK retry OK');boot();}},3000);
 }
 </script>
-<!-- HARTA LK — position:fixed, nën navbar -->
-<div id="lk-map" style="display:none;position:fixed;z-index:50;background:#07090f"></div>
-
 </body>
 </html>
