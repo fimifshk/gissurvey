@@ -109,8 +109,8 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 .ava{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--mono);flex-shrink:0}
 .uname{font-size:12px;font-weight:600}
 .urole{font-size:10px;color:var(--txt2);font-family:var(--mono)}
-.pages{flex:1;overflow:hidden;position:relative;z-index:1;overflow:hidden}
-.page{position:absolute;inset:0;display:none;overflow:hidden}.page#page-rp{overflow:visible}
+.pages{flex:1;overflow:hidden;position:relative}
+.page{position:absolute;inset:0;display:none;overflow:hidden;pointer-events:none}.page#page-rp{overflow:visible}
 .page.on{display:flex}
 
 /* ── SURVEY LAYOUT ── */
@@ -1379,8 +1379,46 @@ create trigger on_auth_user_created
     </div>
     </div>
 
+  </div><!-- /pages -->
+</div><!-- /app -->
+<!-- DETAIL PANEL -->
+<div id="dpanel" style="position:fixed;top:0;right:-520px;width:500px;max-width:100vw;height:100vh;background:#0d1119;border-left:1px solid #1c2740;z-index:4000;transition:right .3s;overflow-y:auto;display:flex;flex-direction:column">
+  <div style="padding:14px 16px;border-bottom:1px solid #1c2740;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#0d1119;position:sticky;top:0;z-index:1">
+    <div>
+      <div style="font-size:15px;font-weight:700" id="dp-title">Detajet</div>
+      <div style="font-size:11px;color:#8da0bb;font-family:monospace" id="dp-sub"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="dp-status-badge"></span>
+      <button onclick="closeDp()" style="background:transparent;border:none;color:#3d5275;font-size:20px;cursor:pointer;padding:0 4px">✕</button>
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:16px" id="dp-body">
+    <div id="dp-carousel-wrap" style="margin-bottom:14px">
+      <div class="carousel" id="dp-car-outer" style="display:none">
+        <div class="carousel-inner" id="dp-slides"></div>
+        <button class="cbtn left" onclick="carSlide(-1)">‹</button>
+        <button class="cbtn right" onclick="carSlide(1)">›</button>
+        <div id="dp-dots" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px"></div>
+      </div>
+      <div id="dp-nophoto" style="display:none;padding:20px;text-align:center;color:#3d5275;font-family:monospace;font-size:11px;border:1px dashed #1c2740;border-radius:8px">Pa foto</div>
+    </div>
+    <div id="dp-info"></div>
+    <div style="margin-top:14px">
+      <div style="font-size:10px;font-family:monospace;color:#3d5275;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="width:3px;height:12px;background:#2d8bff;border-radius:2px;display:inline-block"></span>DOKUMENTE</div>
+      <div id="dp-doclist"></div>
+      <label style="display:flex;align-items:center;gap:8px;margin-top:8px;padding:8px 12px;border:1px dashed #1c2740;border-radius:8px;cursor:pointer;font-family:monospace;font-size:11px;color:#3d5275">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:#3d5275;stroke-width:2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Ngarko dokument PDF
+        <input type="file" accept=".pdf,.doc,.docx" multiple onchange="processDocFiles(this.files)" style="display:none">
+      </label>
+      <div id="dp-uploading" style="display:none;font-family:monospace;font-size:11px;color:#ffaa2e;padding:6px">Duke ngarkuar...</div>
+    </div>
+  </div>
 </div>
-</div>
+<div id="dp-overlay" style="display:none;position:fixed;inset:0;z-index:3999" onclick="closeDp()"></div>
+
+
 <div class="toastwrap" id="toasts"></div>
 
 <!-- ═══════════════════════════════════
