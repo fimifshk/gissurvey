@@ -3344,3 +3344,149 @@ async function deleteTask(id){
 }
 
 function copyMobileLink(){
+  var u=ls('su'),k=ls('sk');
+  if(!u||!k){toast('warn','Konfiguro Supabase fillimisht');return;}
+  var link=window.location.origin+window.location.pathname+'?su='+encodeURIComponent(u)+'&sk='+encodeURIComponent(k);
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(link).then(function(){toast('ok','Link u kopjua! Ngjite në celular.');});}
+  else{var ta=document.createElement('textarea');ta.value=link;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('ok','Link u kopjua!');}
+}
+function showQR(){
+  var u=ls('su'),k=ls('sk');
+  if(!u||!k){toast('warn','Konfiguro Supabase fillimisht');return;}
+  var link=window.location.origin+window.location.pathname+'?su='+encodeURIComponent(u)+'&sk='+encodeURIComponent(k);
+  document.getElementById('qr-m').classList.remove('hidden');
+  var cv=document.getElementById('qr-cv');
+  cv.width=200;cv.height=200;
+  var ctx=cv.getContext('2d');ctx.clearRect(0,0,200,200);
+  if(typeof QRCode!=='undefined'){
+    var tmp=document.createElement('div');
+    new QRCode(tmp,{text:link,width:200,height:200,colorDark:'#07090f',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+    setTimeout(function(){
+      var img=tmp.querySelector('img')||tmp.querySelector('canvas');
+      if(img){if(img.tagName==='IMG'){var i=new Image();i.onload=function(){ctx.drawImage(i,0,0,200,200);};i.src=img.src;}else{ctx.drawImage(img,0,0,200,200);}}
+    },100);
+  }else{ctx.fillStyle='#ffffff';ctx.fillRect(0,0,200,200);ctx.fillStyle='#07090f';ctx.font='10px monospace';ctx.textAlign='center';ctx.fillText('Përdorni "Kopjo link"',100,110);}
+}
+function expPDF(){
+  if(!_rpRecs.length){toast('warn','Nuk ka të dhëna');return;}
+  var w=window.open('','_blank');
+  var today=new Date().toLocaleDateString('sq-AL');
+  var qm={};_rpRecs.forEach(function(r){var q=r.qellim||'Pa kategori';qm[q]=(qm[q]||0)+1;});
+  var umap={};_rpRecs.forEach(function(r){var k=r.user_email||'?';umap[k]=(umap[k]||0)+1;});
+  var total=_rpRecs.length||1;
+  var catrows=Object.entries(qm).sort(function(a,b){return b[1]-a[1]}).map(function(e){return'<tr><td>'+e[0]+'</td><td style="text-align:center;font-weight:bold;color:#05d9a0">'+e[1]+'</td><td style="text-align:center">'+(e[1]/total*100).toFixed(1)+'%</td></tr>';}).join('');
+  var urows=Object.entries(umap).sort(function(a,b){return b[1]-a[1]}).map(function(e){return'<tr><td>'+e[0]+'</td><td style="text-align:center;font-weight:bold;color:#05d9a0">'+e[1]+'</td></tr>';}).join('');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>GIS Survey — Raport</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#333}h1{color:#05d9a0;border-bottom:2px solid #05d9a0;padding-bottom:8px}table{width:100%;border-collapse:collapse;margin-top:10px}th{background:#1e2838;color:#fff;padding:8px 12px;text-align:left}td{padding:7px 12px;border-bottom:1px solid #eee}.kpi{display:inline-block;margin:8px;padding:14px 20px;background:#f5f5f5;border-radius:8px;text-align:center}.kpi-v{font-size:28px;font-weight:bold;color:#05d9a0}.kpi-l{font-size:11px;color:#666}@media print{.noprint{display:none}}</style></head><body>');
+  w.document.write('<h1>GIS Survey Pro — Raport</h1><p style="color:#666">Data: '+today+' | Rekorde: '+_rpRecs.length+'</p>');
+  w.document.write('<div><div class="kpi"><div class="kpi-l">REKORDE</div><div class="kpi-v">'+_rpRecs.length+'</div></div><div class="kpi"><div class="kpi-l">USERS</div><div class="kpi-v">'+Object.keys(umap).length+'</div></div></div>');
+  w.document.write('<h2>Sipas Kategorisë</h2><table><thead><tr><th>Kategoria</th><th>Rekorde</th><th>%</th></tr></thead><tbody>'+catrows+'</tbody></table>');
+  w.document.write('<h2>Sipas Përdoruesit</h2><table><thead><tr><th>Email</th><th>Rekorde</th></tr></thead><tbody>'+urows+'</tbody></table>');
+  w.document.write('<br><button class="noprint" onclick="window.print()" style="padding:10px 20px;background:#05d9a0;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨️ Printo / Ruaj PDF</button></body></html>');
+  w.document.close();toast('ok','PDF gati!');
+}
+
+function expJSON(){
+  dl(JSON.stringify(allRecs,null,2),'application/json','survey_'+dt()+'.json');
+  toast('ok','JSON eksportuar');
+}
+function expCSV(){
+  var src=filteredRecs.length?filteredRecs:allRecs;
+  if(!src.length){toast('warn','Asnjë rekord');return}
+  var k=['id','user_name','user_email','user_role','rec_date','rec_time','lat','lng','accuracy','qellim','notes','photo_count','synced','created_at'];
+  var csv='\uFEFF'+k.join(',')+'\n';
+  src.forEach(function(r){csv+=k.map(function(f){var v=r[f]!==undefined?String(r[f]):'';return'"'+v.replace(/"/g,'""')+'"'}).join(',')+'\n'});
+  dl(csv,'text/csv;charset=utf-8;','survey_'+dt()+'.csv');
+  toast('ok','CSV eksportuar ('+src.length+' rekorde)');
+}
+function expXLS(){
+  var src=filteredRecs.length?filteredRecs:allRecs;
+  if(!src.length){toast('warn','Asnjë rekord');return}
+  var k=['id','user_name','user_email','user_role','rec_date','rec_time','lat','lng','accuracy','qellim','notes','photo_count'];
+  var hdrs={id:'#ID',user_name:'Emri',user_email:'Email',user_role:'Roli',rec_date:'Data',rec_time:'Ora',lat:'Gjerësi',lng:'Gjatësi',accuracy:'Saktësia(m)',qellim:'Qëllimi',notes:'Shënime',photo_count:'Foto'};
+  var tb='<table border="1" style="border-collapse:collapse"><thead><tr>'+k.map(function(f){return'<th style="background:#05d9a0;color:#021a10;padding:6px 10px;font-family:monospace">'+hdrs[f]+'</th>'}).join('')+'</tr></thead><tbody>';
+  src.forEach(function(r){tb+='<tr>'+k.map(function(f){return'<td style="padding:5px 9px">'+(r[f]!==undefined?r[f]:'')+'</td>'}).join('')+'</tr>'});
+  tb+='</tbody></table>';
+  var full='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>'+tb+'</body></html>';
+  dl(full,'application/vnd.ms-excel;charset=utf-8;','survey_'+dt()+'.xls');
+  toast('ok','Excel eksportuar ('+src.length+' rekorde)');
+}
+function dl(content,mime,fname){
+  var b=new Blob([content],{type:mime});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname;a.click();
+}
+function dt(){return new Date().toISOString().slice(0,10)}
+
+/* ═══════════════════════════════════════
+   CONNECTION TEST
+═══════════════════════════════════════ */
+function testConn(){
+  var on=navigator.onLine;
+  document.getElementById('cdot').className='cdot'+(on?'':' off');
+  document.getElementById('clbl').textContent=on?'online':'offline';
+  var st=document.getElementById('sync-st');
+  st.className='badge '+(on?'ok':'err');st.textContent=on?'✓ online':'✕ offline';
+  log(on?'ok':'warn','Lidhja: '+(on?'online':'offline'));
+  if(on&&SB){
+    SB.from('profiles').select('id').limit(1).then(function(r){
+      if(r.error) log('warn','Supabase ping: '+r.error.message);
+      else log('ok','Supabase ping OK');
+    });
+  }
+}
+
+/* ═══════════════════════════════════════
+   PAGE NAV
+═══════════════════════════════════════ */
+function goPg(nm){
+  ['sv','rc','us','rp'].forEach(function(p){
+    document.getElementById('page-'+p).classList.remove('on');
+    document.getElementById('nav-'+p).classList.remove('on');
+  });
+  document.getElementById('page-'+nm).classList.add('on');
+  document.getElementById('nav-'+nm).classList.add('on');
+  if(nm==='rc')loadRecs(false);
+  if(nm==='us')loadUsers();
+  if(nm==='rp'){loadRep();setTimeout(function(){if(rMapObj)rMapObj.invalidateSize()},300)}
+}
+function sptab(i){
+  document.querySelectorAll('.ptab').forEach(function(t,j){t.classList.toggle('on',j===i)});
+  document.querySelectorAll('.ptc').forEach(function(c,j){c.classList.toggle('on',j===i)});
+  if(i===3)updSyncCounts();
+}
+
+/* ═══════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════ */
+function v(id){return(document.getElementById(id).value||'').trim()}
+function ls(k,val){if(val===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,val)}
+function lsj(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+function lsjs(k,v2){localStorage.setItem(k,JSON.stringify(v2))}
+function log(type,msg){
+  var box=document.getElementById('dbg');if(!box)return;
+  var n=new Date(),p=function(x){return String(x).padStart(2,'0')};
+  var line=document.createElement('div');line.className='dl '+type;
+  line.textContent='['+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds())+'] '+msg;
+  box.appendChild(line);box.scrollTop=box.scrollHeight;
+}
+function toast(type,msg){
+  var w=document.getElementById('toasts');
+  var t=document.createElement('div');t.className='toast '+type;
+  var ic={ok:'✓',err:'✕',info:'ℹ',warn:'⚠'};
+  t.innerHTML='<span>'+ic[type]+'</span><span>'+msg+'</span>';
+  w.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(14px)';t.style.transition='all .3s';setTimeout(function(){t.remove()},350)},3800);
+}
+function offEvents(){
+  window.addEventListener('online',function(){document.getElementById('cdot').className='cdot';document.getElementById('clbl').textContent='online';toast('ok','Lidhja u restaurua');log('ok','Online')});
+  window.addEventListener('offline',function(){document.getElementById('cdot').className='cdot off';document.getElementById('clbl').textContent='offline';toast('warn','Offline');log('warn','Offline')});
+}
+// Boot — SDK ngarkohet synchronously
+if(typeof supabase!=='undefined'){
+  log('info','Supabase SDK u ngarkua');
+  boot();
+}else{
+  log('err','SDK nuk u ngarkua — kontrolloni internet ose adblocker');
+  setTimeout(function(){if(typeof supabase!=='undefined'){log('ok','SDK retry OK');boot();}},3000);
+}
+</script>
+</body>
+</html>
