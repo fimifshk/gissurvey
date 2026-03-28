@@ -1487,7 +1487,7 @@ create trigger on_auth_user_created
   <div style="padding:14px 16px;border-bottom:1px solid #1c2740;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#0d1119;position:sticky;top:0;z-index:1">
     <div style="flex:1;min-width:0">
       <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="dp-title">Detajet</div>
-      <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-top:2px" id="dp-sub"></div>
+      <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-top:2px"><span id="dp-id"></span> <span id="dp-sub"></span></div>
     </div>
     <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;margin-left:10px">
       <span id="dp-status-badge" class="badge"></span>
@@ -1991,7 +1991,8 @@ function openPanel(b64){
 
   // Header
   document.getElementById('dp-title').textContent=(rec.qellim||'Vëzhgim #'+rec.id);
-  document.getElementById('dp-sub').textContent='#'+rec.id+' · '+(rec.user_name||rec.user_email||'?')+' · '+(rec.rec_date||'—');
+  var dpIdEl=document.getElementById('dp-id');if(dpIdEl)dpIdEl.textContent='#'+rec.id+' · '+(rec.user_role||'');
+  var dpSubEl=document.getElementById('dp-sub');if(dpSubEl)dpSubEl.textContent=(rec.user_name||rec.user_email||'?')+' · '+(rec.rec_date||'—');
 
   // Badge statusi
   var sb=document.getElementById('dp-status-badge');
@@ -2820,29 +2821,13 @@ function renderRT(){
       '<td><span class="badge '+(r.photo_count>0?'ok':'')+'">'+(r.photo_count||0)+'</span></td>' +
       '<td>'+(r.synced===false?'<span class="badge warn">offline</span>':'<span class="badge ok">✓ DB</span>')+'</td>' +
       '<td><div style="display:flex;gap:3px">' +
-        '<div class="ibtn" onclick="showDet(\''+btoa(unescape(encodeURIComponent(JSON.stringify(r))))+'\')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>' +
+        '<div class="ibtn" onclick="openPanel(\''+recB64+'\')">'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>' +
         (CP.role==='admin'?'<div class="ibtn red" onclick="delRec(\''+r.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></div>':'')+
       '</div></td></tr>';
   }).join('');
 }
 
-function showDet(b64){
-  var r;try{r=JSON.parse(decodeURIComponent(escape(atob(b64))))}catch(e){toast('err','Gabim');return}
-  var flds=['id','user_name','user_email','user_role','rec_date','rec_time','lat','lng','accuracy','qellim','notes','photo_count','synced','created_at'];
-  document.getElementById('det-body').innerHTML=flds.map(function(k){
-    return'<div class="drow"><div class="dk">'+k+'</div><div class="dv">'+(r[k]!==undefined&&r[k]!==null?String(r[k]):'—')+'</div></div>';
-  }).join('');
-  document.getElementById('det-m').classList.remove('hidden');
-  setTimeout(function(){
-    if(detMapObj){detMapObj.remove();detMapObj=null}
-    detMapObj=L.map('det-map',{zoomControl:false,attributionControl:false}).setView([r.lat||41.15,r.lng||20.17],r.lat?14:8);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(detMapObj);
-    if(r.lat&&r.lng){
-      var c=RCOL[r.user_role]||'#05d9a0';
-      L.circleMarker([r.lat,r.lng],{radius:8,color:c,weight:3,fillOpacity:.6}).addTo(detMapObj);
-    }
-  },100);
-}
+function showDet(b64){openPanel(b64);}
 
 async function delRec(id){
   if(!confirm('Fshi rekordin #'+id+'?'))return;
