@@ -866,7 +866,7 @@ create trigger on_auth_user_created
         <div class="fbar">
           <input type="text" id="fs-q" placeholder="🔍 Kërko..." oninput="filterR()">
           <select id="fs-u" onchange="filterR()"><option value="">Të gjithë users</option></select>
-          <select id="fs-loc" onchange="filterR()" style="font-family:var(--mono);font-size:11px"><option value="">Të gjitha lok.</option></select>
+          <select id="fs-loc" onchange="filterR()" style="font-family:var(--mono);font-size:11px"><option value="">Të gjitha komp.</option></select>
           <select id="fs-ql" onchange="filterR()">
             <option value="">Të gjithë qëllimet</option>
             <option>Inspektim urban</option><option>Monitorim mjedisi</option>
@@ -1890,7 +1890,7 @@ function startApp(){
   document.getElementById('nav-tk').classList.remove('hidden'); // Të gjithë shohin detyrat
   loadTasks(); // Ngarko detyrat + check njoftimet
   initBLL();offEvents();
-  loadRecs(false);testConn();initFStars();
+  loadLocs();loadRecs(false);testConn();initFStars();loadSvTaskUsers();
   loadLocs(); // ngarko lokacionet dhe kompanitë
   toast('ok','Mirë se vini, '+(CP.full_name||CP.email)+'!');
 }
@@ -2047,12 +2047,17 @@ async function openRecById(id, trEl){
     if(!error && data){
       if(data.locations&&data.locations.name){
         data.location_name=data.locations.name;
-        if(data.locations.companies&&data.locations.companies.name){
-          data.company_name=data.locations.companies.name;
-          data.location_display=data.company_name+' › '+data.location_name;
+        var cid=data.locations.company_id;
+        if(cid){
+          var comp=allCompanies.find(function(c){return c.id===cid;});
+          if(comp){data.company_name=comp.name;data.location_display=comp.name+' › '+data.location_name;}
         }
+        if(!data.location_display)data.location_display=data.location_name;
       }
       delete data.locations;
+      // Shto në allRecs
+      var existIdx=allRecs.findIndex(function(r){return r.id===data.id;});
+      if(existIdx>=0)allRecs[existIdx]=data; else allRecs.unshift(data);
       rec=data;
     }
   }
@@ -2127,21 +2132,23 @@ function openPanel(b64){
   try{if(rec.doc_urls)docPaths=JSON.parse(rec.doc_urls);}catch(e){}
   renderDocList(docPaths);
 
-  // Karusel
-  var photoUrls=[];
-  try{if(rec.photo_urls)photoUrls=JSON.parse(rec.photo_urls);}catch(e){}
-  if(!photoUrls.length&&rec.photo_count>0&&SB&&CU){
-    fetchPhotoUrls(rec).then(function(urls){if(urls.length)renderCarousel(urls,urls.length);});
-  }
-  renderCarousel(photoUrls,rec.photo_count||0);
+  // Hap panelin PARA karuselit (keshtu elementet ekzistojnë)
+  document.getElementById('dpanel').classList.add('open');
+  document.getElementById('dp-overlay').style.display='block';
+  document.body.style.overflow='hidden';
 
   // Harta mini
   dpInitMap(rec);
 
-  // Hap panelin
-  document.getElementById('dpanel').classList.add('open');
-  document.getElementById('dp-overlay').style.display='block';
-  document.body.style.overflow='hidden';
+  // Karusel (tani elementi dp-car-outer ekziston)
+  var photoUrls=[];
+  try{if(rec.photo_urls)photoUrls=JSON.parse(rec.photo_urls);}catch(e){}
+  setTimeout(function(){
+    renderCarousel(photoUrls,rec.photo_count||0);
+    if(!photoUrls.length&&rec.photo_count>0&&SB&&CU){
+      fetchPhotoUrls(rec).then(function(urls){if(urls.length)renderCarousel(urls,urls.length);});
+    }
+  },100);
 }
 
 var _dpMapObj=null;
@@ -2316,12 +2323,12 @@ function renderCarousel(photoUrls,photoCount){
 
   if(!photoUrls.length){
     car.style.display='none';
-    nop.style.display=photoCount>0?'block':'none';
-    if(photoCount>0)nop.innerHTML='📷 '+photoCount+' foto (nuk janë ngarkuar në Storage)';
+    if(nop)nop.style.display=photoCount>0?'block':'none';
+    if(nop&&photoCount>0)nop.innerHTML='📷 '+photoCount+' foto (nuk janë ngarkuar në Storage)';
     return;
   }
-  nop.style.display='none';
-  car.style.display='block';
+  if(nop)nop.style.display='none';
+  if(car)car.style.display='block';
   var fbSrc='data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%22400%22 height%3D%22225%22%3E%3Crect fill%3D%22%231c2740%22 width%3D%22400%22 height%3D%22225%22%2F%3E%3Ctext y%3D%2250%25%22 x%3D%2250%25%22 text-anchor%3D%22middle%22 dominant-baseline%3D%22middle%22 fill%3D%22%233d5275%22 font-size%3D%2214%22%3EFoto nuk u ngarkua%3C%2Ftext%3E%3C%2Fsvg%3E';
   slides.innerHTML=photoUrls.map(function(url){
     return'<img class="carousel-slide" src="'+url+'" onerror="this.src=\''+fbSrc+'\'">';
@@ -2859,7 +2866,7 @@ async function loadRecs(showToast){
   if(!SB||!CU)return;
   log('info','Duke ngarkuar rekordet...');
   try{
-    var q=SB.from('survey_records').select('*,locations(id,name,company_id,companies(id,name))').order('created_at',{ascending:false});
+    var q=SB.from('survey_records').select('*,locations(id,name,company_id)').order('created_at',{ascending:false});
     if(CP.role==='field')q=q.eq('user_id',CU.id);
     var{data,error}=await q;
     if(error)throw error;
@@ -2867,12 +2874,15 @@ async function loadRecs(showToast){
       // Ekstrakto location_name nga JOIN
       if(r.locations&&r.locations.name){
         r.location_name=r.locations.name;
-        if(r.locations.companies&&r.locations.companies.name){
-          r.company_name=r.locations.companies.name;
-          r.location_display=r.company_name+' › '+r.location_name;
-        } else {
-          r.location_display=r.location_name;
+        var companyId=r.locations.company_id;
+        if(companyId&&allCompanies.length){
+          var comp=allCompanies.find(function(c){return c.id===companyId;});
+          if(comp){
+            r.company_name=comp.name;
+            r.location_display=comp.name+' › '+r.location_name;
+          }
         }
+        if(!r.location_display) r.location_display=r.location_name;
       }
       delete r.locations;
       return r;
@@ -2893,7 +2903,7 @@ async function loadRecs(showToast){
   // Popullo filtrin e lokacioneve
   var locNames={};allRecs.forEach(function(r){if(r.location_name)locNames[r.location_name]=1;});
   var locSel=document.getElementById('fs-loc');
-  if(locSel){var lv=locSel.value;locSel.innerHTML='<option value="">Të gjitha lok.</option>'+Object.keys(locNames).sort().map(function(n){return'<option value="'+n+'">🏢 '+n+'</option>';}).join('');locSel.value=lv;}
+  if(locSel){var lv=locSel.value;locSel.innerHTML='<option value="">Të gjitha komp.</option>'+Object.keys(locNames).sort().map(function(n){return'<option value="'+n+'">🏢 '+n+'</option>';}).join('');locSel.value=lv;}
   var sel=document.getElementById('fs-u');var cv=sel.value;
   sel.innerHTML='<option value="">Të gjithë users</option>';
   Object.entries(users).forEach(function(kv){sel.innerHTML+='<option value="'+kv[0]+'">'+kv[1]+'</option>'});
