@@ -931,8 +931,12 @@ create trigger on_auth_user_created
 
       <!-- Filtër -->
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
-        <input type="text" id="rp-locq" placeholder="Kërko kompani..." oninput="filterLocRep()"
-          style="padding:7px 10px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;width:180px">
+        <select id="rp-loccomp" onchange="filterLocRep()"
+          style="padding:7px 9px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;min-width:160px">
+          <option value="">🏢 Të gjitha kompanitë</option>
+        </select>
+        <input type="text" id="rp-locq" placeholder="Kërko degë..." oninput="filterLocRep()"
+          style="padding:7px 10px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;width:150px">
         <select id="rp-loccat" onchange="filterLocRep()"
           style="padding:7px 9px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
           <option value="">Të gjitha kategoritë</option>
@@ -968,7 +972,7 @@ create trigger on_auth_user_created
       <!-- Grafik top lokacione -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
         <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:18px">
-          <div style="font-size:13px;font-weight:600;margin-bottom:14px">Top 10 lokacionet (vizita)</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:14px">Top 10 kompanitë (vizita)</div>
           <div style="position:relative;height:220px"><canvas id="ch-lk"></canvas></div>
         </div>
         <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:18px">
@@ -1382,10 +1386,33 @@ create trigger on_auth_user_created
           </div>
           <!-- SUB-TAB 1: LISTA DEGËVE -->
           <div id="lksec1" style="display:none;flex:1;overflow-y:auto;padding:8px">
-            <div style="padding:6px 6px 10px;display:flex;gap:6px;flex-wrap:wrap">
-              <select id="lk-fcat" onchange="filterLocs()" style="padding:6px 8px;background:#07090f;border:1px solid #1c2740;border-radius:7px;color:#dce6f5;font-family:monospace;font-size:10px;outline:none;flex:1">
-                <option value="">Të gjitha kategoritë</option>
+            <!-- Filtra -->
+            <div style="display:flex;flex-direction:column;gap:6px;padding:0 0 10px">
+              <input type="text" id="lk-list-search" placeholder="🔍 Kërko kompani ose degë..."
+                oninput="filterLocs()"
+                style="padding:7px 10px;background:#07090f;border:1px solid #1c2740;border-radius:7px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;width:100%">
+              <div style="display:flex;gap:6px">
+                <select id="lk-fcomp" onchange="filterLocs()"
+                  style="padding:6px 8px;background:#07090f;border:1px solid #1c2740;border-radius:7px;color:#dce6f5;font-family:monospace;font-size:10px;outline:none;flex:1">
+                  <option value="">Të gjitha kompanitë</option>
+                </select>
+                <select id="lk-fcat" onchange="filterLocs()"
+                  style="padding:6px 8px;background:#07090f;border:1px solid #1c2740;border-radius:7px;color:#dce6f5;font-family:monospace;font-size:10px;outline:none;flex:1">
+                  <option value="">Të gjitha kategoritë</option>
+                </select>
+              </div>
+              <select id="lk-fql" onchange="filterLocs()"
+                style="padding:6px 8px;background:#07090f;border:1px solid #1c2740;border-radius:7px;color:#dce6f5;font-family:monospace;font-size:10px;outline:none;width:100%">
+                <option value="">Të gjitha qëllimet e vëzhgimit</option>
+                <option>Inspektim urban</option>
+                <option>Monitorim mjedisi</option>
+                <option>Infrastrukturë rrugore</option>
+                <option>Kadastër / Pronë</option>
+                <option>Pyje dhe bimësi</option>
+                <option>Ujëra dhe liqene</option>
+                <option>Tjetër</option>
               </select>
+              <div id="lk-list-stats" style="font-family:monospace;font-size:10px;color:#3d5275;padding:2px 0"></div>
             </div>
             <div id="lk-list"></div>
           </div>
@@ -2881,10 +2908,12 @@ async function loadLocRep(){
 function filterLocRep(){
   var q=(document.getElementById('rp-locq')||{value:''}).value.toLowerCase();
   var cat=(document.getElementById('rp-loccat')||{value:''}).value;
+  var fcomp=(document.getElementById('rp-loccomp')||{value:''}).value;
   var sort=(document.getElementById('rp-locsort')||{value:'visits'}).value;
 
   var filtered=_locRepData.filter(function(l){
     if(cat&&l.category!==cat)return false;
+    if(fcomp&&String(l.company_id)!==fcomp)return false;
     if(q){
       var searchStr=(l.company_name&&l.company_name!=='—'?l.company_name+' ':'')+l.name;
       if(!searchStr.toLowerCase().includes(q))return false;
@@ -2900,6 +2929,16 @@ function filterLocRep(){
 }
 
 function renderLocRep(){
+  // Popullo dropdown kompanish
+  var compSel=document.getElementById('rp-loccomp');
+  if(compSel&&allCompanies.length){
+    var curComp=compSel.value;
+    compSel.innerHTML='<option value="">🏢 Të gjitha kompanitë</option>'+
+      allCompanies.map(function(c){
+        return'<option value="'+c.id+'">'+c.name+(c.category?' · '+c.category:'')+'</option>';
+      }).join('');
+    compSel.value=curComp;
+  }
   // Popullo kategorifiltrin
   var cats={};
   _locRepData.forEach(function(l){if(l.category&&l.category!=='—')cats[l.category]=1;});
@@ -3589,6 +3628,7 @@ var lkMarkers=null;
 var editLocId=null;
 var lkmMap=null;
 var lkmMarker=null;
+var _locSurveyData=null; // {location_id: [records]}
 
 async function loadLocs(){
   if(!SB)return;
@@ -3609,53 +3649,135 @@ async function loadLocs(){
   var compSel=document.getElementById('lkm-company');
   if(compSel){var cv2=compSel.value;compSel.innerHTML='<option value="">— Pa kompani —</option>'+allCompanies.map(function(c){return'<option value="'+c.id+'">'+c.name+'</option>';}).join('');compSel.value=cv2;}
   filterLocs();renderHierarchy();populateSvCompanyDropdown();
+  // Popullo dropdown kompanish në lksec1
+  var fcomp=document.getElementById('lk-fcomp');
+  if(fcomp){
+    fcomp.innerHTML='<option value="">Të gjitha kompanitë</option>'+
+      allCompanies.map(function(c){return'<option value="'+c.id+'">'+c.name+'</option>';}).join('');
+  }
+  // Ngarko survey data per filtrin e qëllimit
+  loadLocSurveyData();
 }
 
 function filterLocs(){
   var q=(document.getElementById('lk-search')||{value:''}).value.toLowerCase();
+  var qs=(document.getElementById('lk-list-search')||{value:''}).value.toLowerCase();
   var cat=(document.getElementById('lk-fcat')||{value:''}).value;
+  var fcomp=(document.getElementById('lk-fcomp')||{value:''}).value;
+  var fql=(document.getElementById('lk-fql')||{value:''}).value;
+  var searchQ=q||qs;
+
   filteredLocs=allLocs.filter(function(l){
     if(cat&&l.category!==cat)return false;
-    if(q&&!(l.name+' '+(l.address||'')+' '+(l.category||'')).toLowerCase().includes(q))return false;
+    if(fcomp&&String(l.company_id)!==fcomp)return false;
+    if(searchQ){
+      var comp=l.company_id?allCompanies.find(function(c){return c.id===l.company_id;}):null;
+      var compName=comp?comp.name:'';
+      if(!(l.name+' '+compName+' '+(l.address||'')+' '+(l.category||'')).toLowerCase().includes(searchQ))return false;
+    }
+    // Filtro sipas qëllimit — kërko survey records
+    if(fql&&_locSurveyData){
+      var hasSurvey=(_locSurveyData[l.id]||[]).some(function(r){return r.qellim===fql;});
+      if(!hasSurvey)return false;
+    }
     return true;
   });
   renderLocList();renderLocMapMarkers();
   document.getElementById('lk-cnt')&&(document.getElementById('lk-cnt').textContent=filteredLocs.length);
+  var stats=document.getElementById('lk-list-stats');
+  if(stats)stats.textContent=filteredLocs.length+' degë/lokacione nga '+allLocs.length;
 }
 
 function renderLocList(){
   var el=document.getElementById('lk-list');if(!el)return;
-  if(!filteredLocs.length){el.innerHTML='<div style="text-align:center;padding:30px 10px;color:#3d5275;font-family:monospace;font-size:11px">Asnjë lokacion</div>';return;}
+  if(!filteredLocs.length){
+    el.innerHTML='<div style="text-align:center;padding:30px 10px;color:#3d5275;font-family:monospace;font-size:11px">Asnjë lokacion i gjetur</div>';
+    return;
+  }
   var sColors={aktiv:'#05d9a0',ne_ndertim:'#ffaa2e',i_mbyllur:'#8da0bb',ne_investigim:'#2d8bff'};
   el.innerHTML='';
+
   filteredLocs.forEach(function(l){
+    var comp=l.company_id?allCompanies.find(function(c){return c.id===l.company_id;}):null;
+    var surveys=_locSurveyData?(_locSurveyData[l.id]||[]):[];
+    var visitCount=surveys.length;
+    var lastVisit=surveys.reduce(function(m,r){return(!m||r.rec_date>m)?r.rec_date:m;},null);
+    // Qëllimet unike
+    var qmap={};surveys.forEach(function(r){if(r.qellim)qmap[r.qellim]=(qmap[r.qellim]||0)+1;});
+    var topQ=Object.keys(qmap).sort(function(a,b){return qmap[b]-qmap[a];})[0]||null;
+
     var card=document.createElement('div');
-    card.style.cssText='padding:10px 12px;border:1px solid #1c2740;border-radius:8px;margin-bottom:6px;background:#07090f;cursor:pointer;transition:border-color .15s';
-    card.onmouseenter=function(){this.style.borderColor='#05d9a0';};card.onmouseleave=function(){this.style.borderColor='#1c2740';};
+    card.style.cssText='padding:12px 14px;border:1px solid #1c2740;border-radius:10px;margin-bottom:8px;background:#07090f;cursor:pointer;transition:border-color .15s,box-shadow .15s';
+    card.onmouseenter=function(){this.style.borderColor='#05d9a0';this.style.boxShadow='0 2px 8px rgba(5,217,160,.1)';};
+    card.onmouseleave=function(){this.style.borderColor='#1c2740';this.style.boxShadow='none';};
     card.onclick=function(){zoomToLoc(l.id);};
-    var top=document.createElement('div');top.style.cssText='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px';
-    var nm=document.createElement('div');nm.style.cssText='font-size:12px;font-weight:600;flex:1;margin-right:8px;color:#dce6f5';nm.textContent=l.name;top.appendChild(nm);
-    var btns=document.createElement('div');btns.style.cssText='display:flex;gap:4px;flex-shrink:0';
-    var eB=document.createElement('button');eB.style.cssText='padding:3px 7px;background:#18202e;border:1px solid #253352;border-radius:4px;color:#8da0bb;font-size:10px;cursor:pointer';eB.textContent='✏️';eB.onclick=function(e){e.stopPropagation();openLocModal(l.id);};btns.appendChild(eB);
-    var dB=document.createElement('button');dB.style.cssText='padding:3px 7px;background:transparent;border:1px solid transparent;border-radius:4px;color:#3d5275;font-size:10px;cursor:pointer';dB.textContent='🗑️';dB.onmouseenter=function(){this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d';};dB.onmouseleave=function(){this.style.borderColor='transparent';this.style.color='#3d5275';};dB.onclick=function(e){e.stopPropagation();deleteLoc(l.id);};btns.appendChild(dB);
-    top.appendChild(btns);card.appendChild(top);
-    if(l.category){var c2=document.createElement('div');c2.style.cssText='font-size:10px;color:#2d8bff;font-family:monospace;margin-bottom:3px';c2.textContent=l.category;card.appendChild(c2);}
-    if(l.address){var a2=document.createElement('div');a2.style.cssText='font-size:10px;color:#3d5275;margin-bottom:3px';a2.textContent='📍 '+l.address;card.appendChild(a2);}
-    var st=document.createElement('div');st.style.cssText='font-size:10px;font-family:monospace;margin-top:4px;color:'+(sColors[l.status]||'#8da0bb');st.textContent='● '+(l.status||'aktiv');card.appendChild(st);
+
+    // Header: Kompania > Dega
+    var hdr=document.createElement('div');
+    hdr.style.cssText='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px';
+
+    var nameDiv=document.createElement('div');nameDiv.style.cssText='flex:1;min-width:0';
+    if(comp){
+      var compEl=document.createElement('div');
+      compEl.style.cssText='font-size:10px;color:#2d8bff;font-family:monospace;margin-bottom:2px';
+      compEl.textContent='🏢 '+comp.name;
+      nameDiv.appendChild(compEl);
+    }
+    var nameEl=document.createElement('div');
+    nameEl.style.cssText='font-size:13px;font-weight:600;color:#dce6f5';
+    nameEl.textContent=(comp?'  › ':'')+l.name;
+    nameDiv.appendChild(nameEl);
+
+    var btns=document.createElement('div');btns.style.cssText='display:flex;gap:3px;flex-shrink:0;margin-left:8px';
+    var survBtn=document.createElement('button');
+    survBtn.style.cssText='padding:3px 7px;background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);border-radius:4px;color:#05d9a0;font-size:10px;cursor:pointer;font-family:monospace';
+    survBtn.textContent='▶';survBtn.title='Shto survey';
+    survBtn.onclick=function(e){e.stopPropagation();useLoc(l.id);};btns.appendChild(survBtn);
+    var eB=document.createElement('button');
+    eB.style.cssText='padding:3px 7px;background:#18202e;border:1px solid #253352;border-radius:4px;color:#8da0bb;font-size:10px;cursor:pointer';
+    eB.textContent='✏️';eB.onclick=function(e){e.stopPropagation();openLocModal(l.id);};btns.appendChild(eB);
+    var dB=document.createElement('button');
+    dB.style.cssText='padding:3px 7px;background:transparent;border:1px solid transparent;border-radius:4px;color:#3d5275;font-size:10px;cursor:pointer';
+    dB.textContent='🗑️';dB.onmouseenter=function(){this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d';};
+    dB.onmouseleave=function(){this.style.borderColor='transparent';this.style.color='#3d5275';};
+    dB.onclick=function(e){e.stopPropagation();deleteLoc(l.id);};btns.appendChild(dB);
+
+    hdr.appendChild(nameDiv);hdr.appendChild(btns);card.appendChild(hdr);
+
+    // Info row: adresë, kategori, status
+    if(l.address){
+      var aEl=document.createElement('div');
+      aEl.style.cssText='font-size:10px;color:#3d5275;margin-bottom:6px';
+      aEl.textContent='📍 '+l.address;card.appendChild(aEl);
+    }
+
+    // Stats row: vizita, qëllimi kryesor, data e fundit
+    var statsRow=document.createElement('div');
+    statsRow.style.cssText='display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px;padding-top:6px;border-top:1px solid #1c2740';
+
+    var stEl=document.createElement('span');
+    stEl.style.cssText='font-size:10px;font-family:monospace;color:'+(sColors[l.status]||'#8da0bb');
+    stEl.textContent='● '+(l.status||'aktiv');statsRow.appendChild(stEl);
+
+    var vEl=document.createElement('span');
+    vEl.style.cssText='font-size:10px;font-family:monospace;color:'+(visitCount>0?'#05d9a0':'#3d5275');
+    vEl.textContent='📋 '+visitCount+' vizitë';statsRow.appendChild(vEl);
+
+    if(topQ){
+      var qEl=document.createElement('span');
+      qEl.style.cssText='font-size:10px;font-family:monospace;color:#2d8bff;background:rgba(45,139,255,.1);padding:1px 6px;border-radius:4px';
+      qEl.textContent=topQ;statsRow.appendChild(qEl);
+    }
+    if(lastVisit){
+      var lvEl=document.createElement('span');
+      lvEl.style.cssText='font-size:10px;font-family:monospace;color:#8da0bb;margin-left:auto';
+      lvEl.textContent='🗓 '+lastVisit;statsRow.appendChild(lvEl);
+    }
+    card.appendChild(statsRow);
     el.appendChild(card);
   });
 }
 
-function openLkMapModal(){
-  document.getElementById('lk-map-modal').classList.remove('hidden');
-  initLkMap();
-  setTimeout(function(){if(lkMap)lkMap.invalidateSize();},300);
-}
-function closeLkMapModal(){
-  document.getElementById('lk-map-modal').classList.add('hidden');
-}
-function positionLkMap(){if(lkMap)lkMap.invalidateSize();}
-function hideLkMap(){}
 function initLkMap(){
   setTimeout(function(){
     positionLkMap();
