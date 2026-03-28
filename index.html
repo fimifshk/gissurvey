@@ -2138,10 +2138,8 @@ var _dpCarIdx=0;
 var _dpStar=0;
 
 async function openRecById(id, trEl){
-  console.log('openRecById called with id:', id, 'allRecs count:', allRecs.length);
   // Kërko fillimisht në allRecs
   var rec = allRecs.find(function(r){ return String(r.id)===String(id); });
-  console.log('rec found in allRecs:', rec ? 'YES' : 'NO');
   if(!rec && SB){
     // Kërko direkt nga DB
     var{data,error}=await SB.from('survey_records')
@@ -2170,7 +2168,6 @@ async function openRecById(id, trEl){
 }
 
 function openPanel(b64){
-  console.log('openPanel called');
   var rec;
   try{rec=JSON.parse(decodeURIComponent(escape(atob(b64))));}
   catch(e){toast('err','Gabim panel');return;}
@@ -2248,8 +2245,7 @@ function openPanel(b64){
   try{if(rec.doc_urls)docPaths=JSON.parse(rec.doc_urls);}catch(e){}
   // Hap panelin - JS direct style
   var dpEl=document.getElementById('dpanel');
-  console.log('dpanel classList before:', dpEl.className);
-  if(dpEl){dpEl.classList.add('open');console.log('dpanel classList after:', dpEl.className);var db=document.getElementById('dp-body');if(db)db.scrollTop=0;}
+  if(dpEl){dpEl.classList.add('open');dpEl.style.right='0';var db=document.getElementById('dp-body');if(db)db.scrollTop=0;}
   var ovEl=document.getElementById('dp-overlay');
   if(ovEl)ovEl.style.display='block';
 
@@ -4337,7 +4333,7 @@ function openCompModal(id){
 function closeDp(){
   var dp=document.getElementById('dpanel');
   var ov=document.getElementById('dp-overlay');
-  if(dp)dp.classList.remove('open');
+  if(dp){dp.classList.remove('open');dp.style.right='-560px';}
   if(ov)ov.style.display='none';
   if(_dpMapObj){try{_dpMapObj.remove();}catch(e){}; _dpMapObj=null;}
   _dpRec=null;
