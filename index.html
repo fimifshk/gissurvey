@@ -92,7 +92,7 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 /* ── APP SHELL ── */
 #app{display:none;flex-direction:column;height:100vh}
 #app.on{display:flex}
-.topbar{height:52px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;z-index:9000;overflow-x:auto;position:relative}
+.topbar{height:52px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;z-index:9000;overflow-x:auto;position:relative;isolation:isolate}
 .logo{font-family:var(--mono);font-size:13px;color:var(--acc);letter-spacing:.1em;margin-right:4px}
 .logo span{color:var(--txt3)}
 .nav{display:flex;gap:2px}
@@ -109,8 +109,8 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 .ava{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--mono);flex-shrink:0}
 .uname{font-size:12px;font-weight:600}
 .urole{font-size:10px;color:var(--txt2);font-family:var(--mono)}
-.pages{flex:1;overflow:hidden;position:relative;z-index:1}
-.page{position:absolute;inset:0;display:none;overflow:hidden}.page#page-rp{overflow:visible}
+.pages{flex:1;overflow:hidden;position:relative;z-index:1;contain:strict}
+.page{position:absolute;inset:0;display:none;overflow:hidden;isolation:isolate}.page#page-rp{overflow:visible}
 .page.on{display:flex}
 
 /* ── SURVEY LAYOUT ── */
@@ -222,8 +222,16 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 .cmp-diff.up{color:var(--acc)}.cmp-diff.dn{color:var(--err)}.cmp-diff.eq{color:var(--txt3)}
 .rpc-t{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
 #rmap{height:270px;border-radius:8px;overflow:hidden}
-#lk-map .leaflet-pane{z-index:1!important}
-#lk-map .leaflet-top,#lk-map .leaflet-bottom{z-index:2!important}
+.leaflet-pane{z-index:auto!important}
+.leaflet-map-pane{z-index:2!important}
+.leaflet-tile-pane{z-index:2!important}
+.leaflet-overlay-pane{z-index:4!important}
+.leaflet-shadow-pane{z-index:5!important}
+.leaflet-marker-pane{z-index:6!important}
+.leaflet-tooltip-pane{z-index:7!important}
+.leaflet-popup-pane{z-index:8!important}
+.leaflet-top,.leaflet-bottom{z-index:10!important}
+#app .leaflet-container{z-index:0}
 
 /* ── TASKS ── */
 .risk-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:10px;font-family:monospace;font-weight:600;border:1px solid}
