@@ -162,7 +162,7 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 .dl.warn{color:var(--warn)}
 
 /* ── RECORDS ── */
-.rpage{flex-direction:column;background:var(--bg);width:100%}
+.rpage{display:flex;flex-direction:column;background:var(--bg);width:100%;height:100%}
 .ph{padding:18px 22px 14px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--s1)}
 .ph-title{font-size:17px;font-weight:700}
 .ph-sub{font-size:11px;color:var(--txt2);font-family:var(--mono);margin-top:1px}
@@ -170,7 +170,7 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 .fbar input,.fbar select{padding:7px 9px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-family:var(--mono);font-size:11px;outline:none;transition:.2s}
 .fbar input:focus,.fbar select:focus{border-color:var(--acc);overflow:hidden}
 .fbar input[type=text]{width:180px}
-.tw{flex:1;overflow:auto;padding:14px 22px}
+.tw{flex:1;overflow:auto;padding:14px 22px;min-height:0}
 .rt{width:100%;border-collapse:collapse;font-size:12px}
 .rt th{text-align:left;padding:10px 11px;font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--b1);white-space:nowrap;position:sticky;top:0;background:var(--bg);z-index:1}
 .rt td{padding:9px 11px;border-bottom:1px solid var(--b1);vertical-align:middle}
@@ -1981,6 +1981,14 @@ var _dpDocs=[];
 var _dpCarIdx=0;
 var _dpStar=0;
 
+function openRecById(id, trEl){
+  // Gjej rekord nga allRecs (nuk ka probleme b64 encoding)
+  var rec = allRecs.find(function(r){ return String(r.id)===String(id); });
+  if(!rec){ toast('warn','Rekord i pa-gjetur'); return; }
+  var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(rec))));
+  openPanel(b64);
+}
+
 function openPanel(b64){
   var rec;
   try{rec=JSON.parse(decodeURIComponent(escape(atob(b64))));}
@@ -2807,8 +2815,8 @@ function renderRT(){
     var c=RCOL[r.user_role]||'#05d9a0';
     var offTag=r.synced===false?'<span class="badge warn" style="margin-left:4px;font-size:9px">offline</span>':'';
     var sid=String(r.id);var sidShort=sid.startsWith('OFF_')?sid.substring(4,18)+'…':sid;
-    var recB64=btoa(unescape(encodeURIComponent(JSON.stringify(r))));
-    return'<tr style="cursor:pointer" onclick="openPanel(\''+recB64+'\')" onmouseenter="this.style.background=\'#0d1119\'" onmouseleave="this.style.background=\'\'">' +
+    var recId=r.id;
+    return'<tr style="cursor:pointer" onclick="openRecById(\''+recId+'\',this)" onmouseenter="this.style.background=\'#0d1119\'" onmouseleave="this.style.background=\'\'">' +
       '<td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">#'+sidShort+'</td>' +
       '<td><div class="utag"><div class="mava" style="background:'+c+'22;color:'+c+'">'+ini+'</div>' +
         '<div><div style="font-size:12px;font-weight:500">'+nm+'</div>' +
@@ -2822,7 +2830,7 @@ function renderRT(){
       '<td>'+(r.synced===false?'<span class="badge warn">offline</span>':'<span class="badge ok">✓ DB</span>')+'</td>' +
       '<td><div style="display:flex;gap:3px">' +
       '<td><div style="display:flex;gap:3px">' +
-        '<div class="ibtn" onclick="openPanel(\''+recB64+'\')"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>' +
+        '<div class="ibtn" onclick="openRecById(\''+recId+'\',this)"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>' +
         (CP.role==='admin'?'<div class="ibtn red" onclick="delRec(\''+r.id+'\')" style="color:#ff4d6d"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></div>':'') +
       '</div></td></tr>';
   }).join('');
