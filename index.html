@@ -5194,7 +5194,6 @@ function expPDF(){
   w.document.write('<h2>Sipas Kategorisë</h2><table><thead><tr><th>Kategoria</th><th>Rekorde</th><th>%</th></tr></thead><tbody>'+catrows+'</tbody></table>');
   w.document.write('<h2>Sipas Përdoruesit</h2><table><thead><tr><th>Email</th><th>Rekorde</th></tr></thead><tbody>'+urows+'</tbody></table>');
   w.document.write('<br><button class="noprint" onclick="window.print()" style="padding:10px 20px;background:#05d9a0;border:none;border-radius:6px;cursor:pointer;font-size:14px">Printo / Ruaj PDF</button></body></html>');w.document.close();
-</body></html>';
   dl(full,'application/vnd.ms-excel;charset=utf-8;','survey_'+dt()+'.xls');
   toast('ok','Excel eksportuar ('+src.length+' rekorde)');
 }
