@@ -276,6 +276,7 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 
 /* ── DETAIL PANEL (djathtas) ── */
 .dpanel{position:fixed;top:0;right:-520px;width:500px;max-width:100vw;height:100vh;background:var(--s1);border-left:1px solid var(--b1);z-index:4000;display:flex;flex-direction:column;transition:right .3s ease;box-shadow:-4px 0 24px rgba(0,0,0,.4)}
+#dpanel.open,.dpanel.open{right:0!important}
 .dpanel#dpanel.open{right:0!important}
 .dpanel-hd{padding:18px 20px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .dpanel-title{font-size:15px;font-weight:700}
@@ -1890,9 +1891,9 @@ function startApp(){
   document.getElementById('nav-tk').classList.remove('hidden'); // Të gjithë shohin detyrat
   loadTasks(); // Ngarko detyrat + check njoftimet
   initBLL();offEvents();
-  loadLocs();loadRecs(false);testConn();initFStars();loadSvTaskUsers();
-  loadLocs(); // ngarko lokacionet dhe kompanitë
-  toast('ok','Mirë se vini, '+(CP.full_name||CP.email)+'!');
+  testConn();initFStars();loadSvTaskUsers();
+  testConn();initFStars();loadSvTaskUsers();
+  loadLocs().then(function(){loadRecs(false);populateSvCompanyDropdown();});
 }
 function updateTop(){
   var nm=CP.full_name||CP.email,role=CP.role||'field';
@@ -2037,6 +2038,7 @@ var _dpCarIdx=0;
 var _dpStar=0;
 
 async function openRecById(id, trEl){
+  console.log('openRecById called:', id, 'allRecs:', allRecs.length);
   // Kërko fillimisht në allRecs
   var rec = allRecs.find(function(r){ return String(r.id)===String(id); });
   if(!rec && SB){
