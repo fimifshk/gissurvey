@@ -2821,8 +2821,9 @@ function renderRT(){
       '<td><span class="badge '+(r.photo_count>0?'ok':'')+'">'+(r.photo_count||0)+'</span></td>' +
       '<td>'+(r.synced===false?'<span class="badge warn">offline</span>':'<span class="badge ok">✓ DB</span>')+'</td>' +
       '<td><div style="display:flex;gap:3px">' +
-        '<div class="ibtn" onclick="openPanel(\''+recB64+'\')">'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>' +
-        (CP.role==='admin'?'<div class="ibtn red" onclick="delRec(\''+r.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></div>':'')+
+      '<td><div style="display:flex;gap:3px">' +
+        '<div class="ibtn" onclick="openPanel(\''+recB64+'\')"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>' +
+        (CP.role==='admin'?'<div class="ibtn red" onclick="delRec(\''+r.id+'\')" style="color:#ff4d6d"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></div>':'') +
       '</div></td></tr>';
   }).join('');
 }
