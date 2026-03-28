@@ -3112,52 +3112,127 @@ function buildTaskCard(t){
   var card=document.createElement('div');
   card.className='task-card risk-'+rl.cls+'-border'+(isDone?' done':'');
 
-  // Deadline bar
-  var barPct=0, barColor='#05d9a0';
+  // Deadline progress bar %
+  var barPct=0,barColor='#05d9a0';
   if(t.deadline&&!isDone){
-    var created=new Date(t.created_at); var dl=new Date(t.deadline); var now=new Date();
-    var total=Math.max(1,(dl-created)/(1000*60*60*24));
-    var elapsed=(now-created)/(1000*60*60*24);
-    barPct=Math.min(100,Math.max(0,Math.round(elapsed/total*100)));
+    var created=new Date(t.created_at),dl=new Date(t.deadline),now=new Date();
+    var total=Math.max(1,(dl-created)/(864e5));
+    barPct=Math.min(100,Math.max(0,Math.round((now-created)/(864e5)/total*100)));
     barColor=t.risk_level==='kritik'?'#ff4d6d':t.risk_level==='i_larte'?'#ffaa2e':t.risk_level==='mesem'?'#2d8bff':'#05d9a0';
   }
 
   // Days label
-  var daysLbl='';
+  var daysEl=document.createElement('span');
+  daysEl.style.fontFamily='monospace';daysEl.style.fontSize='10px';
   if(!isDone&&t.deadline){
-    if(t.days_remaining<0) daysLbl='<span style="color:#ff4d6d;font-weight:700">⚠️ '+Math.abs(t.days_remaining)+' ditë vonesë</span>';
-    else if(t.days_remaining===0) daysLbl='<span style="color:#ff4d6d;font-weight:700">🚨 Skadon SOT!</span>';
-    else if(t.days_remaining<=3) daysLbl='<span style="color:#ffaa2e">⏰ '+t.days_remaining+' ditë</span>';
-    else daysLbl='<span style="color:#8da0bb">'+t.days_remaining+' ditë mbetur</span>';
+    if(t.days_remaining<0){daysEl.style.color='#ff4d6d';daysEl.style.fontWeight='700';daysEl.textContent='⚠️ '+Math.abs(t.days_remaining)+' ditë vonesë';}
+    else if(t.days_remaining===0){daysEl.style.color='#ff4d6d';daysEl.style.fontWeight='700';daysEl.textContent='🚨 Skadon SOT!';}
+    else if(t.days_remaining<=3){daysEl.style.color='#ffaa2e';daysEl.textContent='⏰ '+t.days_remaining+' ditë';}
+    else{daysEl.style.color='#8da0bb';daysEl.textContent=t.days_remaining+' ditë mbetur';}
   }
 
   var compLoc=t.company_name?(t.company_name+(t.location_name?' › '+t.location_name:'')):t.location_name||'';
 
-  card.innerHTML=
-    '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">'+
-      '<div style="flex:1;min-width:0">'+
-        '<div style="font-size:13px;font-weight:600;color:#dce6f5;margin-bottom:4px">'+(isDone?'<s>':'')+t.title+(isDone?'</s>':'')+'</div>'+
-        (compLoc?'<div style="font-size:10px;color:#2d8bff;font-family:monospace;margin-bottom:3px">🏢 '+compLoc+'</div>':'')+
-        (t.description?'<div style="font-size:11px;color:#8da0bb;margin-bottom:4px;line-height:1.5">'+t.description.substring(0,120)+(t.description.length>120?'…':'')+'</div>':'')+
-      '</div>'+
-      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">'+
-        '<span class="risk-badge risk-'+rl.cls+'">'+rl.emoji+' '+rl.label+'</span>'+
-        '<span style="font-size:10px;color:#3d5275;font-family:monospace">'+(STATUS_LABELS[t.status]||t.status)+'</span>'+
-      '</div>'+
-    '</div>'+
-    '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">'+
-      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'+
-        (t.deadline?'<span style="font-family:monospace;font-size:10px;color:#8da0bb">📅 '+t.deadline+'</span>':'<span style="font-family:monospace;font-size:10px;color:#3d5275">Pa afat</span>')+
-        daysLbl+
-        '<span style="font-family:monospace;font-size:10px;color:#3d5275">👤 '+t.assigned_name+'</span>'+
-      '</div>'+
-      '<div style="display:flex;gap:4px">'+
-        (!isDone?'<button onclick="quickComplete('+t.id+')" style="padding:3px 8px;background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);border-radius:5px;color:#05d9a0;font-size:10px;cursor:pointer;font-family:monospace">✓ Kryej</button>':'')+
-        '<button onclick="openTaskModal('+t.id+')" style="padding:3px 8px;background:#18202e;border:1px solid #253352;border-radius:5px;color:#8da0bb;font-size:10px;cursor:pointer">✏️</button>'+
-        '<button onclick="deleteTask('+t.id+')" style="padding:3px 8px;background:transparent;border:1px solid transparent;border-radius:5px;color:#3d5275;font-size:10px;cursor:pointer" onmouseenter="this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d'" onmouseleave="this.style.borderColor='transparent';this.style.color='#3d5275'">🗑️</button>'+
-      '</div>'+
-    '</div>'+
-    (t.deadline&&!isDone?'<div class="deadline-bar"><div class="deadline-fill" style="width:'+barPct+'%;background:'+barColor+'"></div></div>':'');
+  // ── TOP ROW ──
+  var topRow=document.createElement('div');
+  topRow.style.cssText='display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px';
+
+  var leftDiv=document.createElement('div');
+  leftDiv.style.cssText='flex:1;min-width:0';
+
+  var titleEl=document.createElement('div');
+  titleEl.style.cssText='font-size:13px;font-weight:600;color:#dce6f5;margin-bottom:4px';
+  titleEl.innerHTML=isDone?'<s>'+t.title+'</s>':t.title;
+  leftDiv.appendChild(titleEl);
+
+  if(compLoc){
+    var compEl=document.createElement('div');
+    compEl.style.cssText='font-size:10px;color:#2d8bff;font-family:monospace;margin-bottom:3px';
+    compEl.textContent='🏢 '+compLoc;
+    leftDiv.appendChild(compEl);
+  }
+  if(t.description){
+    var descEl=document.createElement('div');
+    descEl.style.cssText='font-size:11px;color:#8da0bb;margin-bottom:4px;line-height:1.5';
+    descEl.textContent=t.description.substring(0,120)+(t.description.length>120?'…':'');
+    leftDiv.appendChild(descEl);
+  }
+
+  var rightDiv=document.createElement('div');
+  rightDiv.style.cssText='display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0';
+
+  var riskBadge=document.createElement('span');
+  riskBadge.className='risk-badge risk-'+rl.cls;
+  riskBadge.textContent=rl.emoji+' '+rl.label;
+  rightDiv.appendChild(riskBadge);
+
+  var statusEl=document.createElement('span');
+  statusEl.style.cssText='font-size:10px;color:#3d5275;font-family:monospace';
+  statusEl.textContent=STATUS_LABELS[t.status]||t.status;
+  rightDiv.appendChild(statusEl);
+
+  topRow.appendChild(leftDiv);
+  topRow.appendChild(rightDiv);
+  card.appendChild(topRow);
+
+  // ── BOTTOM ROW ──
+  var botRow=document.createElement('div');
+  botRow.style.cssText='display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px';
+
+  var metaDiv=document.createElement('div');
+  metaDiv.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap';
+
+  var dlEl=document.createElement('span');
+  dlEl.style.cssText='font-family:monospace;font-size:10px;color:'+(t.deadline?'#8da0bb':'#3d5275');
+  dlEl.textContent=t.deadline?'📅 '+t.deadline:'Pa afat';
+  metaDiv.appendChild(dlEl);
+  if(daysEl.textContent) metaDiv.appendChild(daysEl);
+
+  var asEl=document.createElement('span');
+  asEl.style.cssText='font-family:monospace;font-size:10px;color:#3d5275';
+  asEl.textContent='👤 '+t.assigned_name;
+  metaDiv.appendChild(asEl);
+
+  var btnsDiv=document.createElement('div');
+  btnsDiv.style.cssText='display:flex;gap:4px';
+
+  if(!isDone){
+    var doneBtn=document.createElement('button');
+    doneBtn.style.cssText='padding:3px 8px;background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);border-radius:5px;color:#05d9a0;font-size:10px;cursor:pointer;font-family:monospace';
+    doneBtn.textContent='✓ Kryej';
+    doneBtn.onclick=function(){quickComplete(t.id);};
+    btnsDiv.appendChild(doneBtn);
+  }
+
+  var editBtn=document.createElement('button');
+  editBtn.style.cssText='padding:3px 8px;background:#18202e;border:1px solid #253352;border-radius:5px;color:#8da0bb;font-size:10px;cursor:pointer';
+  editBtn.textContent='✏️';
+  editBtn.onclick=function(){openTaskModal(t.id);};
+  btnsDiv.appendChild(editBtn);
+
+  var delBtn=document.createElement('button');
+  delBtn.style.cssText='padding:3px 8px;background:transparent;border:1px solid transparent;border-radius:5px;color:#3d5275;font-size:10px;cursor:pointer';
+  delBtn.textContent='🗑️';
+  delBtn.onmouseenter=function(){this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d';};
+  delBtn.onmouseleave=function(){this.style.borderColor='transparent';this.style.color='#3d5275';};
+  delBtn.onclick=function(){deleteTask(t.id);};
+  btnsDiv.appendChild(delBtn);
+
+  botRow.appendChild(metaDiv);
+  botRow.appendChild(btnsDiv);
+  card.appendChild(botRow);
+
+  // ── PROGRESS BAR ──
+  if(t.deadline&&!isDone){
+    var barWrap=document.createElement('div');
+    barWrap.className='deadline-bar';
+    var barFill=document.createElement('div');
+    barFill.className='deadline-fill';
+    barFill.style.width=barPct+'%';
+    barFill.style.background=barColor;
+    barWrap.appendChild(barFill);
+    card.appendChild(barWrap);
+  }
 
   return card;
 }
@@ -3179,20 +3254,12 @@ function openTaskModal(id){
   document.getElementById('tkm-priority').value=t?t.priority:'mesem';
   document.getElementById('tkm-status').value=t?t.status:'hapur';
   document.getElementById('tkm-notes').value=t?t.notes||'':'';
-
-  // Popullo dropdowns
   var compSel=document.getElementById('tkm-company');
   compSel.innerHTML='<option value="">— Zgjidh kompaninë —</option>'+
     allCompanies.map(function(c){return'<option value="'+c.id+'"'+(t&&t.company_id===c.id?' selected':'')+'>'+c.name+'</option>';}).join('');
-
-  // Ngarko assigned users
   loadProfilesForTask(t?t.assigned_to:null);
-
-  // Ngarko degët
   if(t&&t.company_id) onTkmCompanyChange(t.company_id,t.location_id);
-  else onTkmCompanyChange('');
-
-  // Update risk preview
+  else onTkmCompanyChange('',null);
   updateRiskPreview();
   document.getElementById('tkm-alert').classList.add('hidden');
   document.getElementById('task-modal').classList.remove('hidden');
@@ -3230,9 +3297,9 @@ function updateRiskPreview(){
   var dval=document.getElementById('tkm-days-val');
   if(prev)prev.innerHTML='<span class="risk-badge risk-'+rl.cls+'">'+rl.emoji+' '+rl.label+'</span>';
   if(dval){
-    if(dr===null) dval.textContent='';
-    else if(dr<0) dval.textContent='⚠️ '+Math.abs(dr)+' ditë vonesë!';
-    else if(dr===0) dval.textContent='🚨 Skadon sot!';
+    if(dr===null)dval.textContent='';
+    else if(dr<0)dval.textContent='⚠️ '+Math.abs(dr)+' ditë vonesë!';
+    else if(dr===0)dval.textContent='🚨 Skadon sot!';
     else dval.textContent='📅 '+dr+' ditë mbetur';
   }
 }
@@ -3269,7 +3336,7 @@ async function saveTask(){
 
 async function deleteTask(id){
   var t=allTasks.find(function(x){return x.id===id;});
-  if(!t||!confirm('Fshi detyrën "'+t.title+'"?')) return;
+  if(!t||!confirm('Fshi detyrën "'+t.title+'"?'))return;
   var{error}=await SB.from('tasks').delete().eq('id',id);
   if(error){toast('err','Gabim: '+error.message);return;}
   toast('ok','Detyra u fshi');
@@ -3277,922 +3344,3 @@ async function deleteTask(id){
 }
 
 function copyMobileLink(){
-  var u=ls('su'),k=ls('sk');
-  if(!u||!k){toast('warn','Konfiguro Supabase fillimisht');return;}
-  var link=window.location.origin+window.location.pathname+'?su='+encodeURIComponent(u)+'&sk='+encodeURIComponent(k);
-  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(link).then(function(){toast('ok','Link u kopjua! Ngjite në celular.');});}
-  else{var ta=document.createElement('textarea');ta.value=link;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('ok','Link u kopjua!');}
-}
-function showQR(){
-  var u=ls('su'),k=ls('sk');
-  if(!u||!k){toast('warn','Konfiguro Supabase fillimisht');return;}
-  var link=window.location.origin+window.location.pathname+'?su='+encodeURIComponent(u)+'&sk='+encodeURIComponent(k);
-  document.getElementById('qr-m').classList.remove('hidden');
-  var cv=document.getElementById('qr-cv');
-  cv.width=200;cv.height=200;
-  var ctx=cv.getContext('2d');ctx.clearRect(0,0,200,200);
-  if(typeof QRCode!=='undefined'){
-    var tmp=document.createElement('div');
-    new QRCode(tmp,{text:link,width:200,height:200,colorDark:'#07090f',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
-    setTimeout(function(){
-      var img=tmp.querySelector('img')||tmp.querySelector('canvas');
-      if(img){
-        if(img.tagName==='IMG'){
-          var i=new Image();i.onload=function(){ctx.drawImage(i,0,0,200,200);};i.src=img.src;
-        }else{ctx.drawImage(img,0,0,200,200);}
-      }
-    },100);
-  }else{
-    // Fallback: vizualizim manual QR i thjeshtë
-    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,200,200);
-    ctx.fillStyle='#07090f';ctx.font='10px monospace';ctx.textAlign='center';
-    ctx.fillText('QR nuk u ngarkua.',100,90);ctx.fillText('Përdorni "Kopjo link"',100,110);
-  }
-  log('ok','QR Code gjeneruar');
-}
-function expPDF(){
-  if(!_rpRecs.length){toast('warn','Nuk ka të dhëna');return;}
-  var w=window.open('','_blank');
-  var today=new Date().toLocaleDateString('sq-AL');
-  var qm={};_rpRecs.forEach(function(r){var q=r.qellim||'Pa kategori';qm[q]=(qm[q]||0)+1;});
-  var umap={};_rpRecs.forEach(function(r){var k=r.user_email||'?';umap[k]=(umap[k]||0)+1;});
-  var total=_rpRecs.length||1;
-  var catrows=Object.entries(qm).sort(function(a,b){return b[1]-a[1]}).map(function(e){return'<tr><td>'+e[0]+'</td><td style="text-align:center;font-weight:bold;color:#05d9a0">'+e[1]+'</td><td style="text-align:center">'+(e[1]/total*100).toFixed(1)+'%</td></tr>';}).join('');
-  var urows=Object.entries(umap).sort(function(a,b){return b[1]-a[1]}).map(function(e){return'<tr><td>'+e[0]+'</td><td style="text-align:center;font-weight:bold;color:#05d9a0">'+e[1]+'</td></tr>';}).join('');
-  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>GIS Survey — Raport</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#333}h1{color:#05d9a0;border-bottom:2px solid #05d9a0;padding-bottom:8px}h2{color:#2d8bff;margin-top:24px}table{width:100%;border-collapse:collapse;margin-top:10px}th{background:#1e2838;color:#fff;padding:8px 12px;text-align:left}td{padding:7px 12px;border-bottom:1px solid #eee}.kpi{display:inline-block;margin:8px;padding:14px 20px;background:#f5f5f5;border-radius:8px;text-align:center}.kpi-v{font-size:28px;font-weight:bold;color:#05d9a0}.kpi-l{font-size:11px;color:#666}@media print{.noprint{display:none}}</style></head><body>');
-  w.document.write('<h1>GIS Survey Pro — Raport</h1><p style="color:#666">Data: '+today+' | Rekorde: '+_rpRecs.length+'</p>');
-  w.document.write('<div><div class="kpi"><div class="kpi-l">REKORDE</div><div class="kpi-v">'+_rpRecs.length+'</div></div><div class="kpi"><div class="kpi-l">USERS</div><div class="kpi-v">'+Object.keys(umap).length+'</div></div><div class="kpi"><div class="kpi-l">KATEGORI</div><div class="kpi-v">'+Object.keys(qm).length+'</div></div></div>');
-  w.document.write('<h2>Sipas Kategorisë</h2><table><thead><tr><th>Kategoria</th><th>Rekorde</th><th>%</th></tr></thead><tbody>'+catrows+'</tbody></table>');
-  w.document.write('<h2>Sipas Përdoruesit</h2><table><thead><tr><th>Email</th><th>Rekorde</th></tr></thead><tbody>'+urows+'</tbody></table>');
-  w.document.write('<br><button class="noprint" onclick="window.print()" style="padding:10px 20px;background:#05d9a0;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨️ Printo / Ruaj PDF</button></body></html>');
-  w.document.close();toast('ok','PDF gati!');
-}
-/* ═══════════════════════════════════════
-   KOMPANITË & HIERARKIA
-═══════════════════════════════════════ */
-var allCompanies=[];
-var editCompId=null;
-
-async function loadCompanies(){
-  if(!SB)return;
-  var{data,error}=await SB.from('companies').select('*').order('name');
-  if(error){log('warn','loadCompanies: '+error.message);return;}
-  allCompanies=data||[];
-  // Popullo dropdown në modal lokacioni
-  var sel=document.getElementById('lkm-company');
-  if(sel){
-    var cur=sel.value;
-    sel.innerHTML='<option value="">— Pa kompani (lokacion i pavarur) —</option>'+
-      allCompanies.map(function(c){return'<option value="'+c.id+'">'+c.name+(c.category?' · '+c.category:'')+'</option>';}).join('');
-    sel.value=cur;
-  }
-  document.getElementById('lk-comp-cnt')&&(document.getElementById('lk-comp-cnt').textContent=allCompanies.length);
-}
-
-function onCompanyChange(){
-  var cid=document.getElementById('lkm-company').value;
-  if(!cid)return;
-  var comp=allCompanies.find(function(c){return c.id==cid;});
-  if(comp&&comp.category){
-    var catSel=document.getElementById('lkm-cat');
-    if(catSel)catSel.value=comp.category||'';
-  }
-}
-
-function openCompModal(id){
-  editCompId=id||null;
-  var c=id?allCompanies.find(function(x){return x.id===id;}):null;
-  document.getElementById('compm-title').textContent=c?'Edito: '+c.name:'Shto Kompani të Re';
-  document.getElementById('compm-name').value=c?c.name:'';
-  document.getElementById('compm-cat').value=c?c.category||'':'';
-  document.getElementById('compm-tel').value=c?c.phone||'':'';
-  document.getElementById('compm-email').value=c?c.email||'':'';
-  document.getElementById('compm-web').value=c?c.website||'':'';
-  document.getElementById('compm-notes').value=c?c.notes||'':'';
-  document.getElementById('compm-alert').classList.add('hidden');
-  document.getElementById('comp-modal').classList.remove('hidden');
-}
-function closeCompModal(){document.getElementById('comp-modal').classList.add('hidden');}
-
-async function saveComp(){
-  var name=document.getElementById('compm-name').value.trim();
-  if(!name){
-    var ae=document.getElementById('compm-alert');
-    ae.className='alert err';ae.textContent='Emri është i detyrueshëm!';ae.classList.remove('hidden');return;
-  }
-  var data={
-    name:name,
-    category:document.getElementById('compm-cat').value||null,
-    phone:document.getElementById('compm-tel').value||null,
-    email:document.getElementById('compm-email').value||null,
-    website:document.getElementById('compm-web').value||null,
-    notes:document.getElementById('compm-notes').value||null,
-    created_by:CU.id
-  };
-  var res=editCompId?
-    await SB.from('companies').update(data).eq('id',editCompId):
-    await SB.from('companies').insert(data);
-  if(res.error){
-    var ae=document.getElementById('compm-alert');
-    ae.className='alert err';ae.textContent='Gabim: '+res.error.message;ae.classList.remove('hidden');return;
-  }
-  toast('ok',editCompId?'Kompania u përditësua!':'Kompania u shtua!');
-  closeCompModal();
-  await loadCompanies();
-  await loadLocs();
-}
-
-async function deleteComp(id){
-  var c=allCompanies.find(function(x){return x.id===id;});
-  if(!c)return;
-  var branches=allLocs.filter(function(l){return l.company_id===id;});
-  var msg='Fshi kompaninë "'+c.name+'"?';
-  if(branches.length)msg+='
-⚠️ Ka '+branches.length+' degë/lokacione — do mbeten pa kompani.';
-  if(!confirm(msg))return;
-  var{error}=await SB.from('companies').delete().eq('id',id);
-  if(error){toast('err','Gabim: '+error.message);return;}
-  toast('ok','Kompania u fshi');
-  await loadCompanies();await loadLocs();
-}
-
-function lkSubTab(n){
-  [0,1].forEach(function(i){
-    var sec=document.getElementById('lksec'+i);
-    var btn=document.getElementById('lkst'+i);
-    if(sec)sec.style.display=i===n?'flex':'none';
-    if(btn){
-      btn.style.color=i===n?'#05d9a0':'#3d5275';
-      btn.style.borderBottomColor=i===n?'#05d9a0':'transparent';
-    }
-  });
-  if(n===0)renderHierarchy();
-  else renderLocList();
-}
-
-function renderHierarchy(){
-  var el=document.getElementById('lk-hierarchy');
-  if(!el)return;
-  var q=(document.getElementById('lk-search')||{value:''}).value.toLowerCase();
-
-  // Grupëzo lokacionet sipas company_id
-  var byComp={};
-  allLocs.forEach(function(l){
-    var cid=l.company_id||'__none__';
-    if(!byComp[cid])byComp[cid]=[];
-    byComp[cid].push(l);
-  });
-
-  el.innerHTML='';
-
-  // ── Kompanitë me degët e tyre ──
-  allCompanies.forEach(function(c){
-    if(q&&!c.name.toLowerCase().includes(q))return;
-    var branches=byComp[c.id]||[];
-
-    var wrap=document.createElement('div');
-    wrap.style.marginBottom='6px';
-
-    // Header kompanie
-    var hdr=document.createElement('div');
-    hdr.className='comp-header';
-    hdr.onclick=function(){
-      this.classList.toggle('open');
-      var br=wrap.querySelector('.branches');
-      if(br)br.classList.toggle('open');
-    };
-    hdr.innerHTML=
-      '<div class="comp-icon">🏢</div>'+
-      '<div class="comp-info">'+
-        '<div class="comp-name">'+c.name+'</div>'+
-        '<div class="comp-meta">'+(c.category||'')+(branches.length?' · '+branches.length+' degë':'· Pa degë')+'</div>'+
-      '</div>'+
-      '<div style="display:flex;gap:4px;align-items:center">'+
-        '<button onclick="event.stopPropagation();openLocModal(null,'+c.id+')" style="padding:2px 7px;background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);border-radius:4px;color:#05d9a0;font-size:10px;cursor:pointer;font-family:monospace">+Degë</button>'+
-        '<button onclick="event.stopPropagation();openCompModal('+c.id+')" style="padding:2px 7px;background:#18202e;border:1px solid #253352;border-radius:4px;color:#8da0bb;font-size:10px;cursor:pointer">✏️</button>'+
-        '<button onclick="event.stopPropagation();deleteComp('+c.id+')" style="padding:2px 7px;background:transparent;border:1px solid transparent;border-radius:4px;color:#3d5275;font-size:10px;cursor:pointer" onmouseenter="this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d'" onmouseleave="this.style.borderColor='transparent';this.style.color='#3d5275'">🗑️</button>'+
-        '<span class="comp-arrow">▶</span>'+
-      '</div>';
-    wrap.appendChild(hdr);
-
-    // Degët
-    var brDiv=document.createElement('div');
-    brDiv.className='branches';
-    if(branches.length){
-      branches.forEach(function(l){
-        var bi=document.createElement('div');
-        bi.className='branch-item';
-        bi.onclick=function(){zoomToLoc(l.id);};
-        bi.innerHTML=
-          '<div class="branch-dot"></div>'+
-          '<div class="branch-info">'+
-            '<div class="branch-name">'+l.name+'</div>'+
-            (l.address?'<div class="branch-addr">📍 '+l.address+'</div>':'')+
-          '</div>'+
-          '<div class="branch-btns">'+
-            '<button onclick="event.stopPropagation();useLoc('+l.id+')" style="padding:2px 7px;background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);border-radius:4px;color:#05d9a0;font-size:10px;cursor:pointer;font-family:monospace">▶</button>'+
-            '<button onclick="event.stopPropagation();openLocModal('+l.id+')" style="padding:2px 7px;background:#18202e;border:1px solid #253352;border-radius:4px;color:#8da0bb;font-size:10px;cursor:pointer">✏️</button>'+
-            '<button onclick="event.stopPropagation();deleteLoc('+l.id+')" style="padding:2px 7px;background:transparent;border:1px solid transparent;border-radius:4px;color:#3d5275;font-size:10px;cursor:pointer" onmouseenter="this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d'" onmouseleave="this.style.borderColor='transparent';this.style.color='#3d5275'">🗑️</button>'+
-          '</div>';
-        brDiv.appendChild(bi);
-      });
-    }else{
-      var empty=document.createElement('div');
-      empty.style.cssText='padding:10px 14px;font-family:monospace;font-size:11px;color:#3d5275;text-align:center';
-      empty.textContent='Pa degë — klikoni "+Degë" për të shtuar';
-      brDiv.appendChild(empty);
-    }
-    wrap.appendChild(brDiv);
-    el.appendChild(wrap);
-  });
-
-  // ── Lokacione pa kompani ──
-  var standalone=byComp['__none__']||[];
-  if(standalone.length){
-    var stWrap=document.createElement('div');
-    stWrap.style.marginBottom='6px';
-    var stHdr=document.createElement('div');
-    stHdr.className='comp-header';
-    stHdr.style.borderColor='#253352';
-    stHdr.onclick=function(){
-      this.classList.toggle('open');
-      stWrap.querySelector('.branches').classList.toggle('open');
-    };
-    stHdr.innerHTML=
-      '<div class="comp-icon" style="background:rgba(61,82,117,.2)">📍</div>'+
-      '<div class="comp-info">'+
-        '<div class="comp-name" style="color:#8da0bb">Lokacione të pavarura</div>'+
-        '<div class="comp-meta">'+standalone.length+' lokacione pa kompani</div>'+
-      '</div>'+
-      '<span class="comp-arrow" style="color:#3d5275">▶</span>';
-    stWrap.appendChild(stHdr);
-    var stBr=document.createElement('div');
-    stBr.className='branches';
-    stBr.style.borderColor='#253352';
-    standalone.forEach(function(l){
-      var bi=document.createElement('div');
-      bi.className='branch-item';
-      bi.onclick=function(){zoomToLoc(l.id);};
-      bi.innerHTML=
-        '<div class="branch-dot" style="background:#8da0bb"></div>'+
-        '<div class="branch-info">'+
-          '<div class="branch-name">'+l.name+'</div>'+
-          (l.address?'<div class="branch-addr">📍 '+l.address+'</div>':'')+
-        '</div>'+
-        '<div class="branch-btns">'+
-          '<button onclick="event.stopPropagation();useLoc('+l.id+')" style="padding:2px 7px;background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);border-radius:4px;color:#05d9a0;font-size:10px;cursor:pointer;font-family:monospace">▶</button>'+
-          '<button onclick="event.stopPropagation();openLocModal('+l.id+')" style="padding:2px 7px;background:#18202e;border:1px solid #253352;border-radius:4px;color:#8da0bb;font-size:10px;cursor:pointer">✏️</button>'+
-        '</div>';
-      stBr.appendChild(bi);
-    });
-    stWrap.appendChild(stBr);
-    el.appendChild(stWrap);
-  }
-
-  if(!allCompanies.length&&!standalone.length){
-    el.innerHTML='<div style="text-align:center;padding:40px 20px;color:#3d5275;font-family:monospace;font-size:12px">'+
-      'Asnjë kompani.<br><br>Klikoni <b>+ Kompani</b> për të filluar.</div>';
-  }
-}
-
-/* ═══════════════════════════════════════
-   LOKACIONET
-═══════════════════════════════════════ */
-var allLocs=[];
-var filteredLocs=[];
-var lkMap=null;
-var lkMarkers=null;
-var editLocId=null;
-var lkmMap=null;
-var lkmMarker=null;
-
-async function loadLocs(){
-  if(!SB)return;
-  // Ngarko kompanitë dhe lokacionet paralel
-  var[locsRes,compsRes]=await Promise.all([
-    SB.from('locations').select('*').order('name'),
-    SB.from('companies').select('*').order('name')
-  ]);
-  if(locsRes.error){
-    log('warn','loadLocs: '+locsRes.error.message+' (ekzekutoni locations_table.sql)');
-    return;
-  }
-  if(!compsRes.error)allCompanies=compsRes.data||[];
-  allLocs=locsRes.data||[];
-  log('ok','Ngarkuar '+allLocs.length+' lokacione');
-  document.getElementById('lk-sub').textContent=allLocs.length+' lokacione të regjistruara';
-
-  // Popullo filtrin e kategorive
-  var cats={};allLocs.forEach(function(l){if(l.category)cats[l.category]=1;});
-  var catSel=document.getElementById('lk-fcat');
-  var curVal=catSel.value;
-  catSel.innerHTML='<option value="">Të gjitha</option>'+
-    Object.keys(cats).sort().map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('');
-  catSel.value=curVal;
-
-  filterLocs();
-  renderHierarchy();
-  // Popullo company dropdown
-  var compSel=document.getElementById('lkm-company');
-  if(compSel){
-    var cv=compSel.value;
-    compSel.innerHTML='<option value="">— Pa kompani (lokacion i pavarur) —</option>'+
-      allCompanies.map(function(c){return'<option value="'+c.id+'">'+c.name+(c.category?' · '+c.category:'')+'</option>';}).join('');
-    compSel.value=cv;
-  }
-  initLkMap();
-}
-
-function filterLocs(){
-  var q=(document.getElementById('lk-search').value||'').toLowerCase();
-  var cat=document.getElementById('lk-fcat').value;
-  filteredLocs=allLocs.filter(function(l){
-    if(cat&&l.category!==cat)return false;
-    if(q){var s=(l.name+' '+(l.address||'')+' '+(l.category||'')).toLowerCase();if(!s.includes(q))return false;}
-    return true;
-  });
-  renderLocList();
-  renderLocMapMarkers();
-  document.getElementById('lk-cnt').textContent=filteredLocs.length;
-}
-
-function renderLocList(){
-  var el=document.getElementById('lk-list');
-  if(!filteredLocs.length){
-    el.innerHTML='';
-    var empty=document.createElement('div');
-    empty.style.cssText='text-align:center;padding:30px 10px;color:#3d5275;font-family:monospace;font-size:11px';
-    empty.textContent='Asnjë lokacion';
-    el.appendChild(empty);
-    return;
-  }
-  var sColors={aktiv:'#05d9a0',ne_ndertim:'#ffaa2e',i_mbyllur:'#8da0bb',ne_investigim:'#2d8bff'};
-  el.innerHTML='';
-  filteredLocs.forEach(function(l){
-    var card=document.createElement('div');
-    card.style.cssText='padding:10px 12px;border:1px solid #1c2740;border-radius:8px;margin-bottom:6px;background:#07090f;cursor:pointer;transition:border-color .15s';
-    card.onmouseenter=function(){this.style.borderColor='#05d9a0';};
-    card.onmouseleave=function(){this.style.borderColor='#1c2740';};
-    card.onclick=function(){zoomToLoc(l.id);};
-    var top=document.createElement('div');
-    top.style.cssText='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px';
-    var nameEl=document.createElement('div');
-    nameEl.style.cssText='font-size:12px;font-weight:600;flex:1;margin-right:8px;color:#dce6f5';
-    nameEl.textContent=l.name;
-    top.appendChild(nameEl);
-    var btns=document.createElement('div');
-    btns.style.cssText='display:flex;gap:4px;flex-shrink:0';
-    var eBtn=document.createElement('button');
-    eBtn.style.cssText='padding:3px 7px;background:#18202e;border:1px solid #253352;border-radius:4px;color:#8da0bb;font-size:10px;cursor:pointer';
-    eBtn.textContent='✏️';
-    eBtn.onclick=function(e){e.stopPropagation();openLocModal(l.id);};
-    btns.appendChild(eBtn);
-    var dBtn=document.createElement('button');
-    dBtn.style.cssText='padding:3px 7px;background:transparent;border:1px solid transparent;border-radius:4px;color:#3d5275;font-size:10px;cursor:pointer';
-    dBtn.textContent='🗑️';
-    dBtn.onmouseenter=function(){this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d';};
-    dBtn.onmouseleave=function(){this.style.borderColor='transparent';this.style.color='#3d5275';};
-    dBtn.onclick=function(e){e.stopPropagation();deleteLoc(l.id);};
-    btns.appendChild(dBtn);
-    top.appendChild(btns);
-    card.appendChild(top);
-    if(l.category){var c2=document.createElement('div');c2.style.cssText='font-size:10px;color:#2d8bff;font-family:monospace;margin-bottom:3px';c2.textContent=l.category;card.appendChild(c2);}
-    if(l.address){var a2=document.createElement('div');a2.style.cssText='font-size:10px;color:#3d5275;margin-bottom:3px';a2.textContent='📍 '+l.address;card.appendChild(a2);}
-    if(l.phone){var p2=document.createElement('div');p2.style.cssText='font-size:10px;color:#3d5275';p2.textContent='📞 '+l.phone;card.appendChild(p2);}
-    var st=document.createElement('div');
-    st.style.cssText='font-size:10px;font-family:monospace;margin-top:4px;color:'+(sColors[l.status]||'#8da0bb');
-    st.textContent='● '+(l.status||'aktiv');
-    card.appendChild(st);
-    el.appendChild(card);
-  });
-}
-
-function initLkmMap(){
-  // Inicializo hartën brenda modalit
-  setTimeout(function(){
-    if(lkmMap){lkmMap.invalidateSize();return;}
-    lkmMap=L.map('lkm-map',{zoomControl:true,attributionControl:false}).setView([41.3275,19.8187],10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20}).addTo(lkmMap);
-
-    // Marker i lëvizshëm
-    var mkIcon=L.divIcon({
-      className:'',
-      html:'<div style="width:20px;height:20px;background:#05d9a0;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.5);cursor:grab"></div>',
-      iconSize:[20,20],iconAnchor:[10,10]
-    });
-    lkmMarker=L.marker([41.3275,19.8187],{icon:mkIcon,draggable:true});
-    lkmMarker.addTo(lkmMap);
-
-    // Klik në hartë → zhvendos marker
-    lkmMap.on('click',function(e){
-      lkmMarker.setLatLng(e.latlng);
-      setLkmCoords(e.latlng.lat,e.latlng.lng);
-    });
-    // Drag marker
-    lkmMarker.on('dragend',function(){
-      var ll=lkmMarker.getLatLng();
-      setLkmCoords(ll.lat,ll.lng);
-    });
-  },150);
-}
-
-function setLkmCoords(lat,lng){
-  document.getElementById('lkm-lat').value=lat.toFixed(6);
-  document.getElementById('lkm-lng').value=lng.toFixed(6);
-  var disp=document.getElementById('lkm-coords-display');
-  if(disp){disp.style.display='block';disp.textContent=lat.toFixed(5)+', '+lng.toFixed(5);}
-}
-
-function lkmMapMove(){
-  // Kur user shkruan lat/lng manualisht → zhvendos marker
-  var lat=parseFloat(document.getElementById('lkm-lat').value);
-  var lng=parseFloat(document.getElementById('lkm-lng').value);
-  if(isNaN(lat)||isNaN(lng))return;
-  if(lat<-90||lat>90||lng<-180||lng>180)return;
-  if(lkmMap&&lkmMarker){
-    lkmMarker.setLatLng([lat,lng]);
-    lkmMap.setView([lat,lng],lkmMap.getZoom()<14?16:lkmMap.getZoom());
-    var disp=document.getElementById('lkm-coords-display');
-    if(disp){disp.style.display='block';disp.textContent=lat.toFixed(5)+', '+lng.toFixed(5);}
-  }
-}
-
-function initLkMap(){
-  setTimeout(function(){
-    if(!lkMap){
-      lkMap=L.map('lk-map',{zoomControl:true}).setView([41.15,20.17],8);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'©OSM',maxZoom:19}).addTo(lkMap);
-      lkMarkers=L.layerGroup().addTo(lkMap);
-      // Klik në hartë → vendos koordinata në modal
-      lkMap.on('click',function(e){
-        document.getElementById('lkm-lat').value=e.latlng.lat.toFixed(6);
-        document.getElementById('lkm-lng').value=e.latlng.lng.toFixed(6);
-        toast('info','Koordinatat u vendosën: '+e.latlng.lat.toFixed(4)+', '+e.latlng.lng.toFixed(4));
-      });
-    }
-    lkMap.invalidateSize();
-    renderLocMapMarkers();
-  },200);
-}
-
-function renderLocMapMarkers(){
-  if(!lkMarkers)return;
-  lkMarkers.clearLayers();
-  filteredLocs.forEach(function(l){
-    if(!l.lat||!l.lng)return;
-    var ic=L.divIcon({
-      className:'',
-      html:'<div style="width:12px;height:12px;background:var(--acc2);border:2px solid #07090f;border-radius:50%;box-shadow:0 0 0 3px rgba(45,139,255,.3)"></div>',
-      iconSize:[12,12],iconAnchor:[6,6]
-    });
-    var mk=L.marker([l.lat,l.lng],{icon:ic});
-    mk.bindPopup(
-      '<div style="font-family:var(--sans);min-width:180px">'+
-      '<div style="font-weight:600;margin-bottom:4px;color:var(--acc2)">'+l.name+'</div>'+
-      (l.category?'<div style="font-size:11px;color:#8da0bb;margin-bottom:4px">'+l.category+'</div>':'')+
-      (l.address?'<div style="font-size:11px;margin-bottom:6px">'+l.address+'</div>':'')+
-      '<button onclick="useLoc('+l.id+')" style="width:100%;padding:6px;background:var(--acc);border:none;border-radius:5px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer">▶ Shto survey këtu</button>'+
-      '</div>',
-      {maxWidth:220}
-    );
-    lkMarkers.addLayer(mk);
-  });
-}
-
-function zoomToLoc(id){
-  var l=allLocs.find(function(x){return x.id===id;});
-  if(!l||!l.lat||!l.lng)return;
-  if(lkMap){lkMap.setView([l.lat,l.lng],17);}
-}
-
-function useLoc(id){
-  var l=allLocs.find(function(x){return x.id===id;});
-  if(!l)return;
-  // Plotëso formularin Survey
-  goPg('sv');
-  document.getElementById('f-loc-id').value=l.id;
-  document.getElementById('f-loc-search').value=l.name;
-  var compLabel='';
-  if(l.company_id){var sc=allCompanies.find(function(x){return x.id===l.company_id;});if(sc)compLabel=sc.name+' › ';}
-  document.getElementById('f-loc-name').textContent=compLabel+l.name+(l.category?' · '+l.category:'');
-  document.getElementById('f-loc-sel').style.display='block';
-  if(l.address){document.getElementById('dp-adresa')&&(document.getElementById('dp-adresa').value=l.address);}
-  if(l.lat&&l.lng){
-    document.getElementById('f-lat').textContent=l.lat.toFixed(6);
-    document.getElementById('f-lng').textContent=l.lng.toFixed(6);
-    document.getElementById('f-acc').textContent='—';
-    if(leafMap){leafMap.setView([l.lat,l.lng],17);}
-  }
-  toast('ok','Lokacioni "'+l.name+'" u zgjodh!');
-}
-
-function searchLocs(q){
-  var dd=document.getElementById('f-loc-dd');
-  if(!q||q.length<1){dd.style.display='none';return;}
-  var ql=q.toLowerCase();
-  // Kërko edhe në emrin e kompanisë
-  var res=allLocs.filter(function(l){
-    var compName='';
-    if(l.company_id){var c=allCompanies.find(function(x){return x.id===l.company_id;});if(c)compName=c.name;}
-    return (l.name+' '+(l.address||'')+' '+(l.category||'')+' '+compName).toLowerCase().includes(ql);
-  }).slice(0,10);
-  if(!res.length){dd.style.display='none';return;}
-  dd.style.display='block';
-  dd.innerHTML='';
-  res.forEach(function(l){
-    var item=document.createElement('div');
-    item.style.cssText='padding:9px 12px;cursor:pointer;border-bottom:1px solid #1c2740;transition:background .1s';
-    item.onmouseenter=function(){this.style.background='#18202e';};
-    item.onmouseleave=function(){this.style.background='';};
-    item.onclick=function(){selectLoc(l.id);};
-    var compN='';if(l.company_id){var sc2=allCompanies.find(function(x){return x.id===l.company_id;});if(sc2)compN=sc2.name;}
-    var nm=document.createElement('div');nm.style.cssText='font-size:12px;font-weight:500;color:#dce6f5';
-    nm.textContent=(compN?compN+' › ':'')+l.name;item.appendChild(nm);
-    if(l.category||l.address){var sub=document.createElement('div');sub.style.cssText='font-size:10px;color:#3d5275;font-family:monospace';sub.textContent=(l.category||'')+(l.category&&l.address?' · ':'')+(l.address||'');item.appendChild(sub);}
-    dd.appendChild(item);
-  });
-}
-
-function selectLoc(id){
-  var l=allLocs.find(function(x){return x.id===id;});
-  if(!l)return;
-  document.getElementById('f-loc-search').value=l.name;
-  document.getElementById('f-loc-id').value=l.id;
-  document.getElementById('f-loc-name').textContent=l.name+(l.category?' · '+l.category:'');
-  document.getElementById('f-loc-sel').style.display='block';
-  document.getElementById('f-loc-dd').style.display='none';
-  if(l.lat&&l.lng){
-    document.getElementById('f-lat').textContent=l.lat.toFixed(6);
-    document.getElementById('f-lng').textContent=l.lng.toFixed(6);
-    document.getElementById('f-acc').textContent='Nga lokacioni';
-    if(leafMap)leafMap.setView([l.lat,l.lng],17);
-    toast('info','GPS nga lokacioni: '+l.name);
-  }
-}
-
-function clearLocSel(){
-  document.getElementById('f-loc-id').value='';
-  document.getElementById('f-loc-search').value='';
-  document.getElementById('f-loc-sel').style.display='none';
-}
-
-// Mbyll dropdown kur klikohet jashtë
-document.addEventListener('click',function(e){
-  var dd=document.getElementById('f-loc-dd');
-  if(dd&&!dd.contains(e.target)&&e.target.id!=='f-loc-search'){
-    dd.style.display='none';
-  }
-});
-
-function openLocModal(id,presetCompanyId){
-  editLocId=id||null;
-  var l=id?allLocs.find(function(x){return x.id===id;}):null;
-  document.getElementById('lkm-title').textContent=l?'Edito: '+l.name:'Shto Lokacion të Ri';
-  document.getElementById('lkm-name').value=l?l.name:'';
-  var compSel2=document.getElementById('lkm-company');
-  if(compSel2){compSel2.value=l?l.company_id||'':presetCompanyId||'';}
-  document.getElementById('lkm-cat').value=l?l.category||'':'';
-  document.getElementById('lkm-status').value=l?l.status||'aktiv':'aktiv';
-  document.getElementById('lkm-addr').value=l?l.address||'':'';
-  document.getElementById('lkm-lat').value=l?l.lat||'':'';
-  document.getElementById('lkm-lng').value=l?l.lng||'':'';
-  document.getElementById('lkm-tel').value=l?l.phone||'':'';
-  document.getElementById('lkm-email').value=l?l.email||'':'';
-  document.getElementById('lkm-notes').value=l?l.notes||'':'';
-  document.getElementById('lkm-alert').classList.add('hidden');
-  document.getElementById('lk-modal').classList.remove('hidden');
-  // Inicializo hartën e modalit
-  initLkmMap();
-  // Nëse ka koordinata, vendos marker-in
-  setTimeout(function(){
-    if(lkmMap&&lkmMarker){
-      var lat=parseFloat(document.getElementById('lkm-lat').value);
-      var lng=parseFloat(document.getElementById('lkm-lng').value);
-      if(!isNaN(lat)&&!isNaN(lng)){
-        lkmMarker.setLatLng([lat,lng]);
-        lkmMap.setView([lat,lng],16);
-        var disp=document.getElementById('lkm-coords-display');
-        if(disp){disp.style.display='block';disp.textContent=lat.toFixed(5)+', '+lng.toFixed(5);}
-      }else{
-        // Default: qendra e Shqipërisë
-        lkmMap.setView([41.3275,19.8187],8);
-        lkmMarker.setLatLng([41.3275,19.8187]);
-      }
-      lkmMap.invalidateSize();
-    }
-  },300);
-}
-function closeLkModal(){
-  document.getElementById('lk-modal').classList.add('hidden');
-  // Reset lkmMap për herën tjetër
-  if(lkmMap){lkmMap.remove();lkmMap=null;lkmMarker=null;}
-}
-
-async function saveLoc(){
-  var name=document.getElementById('lkm-name').value.trim();
-  if(!name){
-    var ae=document.getElementById('lkm-alert');ae.className='alert err';ae.textContent='Emri është i detyrueshëm!';ae.classList.remove('hidden');return;
-  }
-  var compId=parseInt(document.getElementById('lkm-company').value)||null;
-  var data={
-    name:name,
-    company_id:compId,
-    category:document.getElementById('lkm-cat').value||null,
-    status:document.getElementById('lkm-status').value||'aktiv',
-    address:document.getElementById('lkm-addr').value||null,
-    lat:parseFloat(document.getElementById('lkm-lat').value)||null,
-    lng:parseFloat(document.getElementById('lkm-lng').value)||null,
-    phone:document.getElementById('lkm-tel').value||null,
-    email:document.getElementById('lkm-email').value||null,
-    notes:document.getElementById('lkm-notes').value||null,
-    created_by:CU.id
-  };
-  var res;
-  if(editLocId){
-    res=await SB.from('locations').update(data).eq('id',editLocId);
-  }else{
-    res=await SB.from('locations').insert(data);
-  }
-  if(res.error){
-    var ae=document.getElementById('lkm-alert');ae.className='alert err';ae.textContent='Gabim: '+res.error.message;ae.classList.remove('hidden');
-    return;
-  }
-  toast('ok',editLocId?'Lokacioni u përditësua!':'Lokacioni u shtua!');
-  log('ok',(editLocId?'Edit':'Shto')+' loc: '+name);
-  closeLkModal();
-  loadLocs();
-}
-
-async function deleteLoc(id){
-  var l=allLocs.find(function(x){return x.id===id;});
-  if(!confirm('Fshi lokacionin "'+l.name+'"?'))return;
-  var{error}=await SB.from('locations').delete().eq('id',id);
-  if(error){toast('err','Gabim: '+error.message);return;}
-  toast('ok','Lokacioni u fshi');
-  loadLocs();
-}
-
-function expJSON(){
-  dl(JSON.stringify(allRecs,null,2),'application/json','survey_'+dt()+'.json');
-  toast('ok','JSON eksportuar');
-}
-function expCSV(){
-  var src=filteredRecs.length?filteredRecs:allRecs;
-  if(!src.length){toast('warn','Asnjë rekord');return}
-  var k=['id','user_name','user_email','user_role','rec_date','rec_time','lat','lng','accuracy','qellim','notes','photo_count','synced','created_at'];
-  var csv='\uFEFF'+k.join(',')+'\n';
-  src.forEach(function(r){csv+=k.map(function(f){var v=r[f]!==undefined?String(r[f]):'';return'"'+v.replace(/"/g,'""')+'"'}).join(',')+'\n'});
-  dl(csv,'text/csv;charset=utf-8;','survey_'+dt()+'.csv');
-  toast('ok','CSV eksportuar ('+src.length+' rekorde)');
-}
-function expXLS(){
-  var src=filteredRecs.length?filteredRecs:allRecs;
-  if(!src.length){toast('warn','Asnjë rekord');return}
-  var k=['id','user_name','user_email','user_role','rec_date','rec_time','lat','lng','accuracy','qellim','notes','photo_count'];
-  var hdrs={id:'#ID',user_name:'Emri',user_email:'Email',user_role:'Roli',rec_date:'Data',rec_time:'Ora',lat:'Gjerësi',lng:'Gjatësi',accuracy:'Saktësia(m)',qellim:'Qëllimi',notes:'Shënime',photo_count:'Foto'};
-  var tb='<table border="1" style="border-collapse:collapse"><thead><tr>'+k.map(function(f){return'<th style="background:#05d9a0;color:#021a10;padding:6px 10px;font-family:monospace">'+hdrs[f]+'</th>'}).join('')+'</tr></thead><tbody>';
-  src.forEach(function(r){tb+='<tr>'+k.map(function(f){return'<td style="padding:5px 9px">'+(r[f]!==undefined?r[f]:'')+'</td>'}).join('')+'</tr>'});
-  tb+='</tbody></table>';
-  var full='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>'+tb+'</body></html>';
-  dl(full,'application/vnd.ms-excel;charset=utf-8;','survey_'+dt()+'.xls');
-  toast('ok','Excel eksportuar ('+src.length+' rekorde)');
-}
-function dl(content,mime,fname){
-  var b=new Blob([content],{type:mime});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname;a.click();
-}
-function dt(){return new Date().toISOString().slice(0,10)}
-
-/* ═══════════════════════════════════════
-   CONNECTION TEST
-═══════════════════════════════════════ */
-function testConn(){
-  var on=navigator.onLine;
-  document.getElementById('cdot').className='cdot'+(on?'':' off');
-  document.getElementById('clbl').textContent=on?'online':'offline';
-  var st=document.getElementById('sync-st');
-  st.className='badge '+(on?'ok':'err');st.textContent=on?'✓ online':'✕ offline';
-  log(on?'ok':'warn','Lidhja: '+(on?'online':'offline'));
-  if(on&&SB){
-    SB.from('profiles').select('id').limit(1).then(function(r){
-      if(r.error) log('warn','Supabase ping: '+r.error.message);
-      else log('ok','Supabase ping OK');
-    });
-  }
-}
-
-/* ═══════════════════════════════════════
-   PAGE NAV
-═══════════════════════════════════════ */
-function goPg(nm){
-  ['sv','rc','us','rp','lk','tk'].forEach(function(p){
-    var pg=document.getElementById('page-'+p);
-    var nb=document.getElementById('nav-'+p);
-    if(pg)pg.classList.remove('on');
-    if(nb)nb.classList.remove('on');
-  });
-  document.getElementById('page-'+nm).classList.add('on');
-  document.getElementById('nav-'+nm).classList.add('on');
-  if(nm==='rc')loadRecs(false);
-  if(nm==='us')loadUsers();
-  if(nm==='rp'){loadRep();}
-  if(nm==='lk')loadLocs();
-  if(nm==='tk')loadTasks();
-}
-function sptab(i){
-  document.querySelectorAll('.ptab').forEach(function(t,j){t.classList.toggle('on',j===i)});
-  document.querySelectorAll('.ptc').forEach(function(c,j){c.classList.toggle('on',j===i)});
-  if(i===3)updSyncCounts();
-}
-
-/* ═══════════════════════════════════════
-   HELPERS
-═══════════════════════════════════════ */
-function v(id){return(document.getElementById(id).value||'').trim()}
-function ls(k,val){if(val===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,val)}
-function lsj(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
-function lsjs(k,v2){localStorage.setItem(k,JSON.stringify(v2))}
-function log(type,msg){
-  var box=document.getElementById('dbg');if(!box)return;
-  var n=new Date(),p=function(x){return String(x).padStart(2,'0')};
-  var line=document.createElement('div');line.className='dl '+type;
-  line.textContent='['+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds())+'] '+msg;
-  box.appendChild(line);box.scrollTop=box.scrollHeight;
-}
-function toast(type,msg){
-  var w=document.getElementById('toasts');
-  var t=document.createElement('div');t.className='toast '+type;
-  var ic={ok:'✓',err:'✕',info:'ℹ',warn:'⚠'};
-  t.innerHTML='<span>'+ic[type]+'</span><span>'+msg+'</span>';
-  w.appendChild(t);
-  setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(14px)';t.style.transition='all .3s';setTimeout(function(){t.remove()},350)},3800);
-}
-function offEvents(){
-  window.addEventListener('online',function(){document.getElementById('cdot').className='cdot';document.getElementById('clbl').textContent='online';toast('ok','Lidhja u restaurua');log('ok','Online')});
-  window.addEventListener('offline',function(){document.getElementById('cdot').className='cdot off';document.getElementById('clbl').textContent='offline';toast('warn','Offline');log('warn','Offline')});
-}
-renderPh();
-// Event listeners për rptabs (shmang onclick konflikte)
-document.addEventListener('DOMContentLoaded', function(){
-  document.querySelectorAll('.rptab[data-tab]').forEach(function(el){
-    el.addEventListener('click', function(e){
-      e.stopPropagation();
-      rpTab(parseInt(this.getAttribute('data-tab')));
-    });
-  });
-});
-
-// Boot — SDK ngarkohet synchronously
-if(typeof supabase!=='undefined'){
-  log('info','Supabase SDK u ngarkua');
-  boot();
-}else{
-  log('err','SDK nuk u ngarkua — kontrolloni internet ose adblocker');
-}
-</script>
-<!-- DETAIL PANEL -->
-<div id="dpanel" class="dpanel">
-  <div class="dpanel-hd">
-    <div>
-      <div class="dpanel-title" id="dp-title">Detajet e Rekordeve</div>
-      <div style="font-size:10px;color:var(--txt3);font-family:var(--mono);margin-top:2px" id="dp-id"></div>
-    </div>
-    <div style="display:flex;gap:6px;align-items:center">
-      <span id="dp-status-badge"></span>
-      <button onclick="closePanel()" style="background:transparent;border:none;color:var(--txt3);font-size:22px;cursor:pointer;line-height:1;padding:4px">✕</button>
-    </div>
-  </div>
-  <div class="dpanel-body" id="dp-body">
-
-    <!-- KARUSEL FOTOSH -->
-    <div id="dp-carousel" class="carousel" style="display:none">
-      <div class="carousel-inner" id="dp-slides"></div>
-      <button class="carousel-btn prev" onclick="carouselPrev()">‹</button>
-      <button class="carousel-btn next" onclick="carouselNext()">›</button>
-      <div class="carousel-dots" id="dp-dots"></div>
-    </div>
-    <div id="dp-nophoto" style="display:none;text-align:center;padding:20px;color:var(--txt3);font-family:var(--mono);font-size:11px;background:var(--bg);border-radius:8px;margin-bottom:14px">
-      📷 Nuk ka foto
-    </div>
-
-    <!-- INFO BAZË -->
-    <div style="background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px;margin-bottom:14px">
-      <div class="sec-hd" style="margin-bottom:10px">Informacion Bazë</div>
-      <div class="lpopup-row"><span class="lpopup-lbl">USER</span><span class="lpopup-val" id="dp-user">—</span></div>
-      <div class="lpopup-row"><span class="lpopup-lbl">DATA</span><span class="lpopup-val" id="dp-date">—</span></div>
-      <div class="lpopup-row"><span class="lpopup-lbl">ORA</span><span class="lpopup-val" id="dp-time">—</span></div>
-      <div class="lpopup-row"><span class="lpopup-lbl">GPS</span><span class="lpopup-val" id="dp-gps">—</span></div>
-      <div class="lpopup-row"><span class="lpopup-lbl">QËLLIMI</span><span class="lpopup-val" id="dp-qellim">—</span></div>
-      <div class="lpopup-row"><span class="lpopup-lbl">SHËNIME</span><span class="lpopup-val" id="dp-notes">—</span></div>
-    </div>
-
-    <!-- FUSHAT E DETAJUARA (editueshme) -->
-    <div style="background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px;margin-bottom:14px">
-      <div class="sec-hd" style="margin-bottom:12px">Detaje Strukturore</div>
-
-      <div class="ifield">
-        <label>ADRESA / VENDNDODHJA</label>
-        <input type="text" id="dp-adresa" placeholder="p.sh. Rruga Myslym Shyri, Nr.12, Tiranë">
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="ifield">
-          <label>KLASIFIKIMI I STRUKTURËS</label>
-          <select id="dp-klasi">
-            <option value="">— Zgjidh —</option>
-            <optgroup label="Ndërtesa">
-              <option>Banesë private</option>
-              <option>Pallat banimi</option>
-              <option>Ndërtesë administrative</option>
-              <option>Objekt tregtar</option>
-              <option>Objekt industrial</option>
-              <option>Objekt arsimor</option>
-              <option>Objekt shëndetësor</option>
-              <option>Objekt fetar</option>
-              <option>Objekt kulturor</option>
-            </optgroup>
-            <optgroup label="Infrastrukturë">
-              <option>Rrugë automobilistike</option>
-              <option>Rrugë këmbësore</option>
-              <option>Urë / Viadukt</option>
-              <option>Rrjet ujësjellës</option>
-              <option>Rrjet kanalizimi</option>
-              <option>Rrjet elektrik</option>
-            </optgroup>
-            <optgroup label="Tokë / Mjedis">
-              <option>Tokë bujqësore</option>
-              <option>Pyll / Pyje</option>
-              <option>Luhatje / Rrëshqitje</option>
-              <option>Zonë e mbrojtur</option>
-              <option>Tjetër</option>
-            </optgroup>
-          </select>
-        </div>
-        <div class="ifield">
-          <label>STATUSI</label>
-          <select id="dp-statusi">
-            <option value="aktiv">✅ Aktiv / Normal</option>
-            <option value="ne_ndertim">🚧 Në ndërtim</option>
-            <option value="ne_rinovim">🔨 Në rinovim</option>
-            <option value="i_demtuar">⚠️ I dëmtuar</option>
-            <option value="i_braktisur">🚫 I braktisur</option>
-            <option value="i_demoluar">💥 I demoluar</option>
-            <option value="ne_investigim">🔍 Nën investigim</option>
-          </select>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="ifield">
-          <label>NR. KATESH</label>
-          <input type="number" id="dp-kate" placeholder="p.sh. 5" min="0" max="200">
-        </div>
-        <div class="ifield">
-          <label>LARTËSIA (m)</label>
-          <input type="number" id="dp-lartesia" placeholder="p.sh. 14.5" step="0.1" min="0">
-        </div>
-      </div>
-
-      <div class="ifield" style="margin-bottom:6px">
-        <label>VLERËSIMI</label>
-        <div class="star-row" id="dp-stars">
-          <span class="star" data-v="1" onclick="setStar(1)">★</span>
-          <span class="star" data-v="2" onclick="setStar(2)">★</span>
-          <span class="star" data-v="3" onclick="setStar(3)">★</span>
-          <span class="star" data-v="4" onclick="setStar(4)">★</span>
-          <span class="star" data-v="5" onclick="setStar(5)">★</span>
-        </div>
-        <div style="font-size:10px;color:var(--txt3);font-family:var(--mono);margin-top:3px" id="dp-star-lbl">Pa vlerësim</div>
-      </div>
-    </div>
-
-    <!-- DOKUMENTET -->
-    <div style="background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:14px;margin-bottom:14px">
-      <div class="sec-hd" style="margin-bottom:12px">Dokumente (PDF, Word)</div>
-      <div id="dp-doclist"></div>
-      <div class="uzone" id="dp-dropzone" onclick="document.getElementById('dp-docinp').click()"
-           ondragover="event.preventDefault();this.style.borderColor='#2d8bff'"
-           ondragleave="this.style.borderColor=''"
-           ondrop="dpDropDoc(event)">
-        📎 Kliko ose tërhiq dokumentin këtu<br>
-        <span style="font-size:10px;opacity:.5">PDF, DOC, DOCX — max 50MB</span>
-      </div>
-      <input type="file" id="dp-docinp" accept=".pdf,.doc,.docx" multiple style="display:none" onchange="dpAddDoc(event)">
-      <div id="dp-uploading" style="display:none;font-family:var(--mono);font-size:11px;color:var(--acc);margin-top:8px">Duke ngarkuar dokumentin...</div>
-    </div>
-
-  </div><!-- /dpanel-body -->
-
-  <div class="dpanel-ft">
-    <button onclick="saveDetail()" class="btn pri" style="flex:1;justify-content:center">
-      <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-      Ruaj Ndryshimet
-    </button>
-    <button onclick="closePanel()" class="btn" style="justify-content:center">Mbyll</button>
-  </div>
-</div>
-
-<!-- OVERLAY për panel -->
-<div id="dp-overlay" onclick="closePanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:3999"></div>
-
-</body>
-</html>
