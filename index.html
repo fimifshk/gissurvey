@@ -1736,6 +1736,36 @@ create trigger on_auth_user_created
             </div>
           </div>
 
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SIPËRFAQJA</div>
+              <div id="dp-siperfaqe-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">NR. INVENTAR</div>
+              <div id="dp-inventar-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">VITI NDËRTIMIT</div>
+              <div id="dp-viti-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">PRONËSIA</div>
+              <div id="dp-pronesia-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ZONA / LAGJA</div>
+              <div id="dp-zona-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SIGURIA NË PUNË</div>
+              <div id="dp-siguria-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+            </div>
+          </div>
           <div>
             <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SHËNIME</div>
             <div id="dp-notes-view" style="font-size:13px;color:#8da0bb;min-height:20px;line-height:1.5"></div>
@@ -2249,6 +2279,14 @@ function openPanel(b64){
   document.getElementById('dp-kate-view').textContent=rec.kate||'—';
   document.getElementById('dp-lartesia-view').textContent=rec.lartesia?rec.lartesia+' m':'—';
   document.getElementById('dp-notes-view').textContent=rec.notes||'—';
+  var _dsp=document.getElementById('dp-siperfaqe-view');if(_dsp)_dsp.textContent=rec.siperfaqe_m2?rec.siperfaqe_m2+' m²':'—';
+  var _din=document.getElementById('dp-inventar-view');if(_din)_din.textContent=rec.nr_inventar||'—';
+  var _dvi=document.getElementById('dp-viti-view');if(_dvi)_dvi.textContent=rec.viti_ndertimit||'—';
+  var _dpr=document.getElementById('dp-pronesia-view');if(_dpr)_dpr.textContent=rec.pronesia||'—';
+  var _dzo=document.getElementById('dp-zona-view');if(_dzo)_dzo.textContent=rec.zona||'—';
+  var _dsi=document.getElementById('dp-siguria-view');
+  if(_dsi){var _sgm={shume_mire:'✅ Shumë mirë',mire:'🟢 Mirë',mesatare:'🟡 Mesatare',dobete:'🟠 Dobët',rrezik:'🔴 Rrezik i lartë',jo_aplikueshme:'➖ Jo aplikueshme'};
+  _dsi.textContent=_sgm[rec.siguria_punesimit]||rec.siguria_punesimit||'—';}
 
   // Fushat edit (vlerat)
   var qSel=document.getElementById('dp-qellim-edit');if(qSel)qSel.value=rec.qellim||'';
@@ -3020,6 +3058,10 @@ function addMkr(rec){
     ['DATA', (rec.rec_date||'—')+' '+(rec.rec_time||'')],
     ['LLOJI', rec.klasifikimi||'—'],
     ['ADRESA', rec.adresa||'—'],
+    ['KATET', rec.kate?rec.kate+' kate':null],
+    ['LARTËSIA', rec.lartesia?rec.lartesia+' m':null],
+    ['SIPËRFAQJA', rec.siperfaqe_m2?rec.siperfaqe_m2+' m²':null],
+    ['SIGURIA', rec.siguria_punesimit?({shume_mire:'✅ Shumë mirë',mire:'🟢 Mirë',mesatare:'🟡 Mesatare',dobete:'🟠 Dobët',rrezik:'🔴 Rrezik i lartë',jo_aplikueshme:'➖ Jo aplikueshme'}[rec.siguria_punesimit]||rec.siguria_punesimit):null],
     ['SHËNIME', rec.notes?(rec.notes.substring(0,80)+(rec.notes.length>80?'…':'')):null],
   ];
   rows.forEach(function(row){
