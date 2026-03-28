@@ -1740,8 +1740,8 @@ function openRecModalById(id){
   var r=allRecs.find(function(x){return String(x.id)===String(id);});
   if(r){openRecModal(r);return;}
   if(!SB)return;
-  SB.from('survey_records').select('*,locations(id,name,company_id)').eq('id',id).single().then(function(res){
-    if(!res.error&&res.data){
+  SB.from('survey_records').select('*,locations(id,name,company_id)').eq('id',id).maybeSingle().then(function(res){
+    if(res.data){
       var d=res.data;
       if(d.locations&&d.locations.name){d.location_name=d.locations.name;var c=allCompanies.find(function(x){return x.id===d.locations.company_id;});if(c){d.company_name=c.name;d.location_display=c.name+' > '+d.location_name;}if(!d.location_display)d.location_display=d.location_name;}
       delete d.locations;openRecModal(d);
@@ -2240,7 +2240,7 @@ async function openRecById(id, trEl){
     // Kërko direkt nga DB
     var{data,error}=await SB.from('survey_records')
       .select('*,locations(id,name,company_id,companies(id,name))')
-      .eq('id',id).single();
+      .eq('id',id).maybeSingle();
     if(!error && data){
       if(data.locations&&data.locations.name){
         data.location_name=data.locations.name;
