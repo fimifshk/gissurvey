@@ -2318,28 +2318,37 @@ async function fetchPhotoUrls(rec){
 }
 
 function renderCarousel(photoUrls,photoCount){
-  var car=document.getElementById('dp-carousel');
+  var car=document.getElementById('dp-car-outer')||document.getElementById('dp-carousel');
   var nop=document.getElementById('dp-nophoto');
   var slides=document.getElementById('dp-slides');
   var dots=document.getElementById('dp-dots');
+  if(!car||!slides)return; // elementi nuk ekziston - panel jo hapur
 
-  if(!photoUrls.length){
+  if(!photoUrls||!photoUrls.length){
     car.style.display='none';
     if(nop)nop.style.display=photoCount>0?'block':'none';
-    if(nop&&photoCount>0)nop.innerHTML='📷 '+photoCount+' foto (nuk janë ngarkuar në Storage)';
+    if(nop&&photoCount>0)nop.innerHTML='📷 '+photoCount+' foto';
     return;
   }
   if(nop)nop.style.display='none';
-  if(car)car.style.display='block';
-  var fbSrc='data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%22400%22 height%3D%22225%22%3E%3Crect fill%3D%22%231c2740%22 width%3D%22400%22 height%3D%22225%22%2F%3E%3Ctext y%3D%2250%25%22 x%3D%2250%25%22 text-anchor%3D%22middle%22 dominant-baseline%3D%22middle%22 fill%3D%22%233d5275%22 font-size%3D%2214%22%3EFoto nuk u ngarkua%3C%2Ftext%3E%3C%2Fsvg%3E';
-  slides.innerHTML=photoUrls.map(function(url){
-    return'<img class="carousel-slide" src="'+url+'" onerror="this.src=\''+fbSrc+'\'">';
-  }).join('');
-  dots.innerHTML=photoUrls.map(function(_,i){
-    return'<div class="cdot2'+(i===0?' on':'')+'" onclick="carouselGo('+i+')"></div>';
-  }).join('');
+  car.style.display='block';
+  slides.innerHTML='';
+  if(dots)dots.innerHTML='';
+  var fbSrc='data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2240%22 height%3D%2240%22%3E%3C%2Fsvg%3E';
+  photoUrls.forEach(function(url,i){
+    var img=document.createElement('img');
+    img.className='carousel-slide';
+    img.src=url;
+    img.onerror=function(){this.src=fbSrc;};
+    slides.appendChild(img);
+    if(dots){
+      var dot=document.createElement('div');
+      dot.style.cssText='width:6px;height:6px;border-radius:50%;background:'+(i===0?'#fff':'rgba(255,255,255,.4)');
+      dots.appendChild(dot);
+    }
+  });
   _dpCarIdx=0;
-  carouselGo(0);
+  slides.style.transform='translateX(0)';
 }
 
 function carouselGo(i){
