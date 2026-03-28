@@ -601,20 +601,25 @@ create trigger on_auth_user_created
                 <div class="ifield"><label>ORA</label><input type="time" id="f-tm"></div>
               </div>
               <div class="ifield">
-                <label>LOKACIONI / KOMPANIA (opsionale)</label>
-                <div style="position:relative">
-                  <input type="text" id="f-loc-search" placeholder="Kërko lokacion..." autocomplete="off"
-                    oninput="searchLocs(this.value)"
-                    onfocus="searchLocs(this.value)"
-                    style="width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:13px;outline:none">
-                  <div id="f-loc-dd" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--s2);border:1px solid var(--b1);border-top:none;border-radius:0 0 var(--r) var(--r);z-index:1000;max-height:200px;overflow-y:auto"></div>
-                </div>
-                <div id="f-loc-sel" style="display:none;margin-top:6px;padding:8px 10px;background:rgba(5,217,160,.08);border:1px solid rgba(5,217,160,.25);border-radius:var(--r);font-size:11px;font-family:var(--mono)">
-                  <span id="f-loc-name" style="color:var(--acc)"></span>
-                  <button onclick="clearLocSel()" style="float:right;background:transparent;border:none;color:var(--txt3);cursor:pointer;font-size:14px">✕</button>
-                </div>
-                <input type="hidden" id="f-loc-id">
+                <label>KOMPANIA</label>
+                <select id="f-company-sel" onchange="onSvCompanyChange()"
+                  style="width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:12px;font-family:var(--mono);outline:none">
+                  <option value="">— Zgjidh kompaninë —</option>
+                </select>
               </div>
+              <div class="ifield" id="f-branch-field" style="display:none">
+                <label>DEGA / LOKACIONI</label>
+                <select id="f-branch-sel" onchange="onSvBranchChange()"
+                  style="width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);color:var(--txt);font-size:12px;font-family:var(--mono);outline:none">
+                  <option value="">— Zgjidh degën —</option>
+                </select>
+              </div>
+              <div id="f-loc-sel" style="display:none;margin-top:4px;padding:7px 10px;background:rgba(5,217,160,.08);border:1px solid rgba(5,217,160,.25);border-radius:var(--r);font-size:11px;font-family:var(--mono)">
+                <span id="f-loc-name" style="color:#05d9a0"></span>
+                <button onclick="clearLocSel()" style="float:right;background:transparent;border:none;color:#3d5275;cursor:pointer;font-size:14px">✕</button>
+              </div>
+              <input type="hidden" id="f-loc-id">
+              <input type="hidden" id="f-loc-search">
               <div class="ifield">
                 <label>QËLLIMI I VËZHGIMIT</label>
                 <select id="f-ql">
@@ -3554,7 +3559,7 @@ async function loadLocs(){
   if(catSel){var cv=catSel.value;catSel.innerHTML='<option value="">Të gjitha</option>'+Object.keys(cats).sort().map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('');catSel.value=cv;}
   var compSel=document.getElementById('lkm-company');
   if(compSel){var cv2=compSel.value;compSel.innerHTML='<option value="">— Pa kompani —</option>'+allCompanies.map(function(c){return'<option value="'+c.id+'">'+c.name+'</option>';}).join('');compSel.value=cv2;}
-  filterLocs();renderHierarchy();
+  filterLocs();renderHierarchy();populateSvCompanyDropdown();
 }
 
 function filterLocs(){
@@ -3640,12 +3645,115 @@ function zoomToLoc(id){
 function useLoc(id){
   var l=allLocs.find(function(x){return x.id===id;});if(!l)return;
   goPg('sv');
+  // Zgjidh kompaninë
+  if(l.company_id){
+    var compSel=document.getElementById('f-company-sel');
+    if(compSel){compSel.value=l.company_id;onSvCompanyChange();}
+  }
+  // Zgjidh degën
+  setTimeout(function(){
+    var brSel=document.getElementById('f-branch-sel');
+    if(brSel){brSel.value=l.id;onSvBranchChange();}
+  },100);
+  toast('ok','📍 '+l.name+' u zgjodh!');
+}
+
+function populateSvCompanyDropdown(){
+  var sel=document.getElementById('f-company-sel');
+  if(!sel)return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">— Zgjidh kompaninë —</option>'+
+    allCompanies.map(function(c){
+      return'<option value="'+c.id+'">🏢 '+c.name+(c.category?' · '+c.category:'')+'</option>';
+    }).join('')+
+    '<option value="__none__">📍 Pa kompani (lokacion direkt)</option>';
+  sel.value=cur;
+}
+
+function onSvCompanyChange(){
+  var cid=document.getElementById('f-company-sel').value;
+  var branchField=document.getElementById('f-branch-field');
+  var branchSel=document.getElementById('f-branch-sel');
+  
+  // Pastro zgjedhjen e mëparshme
+  document.getElementById('f-loc-id').value='';
+  document.getElementById('f-loc-name').textContent='';
+  document.getElementById('f-loc-sel').style.display='none';
+  
+  if(!cid){branchField.style.display='none';return;}
+  
+  if(cid==='__none__'){
+    // Shfaq të gjitha lokacionet pa kompani
+    var locs=allLocs.filter(function(l){return !l.company_id;});
+    if(!locs.length){branchField.style.display='none';toast('warn','Nuk ka lokacione pa kompani');return;}
+    branchField.style.display='block';
+    branchSel.innerHTML='<option value="">— Zgjidh lokacionin —</option>'+
+      locs.map(function(l){return'<option value="'+l.id+'">📍 '+l.name+(l.address?' · '+l.address.substring(0,30):'')+'</option>';}).join('');
+    return;
+  }
+  
+  var locs=allLocs.filter(function(l){return l.company_id==cid;});
+  var comp=allCompanies.find(function(c){return c.id==cid;});
+  
+  if(!locs.length){
+    // Kompania nuk ka degë — merr koordinatat e kompanisë nëse ka
+    branchField.style.display='none';
+    if(comp){
+      document.getElementById('f-loc-id').value='comp_'+cid;
+      document.getElementById('f-loc-name').textContent='🏢 '+comp.name;
+      document.getElementById('f-loc-sel').style.display='block';
+    }
+    toast('info',(comp?comp.name:'Kompania')+' nuk ka degë të regjistruara');
+    return;
+  }
+  
+  branchField.style.display='block';
+  branchSel.innerHTML='<option value="">— Zgjidh degën —</option>'+
+    locs.map(function(l){
+      return'<option value="'+l.id+'">'+l.name+(l.address?' · '+l.address.substring(0,30):'')+'</option>';
+    }).join('');
+    
+  // Nëse ka vetëm një degë, zgjidhe automatikisht
+  if(locs.length===1){
+    branchSel.value=locs[0].id;
+    onSvBranchChange();
+  }
+}
+
+function onSvBranchChange(){
+  var lid=document.getElementById('f-branch-sel').value;
+  if(!lid){
+    document.getElementById('f-loc-id').value='';
+    document.getElementById('f-loc-sel').style.display='none';
+    return;
+  }
+  var l=allLocs.find(function(x){return x.id==lid;});
+  if(!l)return;
+  
+  var comp=l.company_id?allCompanies.find(function(c){return c.id===l.company_id;}):null;
+  var label=(comp?comp.name+' › ':'')+l.name;
+  
   document.getElementById('f-loc-id').value=l.id;
-  document.getElementById('f-loc-search').value=l.name;
-  document.getElementById('f-loc-name').textContent=l.name+(l.category?' · '+l.category:'');
+  document.getElementById('f-loc-name').textContent='🏢 '+label;
   document.getElementById('f-loc-sel').style.display='block';
-  if(l.lat&&l.lng){document.getElementById('f-lat').textContent=l.lat.toFixed(6);document.getElementById('f-lng').textContent=l.lng.toFixed(6);document.getElementById('f-acc').textContent='Nga lokacioni';if(leafMap)leafMap.setView([l.lat,l.lng],17);}
-  toast('ok','Lokacioni "'+l.name+'" u zgjodh!');
+  
+  // Vendos GPS nga lokacioni
+  if(l.lat&&l.lng){
+    document.getElementById('f-lat').textContent=l.lat.toFixed(6);
+    document.getElementById('f-lng').textContent=l.lng.toFixed(6);
+    document.getElementById('f-acc').textContent='Nga lokacioni';
+    if(leafMap)leafMap.setView([l.lat,l.lng],17);
+    toast('info','📍 GPS nga: '+l.name);
+  }
+}
+
+function clearLocSel(){
+  document.getElementById('f-loc-id').value='';
+  document.getElementById('f-loc-search').value='';
+  document.getElementById('f-loc-sel').style.display='none';
+  document.getElementById('f-company-sel').value='';
+  document.getElementById('f-branch-field').style.display='none';
+  document.getElementById('f-branch-sel').innerHTML='<option value="">— Zgjidh degën —</option>';
 }
 
 function searchLocs(q){
