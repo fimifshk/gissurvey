@@ -351,6 +351,19 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
   .kpis{grid-template-columns:1fr 1fr}
   .cgrid{grid-template-columns:1fr}
 }
+
+/* Map tooltip */
+.map-tooltip{
+  background:#0d1119!important;
+  border:1px solid #253352!important;
+  border-radius:8px!important;
+  padding:8px 12px!important;
+  box-shadow:0 4px 20px rgba(0,0,0,.5)!important;
+  color:#dce6f5!important;
+}
+.map-tooltip.leaflet-tooltip-top::before{
+  border-top-color:#253352!important;
+}
 </style>
 </head>
 <body>
@@ -2957,87 +2970,45 @@ function addMkr(rec){
   if(rec.statusi==='i_demtuar')statusEmoji='⚠';
   else if(rec.statusi==='i_braktisur')statusEmoji='🚫';
   else if(rec.statusi==='ne_ndertim')statusEmoji='🚧';
+
   var ic=L.divIcon({
     className:'',
-    html:'<div style="position:relative;width:14px;height:14px">'+
-         '<div style="width:14px;height:14px;background:'+c+';border:2px solid #07090f;border-radius:50%;box-shadow:0 0 0 3px '+c+'44"></div>'+
-         (statusEmoji?'<div style="position:absolute;top:-8px;left:8px;font-size:10px">'+statusEmoji+'</div>':'')+
+    html:'<div style="position:relative;width:16px;height:16px">'+
+         '<div style="width:16px;height:16px;background:'+c+';border:2px solid #07090f;border-radius:50%;box-shadow:0 0 0 3px '+c+'44;cursor:pointer"></div>'+
+         (statusEmoji?'<div style="position:absolute;top:-8px;left:10px;font-size:10px">'+statusEmoji+'</div>':'')+
          '</div>',
-    iconSize:[14,14],iconAnchor:[7,7]
+    iconSize:[16,16],iconAnchor:[8,8]
   });
-  var m=L.marker([rec.lat,rec.lng],{icon:ic});
 
-  // Ruaj rec si data attribute për ta përdorur në onclick
+  var m=L.marker([rec.lat,rec.lng],{icon:ic});
   var recId=rec.id;
 
-  // Popup i thjeshtë dhe i sigurt
-  var starsHtml='';
-  if(rec.vleresimi){
-    for(var s=1;s<=5;s++){
-      starsHtml+='<span style="color:'+(s<=rec.vleresimi?'#ffaa2e':'#3d5275')+'">★</span>';
-    }
-  }
-
-  var popupDiv=document.createElement('div');
-  popupDiv.className='lpopup';
-  popupDiv.style.minWidth='220px';
-
-  // Header
-  var hdr=document.createElement('div');
-  hdr.style.cssText='font-weight:600;margin-bottom:8px;color:'+c+';font-size:13px';
-  hdr.textContent=rec.qellim||'Vëzhgim GIS';
-  popupDiv.appendChild(hdr);
-
-  // Rows
-  var rows=[
-    ['STATUSI', STATUS_LBL[rec.statusi]||rec.statusi||'—'],
-    ['USER', rec.user_name||rec.user_email||'—'],
-    ['DATA', (rec.rec_date||'—')+' '+(rec.rec_time||'')],
-    ['LLOJI', rec.klasifikimi||'—'],
-    ['ADRESA', rec.adresa||'—'],
-    ['KATET', rec.kate?rec.kate+' kate':null],
-    ['LARTËSIA', rec.lartesia?rec.lartesia+' m':null],
-    ['SIPËRFAQJA', rec.siperfaqe_m2?rec.siperfaqe_m2+' m²':null],
-    ['SIGURIA', rec.siguria_punesimit?({shume_mire:'✅ Shumë mirë',mire:'🟢 Mirë',mesatare:'🟡 Mesatare',dobete:'🟠 Dobët',rrezik:'🔴 Rrezik i lartë',jo_aplikueshme:'➖ Jo aplikueshme'}[rec.siguria_punesimit]||rec.siguria_punesimit):null],
-    ['SHËNIME', rec.notes?(rec.notes.substring(0,80)+(rec.notes.length>80?'…':'')):null],
-  ];
-  rows.forEach(function(row){
-    if(!row[1]||row[1]==='—')return;
-    var div=document.createElement('div');
-    div.className='lpopup-row';
-    div.innerHTML='<span class="lpopup-lbl">'+row[0]+'</span><span class="lpopup-val">'+row[1]+'</span>';
-    popupDiv.appendChild(div);
+  // Klikim → hap panel i plotë direkt (pa popup)
+  m.on('click',function(e){
+    L.DomEvent.stopPropagation(e);
+    openRecById(recId);
   });
 
-  // Yjet
-  if(starsHtml){
-    var sd=document.createElement('div');
-    sd.style.margin='6px 0 4px';
-    sd.innerHTML=starsHtml;
-    popupDiv.appendChild(sd);
-  }
+  // Hover tooltip i vogël me info bazë
+  var compInfo=rec.location_display||rec.company_name||rec.location_name||'';
+  var tooltipHtml=
+    '<div style="font-family:monospace;font-size:11px;min-width:160px">'+
+    '<div style="font-weight:700;color:'+c+';margin-bottom:4px">'+(rec.qellim||'Vëzhgim #'+rec.id)+'</div>'+
+    (compInfo?'<div style="color:#8da0bb;font-size:10px">🏢 '+compInfo+'</div>':'')+
+    '<div style="color:#8da0bb;font-size:10px">'+(rec.rec_date||'')+'</div>'+
+    '<div style="margin-top:4px;color:#05d9a0;font-size:10px">▶ Kliko për detaje</div>'+
+    '</div>';
 
-  // Foto count
-  if(rec.photo_count>0){
-    var pd=document.createElement('div');
-    pd.style.cssText='font-size:10px;color:#8da0bb;font-family:monospace;margin-bottom:6px';
-    pd.textContent='📷 '+rec.photo_count+' foto';
-    popupDiv.appendChild(pd);
-  }
+  m.bindTooltip(tooltipHtml,{
+    permanent:false,
+    direction:'top',
+    offset:[0,-10],
+    className:'map-tooltip'
+  });
 
-  // Buton Detaje
-  var btn=document.createElement('button');
-  btn.style.cssText='width:100%;padding:8px;background:var(--acc);border:none;border-radius:6px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer;margin-top:6px';
-  btn.textContent='📋 Hap detajet →';
-  btn.onclick=function(){
-    m.closePopup();
-    openRecById(recId);
-  };
-  popupDiv.appendChild(btn);
-
-  m.bindPopup(popupDiv,{maxWidth:290,className:'lpopup-wrap'});
   sMarkers.addLayer(m);
 }
+
 
 /* ═══════════════════════════════════════
    LOAD & FILTER RECORDS
