@@ -359,7 +359,7 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 <!-- ═══════════════════════════════════
      CONFIG SCREEN  
 ═══════════════════════════════════ -->
-<div id="scr-config" class="overlay">
+<div id="scr-config" class="overlay hidden">
 <div style="width:580px;max-width:100%">
   <div class="card-logo" style="font-family:var(--mono);font-size:11px;color:var(--acc);letter-spacing:.15em;margin-bottom:20px">◈ GIS_SURVEY_PRO <span style="color:var(--txt3)">/ KONFIGURIMI</span></div>
 
@@ -2337,29 +2337,6 @@ function dpStartEdit(){
   openEditModal();
 }
 
-function dpStartEdit_OLD(){
-  console.log('dpStartEdit called, role:', CP?CP.role:'?');
-  _dpEditMode=true;
-  var role=CP?CP.role:'field';
-
-  // Çift view/edit për çdo fushë
-  var allViewIds=['dp-qellim-view','dp-klasi-view','dp-statusi-view','dp-adresa-view','dp-kate-view','dp-lartesia-view','dp-notes-view'];
-  var allEditIds=['dp-qellim-edit','dp-klasi','dp-statusi','dp-adresa','dp-kate','dp-lartesia','dp-notes-edit'];
-
-  // Field mund ndryshojë vetëm notes
-  var editableEdits = (role==='admin'||role==='supervisor') ? allEditIds : ['dp-notes-edit'];
-  var editableViews = (role==='admin'||role==='supervisor') ? allViewIds : ['dp-notes-view'];
-
-  // Fshih view, shfaq edit për fushat editueshme
-  editableViews.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
-  editableEdits.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='block';});
-
-  // Butonat
-  var eb=document.getElementById('dp-edit-btn');if(eb)eb.style.display='none';
-  var sb=document.getElementById('dp-save-btn');if(sb)sb.style.display='inline-block';
-  var cb=document.getElementById('dp-cancel-btn');if(cb)cb.style.display='inline-block';
-  var db=document.getElementById('dp-del-btn');if(db)db.style.display=(role==='admin')?'inline-block':'none';
-}
 
 function dpCancelEdit(){
   _dpEditMode=false;
