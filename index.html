@@ -592,7 +592,7 @@ create trigger on_auth_user_created
   <div class="pages">
 
     <!-- ══ SURVEY PAGE ══ -->
-    <div class="page on" id="page-sv">
+    <div class="page" id="page-sv">
       <div class="svl">
         <div class="svp">
           <div class="ptabs">
@@ -1615,6 +1615,15 @@ function showForgot(){
 function startApp(){
   document.getElementById('scr-auth').classList.add('hidden');
   document.getElementById('app').classList.add('on');
+  // Siguro vetëm page-sv është aktive fillimisht
+  ['sv','rc','us','rp','tk','lk'].forEach(function(p){
+    var pg=document.getElementById('page-'+p);
+    var nb=document.getElementById('nav-'+p);
+    if(pg)pg.classList.remove('on');
+    if(nb)nb.classList.remove('on');
+  });
+  document.getElementById('page-sv').classList.add('on');
+  document.getElementById('nav-sv').classList.add('on');
   updateTop();initMap();renderPh();setDT();
   document.getElementById('f-em').value=CP.email||'';
   // Nav visibility sipas rolit
@@ -2812,7 +2821,7 @@ async function loadLocRep(){
     if(tbody)tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:#ff4d6d;font-family:monospace;font-size:12px">⚠️ Tabela "locations" nuk ekziston.<br>Ekzekutoni <b>locations_table.sql</b> në Supabase SQL Editor.</td></tr>';
     return;
   }
-  var recsRes=await SB.from('survey_records').select('id,location_id,rec_date,rec_time,user_name,user_email,qellim,vleresimi,notes,created_at').not('location_id','is',null);
+  var recsRes=await SB.from('survey_records').select('id,location_id,rec_date,rec_time,user_name,user_email,qellim,vleresimi,notes,created_at').order('rec_date',{ascending:false});
   var{data:locs}=locsRes;
   var{data:recs}=recsRes;
 
@@ -2828,6 +2837,7 @@ async function loadLocRep(){
   });
 
   // Bashko me lokacionet
+  // Shto edhe rekordet që kanë location_id te deget
   _locRepData=locsArr.map(function(l){
     var visits=byLoc[l.id]||[];
     var users=new Set(visits.map(function(v){return v.user_email;}));
