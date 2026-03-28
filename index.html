@@ -821,7 +821,7 @@ create trigger on_auth_user_created
     <button onclick="rpTab(2)" id="rptb2" style="padding:10px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--txt3);font-family:var(--mono);font-size:11px;cursor:pointer;white-space:nowrap">🏢 Kategoritë</button>
     <button onclick="rpTab(3)" id="rptb3" style="padding:10px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--txt3);font-family:var(--mono);font-size:11px;cursor:pointer;white-space:nowrap">📅 Periudhat</button>
     <button onclick="rpTab(4)" id="rptb4" style="padding:10px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--txt3);font-family:var(--mono);font-size:11px;cursor:pointer;white-space:nowrap">🗺️ Harta</button>
-    <button onclick="rpTab(5)" id="rptb5" style="padding:10px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--txt3);font-family:var(--mono);font-size:11px;cursor:pointer;white-space:nowrap">🏢 Lokacionet</button>
+    <button onclick="rpTab(5)" id="rptb5" style="padding:10px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--txt3);font-family:var(--mono);font-size:11px;cursor:pointer;white-space:nowrap">🏢 Kompanitë</button>
   </div>
 
   <!-- CONTENT -->
@@ -931,7 +931,7 @@ create trigger on_auth_user_created
 
       <!-- Filtër -->
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
-        <input type="text" id="rp-locq" placeholder="Kërko lokacion..." oninput="filterLocRep()"
+        <input type="text" id="rp-locq" placeholder="Kërko kompani..." oninput="filterLocRep()"
           style="padding:7px 10px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;width:180px">
         <select id="rp-loccat" onchange="filterLocRep()"
           style="padding:7px 9px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
@@ -948,7 +948,7 @@ create trigger on_auth_user_created
       <!-- KPI për lokacionet -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px">
         <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:17px 18px">
-          <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-bottom:6px">LOKACIONE AKTIVE</div>
+          <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-bottom:6px">KOMPANI AKTIVE</div>
           <div style="font-size:28px;font-weight:700;line-height:1" id="lkv1">—</div>
         </div>
         <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:17px 18px">
@@ -980,13 +980,13 @@ create trigger on_auth_user_created
       <!-- Tabela detajuar -->
       <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:18px;margin-bottom:14px">
         <div style="font-size:13px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
-          <span>Detaje vizitash sipas lokacionit</span>
+          <span>Detaje vizitash sipas kompanisë</span>
           <button onclick="expLocCSV()" style="padding:4px 10px;background:#18202e;border:1px solid #253352;border-radius:6px;color:#8da0bb;font-family:monospace;font-size:10px;cursor:pointer">CSV</button>
         </div>
         <div style="overflow-x:auto">
           <table class="rt">
             <thead><tr>
-              <th>Lokacioni</th>
+              <th>Kompania / Dega</th>
               <th>Kategoria</th>
               <th>Vizita</th>
               <th>Vizitorë unikë</th>
@@ -2885,7 +2885,10 @@ function filterLocRep(){
 
   var filtered=_locRepData.filter(function(l){
     if(cat&&l.category!==cat)return false;
-    if(q&&!l.name.toLowerCase().includes(q))return false;
+    if(q){
+      var searchStr=(l.company_name&&l.company_name!=='—'?l.company_name+' ':'')+l.name;
+      if(!searchStr.toLowerCase().includes(q))return false;
+    }
     return true;
   });
 
@@ -2926,7 +2929,10 @@ function renderLocRepFiltered(data){
   // Chart: top 10
   var top10=data.slice(0,10);
   mkChart('ch-lk','bar',
-    top10.map(function(l){return l.name.length>15?l.name.substring(0,15)+'…':l.name;}),
+    top10.map(function(l){
+      var n=l.company_name&&l.company_name!=='—'?l.company_name:l.name;
+      return n.length>15?n.substring(0,15)+'…':n;
+    }),
     top10.map(function(l){return l.visitCount;}),
     'Vizita','#2d8bff'
   );
