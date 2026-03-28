@@ -2511,27 +2511,6 @@ function renderLocList(){
     el.appendChild(card);
   });
 }
-  el.innerHTML='';
-  var sCol2={aktiv:'#05d9a0',ne_ndertim:'#ffaa2e',i_mbyllur:'#8da0bb',ne_investigim:'#2d8bff'};
-  filteredLocs.forEach(function(l){
-    var card=document.createElement('div');
-    card.style.cssText='padding:10px 12px;border:1px solid #1c2740;border-radius:8px;margin-bottom:6px;background:#07090f;cursor:pointer;transition:border-color .15s';
-    card.onmouseenter=function(){this.style.borderColor='#05d9a0';};
-    card.onmouseleave=function(){this.style.borderColor='#1c2740';};
-    card.onclick=function(){zoomToLoc(l.id);};
-    var top=document.createElement('div');top.style.cssText='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px';
-    var nm=document.createElement('div');nm.style.cssText='font-size:12px;font-weight:600;flex:1;margin-right:8px;color:#dce6f5';nm.textContent=l.name;top.appendChild(nm);
-    var btns=document.createElement('div');btns.style.cssText='display:flex;gap:4px;flex-shrink:0';
-    var eB=document.createElement('button');eB.style.cssText='padding:3px 7px;background:#18202e;border:1px solid #253352;border-radius:4px;color:#8da0bb;font-size:10px;cursor:pointer';eB.textContent='✏️';eB.onclick=function(e){e.stopPropagation();openLocModal(l.id);};btns.appendChild(eB);
-    var dB=document.createElement('button');dB.style.cssText='padding:3px 7px;background:transparent;border:1px solid transparent;border-radius:4px;color:#3d5275;font-size:10px;cursor:pointer';dB.textContent='🗑️';dB.onmouseenter=function(){this.style.borderColor='#ff4d6d';this.style.color='#ff4d6d';};dB.onmouseleave=function(){this.style.borderColor='transparent';this.style.color='#3d5275';};dB.onclick=function(e){e.stopPropagation();deleteLoc(l.id);};btns.appendChild(dB);
-    top.appendChild(btns);card.appendChild(top);
-    if(l.category){var c3=document.createElement('div');c3.style.cssText='font-size:10px;color:#2d8bff;font-family:monospace;margin-bottom:3px';c3.textContent=l.category;card.appendChild(c3);}
-    if(l.address){var a3=document.createElement('div');a3.style.cssText='font-size:10px;color:#3d5275;margin-bottom:3px';a3.textContent='📍 '+l.address;card.appendChild(a3);}
-    if(l.phone){var p3=document.createElement('div');p3.style.cssText='font-size:10px;color:#3d5275';p3.textContent='📞 '+l.phone;card.appendChild(p3);}
-    var st2=document.createElement('div');st2.style.cssText='font-size:10px;font-family:monospace;margin-top:4px;color:'+(sCol2[l.status]||'#8da0bb');st2.textContent='● '+(l.status||'aktiv');card.appendChild(st2);
-    el.appendChild(card);
-  });
-}
 
 function initLkMap(){
   setTimeout(function(){
