@@ -1672,6 +1672,14 @@ create trigger on_auth_user_created
         </div>
       </div>
 
+      <!-- DETYRAT E LIDHURA -->
+      <div id="dp-tasks-wrap" style="border:1px solid #1c2740;border-radius:10px;overflow:hidden;margin-bottom:14px;display:none">
+        <div style="padding:10px 14px;background:#07090f;border-bottom:1px solid #1c2740;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">
+          Detyrat e lidhura
+        </div>
+        <div style="padding:12px" id="dp-tasks-list"></div>
+      </div>
+
       <!-- DOKUMENTET -->
       <div style="border:1px solid #1c2740;border-radius:10px;overflow:hidden;margin-bottom:14px">
         <div style="padding:10px 14px;background:#07090f;border-bottom:1px solid #1c2740;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">
@@ -2131,8 +2139,6 @@ function openPanel(b64){
   // Dokumentet
   var docPaths=[];
   try{if(rec.doc_urls)docPaths=JSON.parse(rec.doc_urls);}catch(e){}
-  renderDocList(docPaths);
-
   // Hap panelin - JS direct style
   var dpEl=document.getElementById('dpanel');
   if(dpEl)dpEl.style.right='0';
@@ -2143,6 +2149,9 @@ function openPanel(b64){
   dpInitMap(rec);
 
   // Karusel (tani elementi dp-car-outer ekziston)
+  renderDocList(docPaths);
+  // Ngarko detyrat e lidhura
+  dpLoadTasks(rec);
   var photoUrls=[];
   try{if(rec.photo_urls)photoUrls=JSON.parse(rec.photo_urls);}catch(e){}
   setTimeout(function(){
@@ -2351,6 +2360,33 @@ function renderCarousel(photoUrls,photoCount){
   });
   _dpCarIdx=0;
   slides.style.transform='translateX(0)';
+}
+
+async function dpLoadTasks(rec){
+  var wrap=document.getElementById('dp-tasks-wrap');
+  var list=document.getElementById('dp-tasks-list');
+  if(!wrap||!list||!SB)return;
+  // Kërko detyra sipas location_id ose company_id
+  var q=SB.from('tasks').select('*').neq('status','anuluar').order('deadline',{ascending:true,nullsFirst:false});
+  if(rec.location_id) q=q.eq('location_id',rec.location_id);
+  else if(rec.company_id) q=q.eq('company_id',rec.company_id);
+  else{wrap.style.display='none';return;}
+  var{data,error}=await q;
+  if(error||!data||!data.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  list.innerHTML='';
+  data.forEach(function(t){
+    var risk=calcRisk(t.priority,t.deadline,t.status);
+    var rl=RISK_LABELS[risk]||RISK_LABELS.mesem;
+    var dr=t.deadline?daysRemaining(t.deadline):null;
+    var div=document.createElement('div');
+    div.style.cssText='padding:8px 10px;border:1px solid #1c2740;border-radius:7px;margin-bottom:6px;display:flex;align-items:center;gap:8px';
+    div.innerHTML='<span class="risk-badge risk-'+rl.cls+'">'+rl.emoji+'</span>'+
+      '<div style="flex:1;min-width:0"><div style="font-size:12px;color:#dce6f5">'+t.title+'</div>'+
+      (t.deadline?'<div style="font-size:10px;color:#8da0bb;font-family:monospace">📅 '+t.deadline+(dr!==null?' · '+Math.abs(dr)+(dr<0?' ditë vonesë':' ditë mbetur'):'')+'</div>':'')+
+      '</div>';
+    list.appendChild(div);
+  });
 }
 
 function carSlide(dir){
@@ -2653,6 +2689,10 @@ async function addRec(){
   var rec={
     user_id:CU.id,
     location_id:parseInt(document.getElementById('f-loc-id').value)||null,
+    company_id:(function(){
+      var cid=document.getElementById('f-company-sel').value;
+      return cid&&!isNaN(parseInt(cid))?parseInt(cid):null;
+    })(),
     user_email:CP.email,
     user_name:CP.full_name||CP.email,
     user_role:CP.role||'field',
@@ -2898,12 +2938,13 @@ async function loadRecs(showToast){
         var companyId=r.locations.company_id;
         if(companyId&&allCompanies.length){
           var comp=allCompanies.find(function(c){return c.id===companyId;});
-          if(comp){
-            r.company_name=comp.name;
-            r.location_display=comp.name+' › '+r.location_name;
-          }
+          if(comp){r.company_name=comp.name;r.location_display=comp.name+' › '+r.location_name;}
         }
-        if(!r.location_display) r.location_display=r.location_name;
+        if(!r.location_display)r.location_display=r.location_name;
+      } else if(r.company_id&&allCompanies.length){
+        // Ka company_id por nuk ka location_id (kompani pa degë)
+        var comp2=allCompanies.find(function(c){return c.id===r.company_id;});
+        if(comp2){r.company_name=comp2.name;r.location_display=comp2.name;}
       }
       delete r.locations;
       return r;
