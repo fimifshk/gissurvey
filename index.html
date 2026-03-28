@@ -926,95 +926,97 @@ create trigger on_auth_user_created
       </div>
     </div>
 
-    <!-- TAB 5: LOKACIONET / VIZITAT -->
+    <!-- TAB 5: KOMPANITË / VIZITAT -->
     <div id="rpsec5" style="display:none">
 
-      <!-- Filtër -->
-      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
-        <select id="rp-loccomp" onchange="document.getElementById('rp-locq').value='';filterLocRep()"
-          style="padding:7px 9px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;min-width:160px">
-          <option value="">🏢 Të gjitha kompanitë</option>
-        </select>
-        <input type="text" id="rp-locq" placeholder="Kërko degë..." oninput="filterLocRep()"
-          style="padding:7px 10px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;width:150px">
-        <select id="rp-loccat" onchange="filterLocRep()"
-          style="padding:7px 9px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
-          <option value="">Të gjitha kategoritë</option>
-        </select>
-        <select id="rp-locsort" onchange="filterLocRep()"
-          style="padding:7px 9px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
-          <option value="visits">Sipas vizitave (më shumë)</option>
-          <option value="recent">Vizita e fundit</option>
-          <option value="name">Sipas emrit</option>
-        </select>
+      <!-- ZGJIDHNI KOMPANINE DHE DEGEN -->
+      <div style="background:#07090f;border:1px solid #1c2740;border-radius:12px;padding:18px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:14px;color:#dce6f5">🏢 Zgjidh Kompaninë dhe Degën</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div>
+            <label style="font-family:monospace;font-size:10px;color:#3d5275;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:6px">KOMPANIA</label>
+            <select id="cv-company" onchange="onCvCompanyChange()"
+              style="width:100%;padding:9px 12px;background:#0d1119;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Zgjidh kompaninë —</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-family:monospace;font-size:10px;color:#3d5275;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:6px">DEGA / LOKACIONI</label>
+            <select id="cv-branch" onchange="onCvBranchChange()"
+              style="width:100%;padding:9px 12px;background:#0d1119;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
+              <option value="">— Të gjitha degët —</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="cv-qellim" onchange="renderCvReport()"
+            style="padding:7px 10px;background:#0d1119;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
+            <option value="">Të gjitha qëllimet</option>
+            <option>Inspektim urban</option>
+            <option>Monitorim mjedisi</option>
+            <option>Infrastrukturë rrugore</option>
+            <option>Kadastër / Pronë</option>
+            <option>Pyje dhe bimësi</option>
+            <option>Ujëra dhe liqene</option>
+            <option>Tjetër</option>
+          </select>
+          <select id="cv-period" onchange="renderCvReport()"
+            style="padding:7px 10px;background:#0d1119;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
+            <option value="0">Të gjitha periudhat</option>
+            <option value="7">7 ditët e fundit</option>
+            <option value="30">30 ditët e fundit</option>
+            <option value="90">3 muajt e fundit</option>
+            <option value="365">Viti i fundit</option>
+          </select>
+          <button onclick="renderCvReport()" style="padding:7px 14px;background:#05d9a0;border:none;border-radius:8px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer">🔍 Shfaq</button>
+        </div>
       </div>
 
-      <!-- KPI për lokacionet -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px">
-        <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:17px 18px">
-          <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-bottom:6px">KOMPANI AKTIVE</div>
-          <div style="font-size:28px;font-weight:700;line-height:1" id="lkv1">—</div>
+      <!-- REZULTATI -->
+      <div id="cv-result" style="display:none">
+        <!-- KPI -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+          <div style="background:#0d1119;border:1px solid #1c2740;border-radius:10px;padding:14px">
+            <div style="font-size:10px;color:#8da0bb;font-family:monospace;margin-bottom:4px">VIZITA TOTALE</div>
+            <div style="font-size:26px;font-weight:700;color:#05d9a0" id="cv-kpi1">0</div>
+          </div>
+          <div style="background:#0d1119;border:1px solid #1c2740;border-radius:10px;padding:14px">
+            <div style="font-size:10px;color:#8da0bb;font-family:monospace;margin-bottom:4px">VIZITORË UNIKË</div>
+            <div style="font-size:26px;font-weight:700;color:#2d8bff" id="cv-kpi2">0</div>
+          </div>
+          <div style="background:#0d1119;border:1px solid #1c2740;border-radius:10px;padding:14px">
+            <div style="font-size:10px;color:#8da0bb;font-family:monospace;margin-bottom:4px">VIZITA E FUNDIT</div>
+            <div style="font-size:13px;font-weight:600;color:#dce6f5;margin-top:4px" id="cv-kpi3">—</div>
+          </div>
+          <div style="background:#0d1119;border:1px solid #1c2740;border-radius:10px;padding:14px">
+            <div style="font-size:10px;color:#8da0bb;font-family:monospace;margin-bottom:4px">VLERËSIM MESATAR</div>
+            <div style="font-size:26px;font-weight:700;color:#ffaa2e" id="cv-kpi4">—</div>
+          </div>
         </div>
-        <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:17px 18px">
-          <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-bottom:6px">VIZITA TOTALE</div>
-          <div style="font-size:28px;font-weight:700;line-height:1" id="lkv2">—</div>
-        </div>
-        <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:17px 18px">
-          <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-bottom:6px">MES. VIZITA/LOK</div>
-          <div style="font-size:28px;font-weight:700;line-height:1" id="lkv3">—</div>
-        </div>
-        <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:17px 18px">
-          <div style="font-size:11px;color:#8da0bb;font-family:monospace;margin-bottom:6px">MÊ I VIZITUAR</div>
-          <div style="font-size:13px;font-weight:600;margin-top:4px;color:#05d9a0" id="lkv4">—</div>
-        </div>
-      </div>
 
-      <!-- Grafik top lokacione -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+        <!-- TABELA E VIZITAVE -->
         <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:18px">
-          <div style="font-size:13px;font-weight:600;margin-bottom:14px">Top 10 kompanitë (vizita)</div>
-          <div style="position:relative;height:220px"><canvas id="ch-lk"></canvas></div>
-        </div>
-        <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:18px">
-          <div style="font-size:13px;font-weight:600;margin-bottom:14px">Trend vizitash (30 ditë)</div>
-          <div style="position:relative;height:220px"><canvas id="ch-lkt"></canvas></div>
-        </div>
-      </div>
-
-      <!-- Tabela detajuar -->
-      <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:18px;margin-bottom:14px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
-          <span>Detaje vizitash sipas kompanisë</span>
-          <button onclick="expLocCSV()" style="padding:4px 10px;background:#18202e;border:1px solid #253352;border-radius:6px;color:#8da0bb;font-family:monospace;font-size:10px;cursor:pointer">CSV</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table class="rt">
-            <thead><tr>
-              <th>Kompania / Dega</th>
-              <th>Kategoria</th>
-              <th>Vizita</th>
-              <th>Vizitorë unikë</th>
-              <th>Vizita e fundit</th>
-              <th>Top qëllim</th>
-              <th>Mesatare ⭐</th>
-              <th>Trend</th>
-            </tr></thead>
-            <tbody id="lkrep"></tbody>
-          </table>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:13px;font-weight:600" id="cv-table-title">Historiku i vizitave</div>
+            <button onclick="expCvCSV()" style="padding:4px 10px;background:#18202e;border:1px solid #253352;border-radius:6px;color:#8da0bb;font-family:monospace;font-size:10px;cursor:pointer">CSV</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="rt">
+              <thead><tr>
+                <th>Data</th><th>Ora</th><th>User</th>
+                <th>Dega</th><th>Qëllimi</th><th>Statusi</th>
+                <th>Vlerësimi</th><th>Shënime</th>
+              </tr></thead>
+              <tbody id="cv-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <!-- Historiku i vizitave për lokacionin e zgjedhur -->
-      <div style="background:#0d1119;border:1px solid #1c2740;border-radius:12px;padding:18px;margin-bottom:14px" id="lk-history-box" style="display:none">
-        <div style="font-size:13px;font-weight:600;margin-bottom:14px" id="lk-history-title">Historiku i vizitave</div>
-        <div style="overflow-x:auto">
-          <table class="rt">
-            <thead><tr><th>Data</th><th>Ora</th><th>User</th><th>Qëllimi</th><th>Vlerësimi</th><th>Shënime</th></tr></thead>
-            <tbody id="lkhrep"></tbody>
-          </table>
-        </div>
+      <!-- MESAZH KUR S'KA ZGJEDHJE -->
+      <div id="cv-empty" style="text-align:center;padding:60px 20px;color:#3d5275;font-family:monospace;font-size:12px">
+        ⬆️ Zgjidh kompaninë për të parë vizitat
       </div>
-
     </div>
 
   </div><!-- /rpbody -->
@@ -2589,7 +2591,7 @@ function rpTab(n){
   else if(n===1)renderUserTab();
   else if(n===2)renderCatTab();
   else if(n===3)repByDate();
-  else if(n===5)loadLocRep();
+  else if(n===5){loadLocRep();initCvDropdowns();}
 }
 function setPeriod(p){
   var now=new Date(),fr=new Date();
@@ -3069,6 +3071,165 @@ function showLocHistory(loc){
   });
 
   box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ═══════════════════════════════════════
+   RAPORT VIZITASH PER KOMPANI
+═══════════════════════════════════════ */
+var _cvRecs = []; // rekordet e filtruara per raportin e kompanise
+
+function initCvDropdowns(){
+  var compSel = document.getElementById('cv-company');
+  if(!compSel) return;
+  compSel.innerHTML = '<option value="">— Zgjidh kompaninë —</option>' +
+    allCompanies.map(function(c){
+      return '<option value="'+c.id+'">'+c.name+(c.category?' · '+c.category:'')+'</option>';
+    }).join('');
+}
+
+function onCvCompanyChange(){
+  var cid = document.getElementById('cv-company').value;
+  var branchSel = document.getElementById('cv-branch');
+  branchSel.innerHTML = '<option value="">— Të gjitha degët —</option>';
+  if(cid){
+    var locs = allLocs.filter(function(l){ return String(l.company_id)===String(cid); });
+    locs.forEach(function(l){
+      var opt = document.createElement('option');
+      opt.value = l.id;
+      opt.textContent = l.name + (l.address?' · '+l.address.substring(0,30):'');
+      branchSel.appendChild(opt);
+    });
+  }
+  renderCvReport();
+}
+
+function onCvBranchChange(){ renderCvReport(); }
+
+async function renderCvReport(){
+  var cid = document.getElementById('cv-company').value;
+  var lid = document.getElementById('cv-branch').value;
+  var ql  = document.getElementById('cv-qellim').value;
+  var per = parseInt(document.getElementById('cv-period').value)||0;
+
+  var emptyEl  = document.getElementById('cv-empty');
+  var resultEl = document.getElementById('cv-result');
+
+  if(!cid){
+    emptyEl.style.display='block';
+    resultEl.style.display='none';
+    return;
+  }
+
+  emptyEl.style.display='none';
+  resultEl.style.display='block';
+
+  // Gjej të gjitha location_id-të e kësaj kompanie
+  var compLocs = allLocs.filter(function(l){ return String(l.company_id)===String(cid); });
+  var locIds   = compLocs.map(function(l){ return l.id; });
+
+  // Nëse është zgjedhur degë specifike
+  if(lid) locIds = [parseInt(lid)];
+
+  // Gjej rekordet nga allRecs
+  var cutoff = per>0 ? new Date(Date.now()-per*864e5).toISOString().slice(0,10) : null;
+
+  _cvRecs = allRecs.filter(function(r){
+    if(!locIds.includes(r.location_id)) return false;
+    if(ql && r.qellim!==ql) return false;
+    if(cutoff && r.rec_date < cutoff) return false;
+    return true;
+  });
+
+  // Nëse nuk gjenden në allRecs (rekordet e vjetra), kërko nga DB
+  if(!_cvRecs.length && locIds.length){
+    var q = SB.from('survey_records')
+      .select('*')
+      .in('location_id', locIds)
+      .order('rec_date',{ascending:false});
+    if(ql) q = q.eq('qellim',ql);
+    if(cutoff) q = q.gte('rec_date',cutoff);
+    var{data} = await q;
+    _cvRecs = data||[];
+  }
+
+  // Titull
+  var comp = allCompanies.find(function(c){return String(c.id)===String(cid);});
+  var branchName = lid ? (allLocs.find(function(l){return String(l.id)===String(lid);})||{name:'?'}).name : 'Të gjitha degët';
+  var titleEl = document.getElementById('cv-table-title');
+  if(titleEl) titleEl.textContent = (comp?comp.name:'?') + ' › ' + branchName;
+
+  // KPI
+  var users = new Set(_cvRecs.map(function(r){return r.user_email;}));
+  var lastV = _cvRecs.reduce(function(m,r){return(!m||r.rec_date>m)?r.rec_date:m;},null);
+  var rated = _cvRecs.filter(function(r){return r.vleresimi;});
+  var avgR  = rated.length ? (rated.reduce(function(s,r){return s+r.vleresimi;},0)/rated.length).toFixed(1) : '—';
+
+  document.getElementById('cv-kpi1').textContent = _cvRecs.length;
+  document.getElementById('cv-kpi2').textContent = users.size;
+  document.getElementById('cv-kpi3').textContent = lastV||'—';
+  document.getElementById('cv-kpi4').textContent = avgR==='—'?'—':avgR+' ⭐';
+
+  // Tabela
+  var tbody = document.getElementById('cv-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+
+  if(!_cvRecs.length){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td colspan="8" style="text-align:center;padding:20px;color:#3d5275;font-family:monospace">Asnjë vizitë e gjetur</td>';
+    tbody.appendChild(tr);
+    return;
+  }
+
+  // Sort: me i ri sipër
+  var sorted = _cvRecs.slice().sort(function(a,b){
+    return ((b.rec_date||'')+(b.rec_time||'')) > ((a.rec_date||'')+(a.rec_time||'')) ? 1:-1;
+  });
+
+  var STATUS_C = {aktiv:'#05d9a0',ne_demtuar:'#ffaa2e',i_braktisur:'#ff4d6d',ne_ndertim:'#2d8bff'};
+
+  sorted.forEach(function(r){
+    var loc = allLocs.find(function(l){return l.id===r.location_id;});
+    var tr = document.createElement('tr');
+    tr.style.cursor='pointer';
+    tr.onclick=function(){
+      var b64=btoa(unescape(encodeURIComponent(JSON.stringify(r))));
+      goPg('rc');
+      setTimeout(function(){openPanel(b64);},300);
+    };
+    tr.onmouseenter=function(){this.style.background='#0d1119';};
+    tr.onmouseleave=function(){this.style.background='';};
+
+    var stars = r.vleresimi ?
+      '<span style="color:#ffaa2e">'+'★'.repeat(r.vleresimi)+'</span><span style="color:#3d5275">'+'★'.repeat(5-r.vleresimi)+'</span>' : '—';
+
+    tr.innerHTML =
+      '<td style="font-family:monospace;font-size:11px">'+(r.rec_date||'—')+'</td>'+
+      '<td style="font-family:monospace;font-size:11px;color:#8da0bb">'+(r.rec_time||'—')+'</td>'+
+      '<td style="font-size:12px">'+(r.user_name||r.user_email||'—')+'</td>'+
+      '<td style="font-size:11px;color:#2d8bff">'+(loc?loc.name:'—')+'</td>'+
+      '<td>'+(r.qellim?'<span class="badge info" style="font-size:9px">'+r.qellim+'</span>':'—')+'</td>'+
+      '<td><span style="font-size:10px;color:'+(STATUS_C[r.statusi]||'#8da0bb')+'">'+(r.statusi||'—')+'</span></td>'+
+      '<td>'+stars+'</td>'+
+      '<td style="font-size:11px;color:#8da0bb;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.notes||'—')+'</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function expCvCSV(){
+  if(!_cvRecs.length){toast('warn','Nuk ka të dhëna');return;}
+  var rows=[['Data','Ora','User','Email','Dega','Qëllimi','Statusi','Vlerësimi','Shënime']];
+  _cvRecs.forEach(function(r){
+    var loc=allLocs.find(function(l){return l.id===r.location_id;});
+    rows.push([r.rec_date||'',r.rec_time||'',r.user_name||'',r.user_email||'',
+      loc?loc.name:'',r.qellim||'',r.statusi||'',r.vleresimi||'',r.notes||'']);
+  });
+  var csv='﻿'+rows.map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('
+');
+  var b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='vizitat_kompani_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  toast('ok','CSV eksportuar!');
 }
 
 function expLocCSV(){
@@ -3649,6 +3810,10 @@ async function loadLocs(){
   var compSel=document.getElementById('lkm-company');
   if(compSel){var cv2=compSel.value;compSel.innerHTML='<option value="">— Pa kompani —</option>'+allCompanies.map(function(c){return'<option value="'+c.id+'">'+c.name+'</option>';}).join('');compSel.value=cv2;}
   filterLocs();renderHierarchy();populateSvCompanyDropdown();
+  // Update cv dropdowns nëse raporti është hapur
+  if(document.getElementById('rpsec5')&&document.getElementById('rpsec5').style.display!=='none'){
+    initCvDropdowns();
+  }
   // Popullo dropdown kompanish në lksec1
   var fcomp=document.getElementById('lk-fcomp');
   if(fcomp){
