@@ -4489,7 +4489,8 @@ function setRiskFilter(risk){
   if(sel){sel.value=risk;}
   filterTasks();
 }
-  var active=allTasks.filter(function(t){return t.status!=='perfunduar'&&t.status!=='anuluar';});
+
+function updateTaskKPIs(){
   var counts={kritik:0,i_larte:0,mesem:0,i_ulet:0,perfunduar:0};
   allTasks.forEach(function(t){
     if(t.status==='perfunduar'||t.status==='anuluar') counts.perfunduar++;
