@@ -2350,13 +2350,21 @@ async function loadRecs(showToast){
   if(!SB||!CU)return;
   log('info','Duke ngarkuar rekordet...');
   try{
-    var q=SB.from('survey_records').select('*,locations(id,name)').order('created_at',{ascending:false});
+    var q=SB.from('survey_records').select('*,locations(id,name,company_id,companies(id,name))').order('created_at',{ascending:false});
     if(CP.role==='field')q=q.eq('user_id',CU.id);
     var{data,error}=await q;
     if(error)throw error;
     allRecs=(data||[]).map(function(r){
       // Ekstrakto location_name nga JOIN
-      if(r.locations&&r.locations.name){r.location_name=r.locations.name;}
+      if(r.locations&&r.locations.name){
+        r.location_name=r.locations.name;
+        if(r.locations.companies&&r.locations.companies.name){
+          r.company_name=r.locations.companies.name;
+          r.location_display=r.company_name+' › '+r.location_name;
+        } else {
+          r.location_display=r.location_name;
+        }
+      }
       delete r.locations;
       return r;
     });
@@ -2425,7 +2433,7 @@ function renderRT(){
       '<td><div class="utag"><div class="mava" style="background:'+c+'22;color:'+c+'">'+ini+'</div>' +
         '<div><div style="font-size:12px;font-weight:500">'+nm+'</div>' +
         '<div style="font-size:10px;color:var(--txt3);font-family:var(--mono)">'+r.user_email+'</div></div>'+offTag+'</div></td>' +
-      '<td style="font-size:11px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.location_name?'<span style="color:#2d8bff">🏢 '+r.location_name+'</span>':'<span style="color:#3d5275">—</span>')+'</td>' +
+      '<td style="font-size:11px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.location_display||r.location_name?'<span style="color:#2d8bff">🏢 '+(r.location_display||r.location_name)+'</span>':'<span style="color:#3d5275">—</span>')+'</td>' +
       '<td><div style="font-family:var(--mono);font-size:11px">'+(r.rec_date||'—')+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--txt3)">'+(r.rec_time||'—')+'</div></td>' +
       '<td><div style="font-family:var(--mono);font-size:11px;color:var(--acc)">'+(r.lat?r.lat.toFixed(5):'—')+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--acc)">'+(r.lng?r.lng.toFixed(5):'—')+'</div></td>' +
       '<td>'+(r.qellim?'<span class="badge info" style="font-size:10px">'+r.qellim+'</span>':'<span style="color:var(--txt3)">—</span>')+'</td>' +
@@ -2813,7 +2821,7 @@ var _locRepData=[];
 async function loadLocRep(){
   if(!SB)return;
   // Ngarko lokacionet + rekordet me location_id
-  var locsRes=await SB.from('locations').select('*').order('name');
+  var locsRes=await SB.from('locations').select('*,companies(id,name)').order('name');
   if(locsRes.error){
     toast('err','Tabela "locations" nuk ekziston — ekzekutoni locations_table.sql');
     log('err','loadLocRep: '+locsRes.error.message);
@@ -2839,6 +2847,9 @@ async function loadLocRep(){
   // Bashko me lokacionet
   // Shto edhe rekordet që kanë location_id te deget
   _locRepData=locsArr.map(function(l){
+    // Ekstrakto emrin e kompanisë
+    if(l.companies&&l.companies.name) l.company_name=l.companies.name;
+    delete l.companies;
     var visits=byLoc[l.id]||[];
     var users=new Set(visits.map(function(v){return v.user_email;}));
     var lastVisit=visits.reduce(function(m,v){return(!m||v.rec_date>m)?v.rec_date:m;},null);
@@ -2906,7 +2917,11 @@ function renderLocRepFiltered(data){
   var el1=document.getElementById('lkv1');if(el1)el1.textContent=activeLocs;
   var el2=document.getElementById('lkv2');if(el2)el2.textContent=totalVisits;
   var el3=document.getElementById('lkv3');if(el3)el3.textContent=avg;
-  var el4=document.getElementById('lkv4');if(el4)el4.textContent=top?(top.name.substring(0,20)+(top.name.length>20?'…':'')+'  ('+top.visitCount+')') :'—';
+  var el4=document.getElementById('lkv4');
+  if(el4){
+    var topName=top?(top.company_name&&top.company_name!=='—'?top.company_name+' › '+top.name:top.name):'—';
+    el4.textContent=top?topName.substring(0,25)+(topName.length>25?'…':'')+'  ('+top.visitCount+')':'—';
+  }
 
   // Chart: top 10
   var top10=data.slice(0,10);
@@ -2960,8 +2975,13 @@ function renderLocRepFiltered(data){
 
     var stars=l.avgRating?'★'.repeat(Math.round(l.avgRating))+'<span style="color:#3d5275">'+'★'.repeat(5-Math.round(l.avgRating))+'</span> '+l.avgRating:'—';
 
+    // Emri kryesor: kompania nëse ka, degë si nëndetaj
+    var mainName=l.company_name&&l.company_name!=='—'?l.company_name:l.name;
+    var subName=l.company_name&&l.company_name!=='—'?l.name:'';
     tr.innerHTML=
-      '<td><div style="font-weight:500;color:#dce6f5">'+l.name+'</div><div style="font-size:10px;color:#3d5275;font-family:monospace">'+l.status+'</div></td>'+
+      '<td><div style="font-weight:500;color:#dce6f5">'+mainName+'</div>'+
+      (subName?'<div style="font-size:10px;color:#2d8bff;font-family:monospace">› '+subName+'</div>':'')+
+      '<div style="font-size:10px;color:#3d5275;font-family:monospace">'+l.status+'</div></td>'+
       '<td><span class="badge info" style="font-size:9px">'+l.category+'</span></td>'+
       '<td style="font-weight:700;font-size:16px;color:#05d9a0">'+l.visitCount+'</td>'+
       '<td style="font-family:monospace">'+l.uniqueUsers+'</td>'+
@@ -2979,7 +2999,9 @@ function showLocHistory(loc){
   var tbody=document.getElementById('lkhrep');
   if(!box||!title||!tbody)return;
 
-  title.textContent='📋 Historiku: '+loc.name+' ('+loc.visitCount+' vizita)';
+  var histTitle=loc.company_name&&loc.company_name!=='—'?
+    loc.company_name+' › '+loc.name : loc.name;
+  title.textContent='📋 Historiku: '+histTitle+' ('+loc.visitCount+' vizita)';
   box.style.display='block';
 
   // Sort vizita sipas datës desc
