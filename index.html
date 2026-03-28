@@ -92,7 +92,7 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 /* ── APP SHELL ── */
 #app{display:none;flex-direction:column;height:100vh}
 #app.on{display:flex}
-.topbar{height:52px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;overflow-x:auto;position:relative;z-index:10000}
+.topbar{height:52px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;overflow-x:auto;position:relative;z-index:10000;pointer-events:auto}
 .logo{font-family:var(--mono);font-size:13px;color:var(--acc);letter-spacing:.1em;margin-right:4px}
 .logo span{color:var(--txt3)}
 .nav{display:flex;gap:2px}
@@ -109,8 +109,9 @@ input,select,textarea,button{font-family:inherit;pointer-events:all}
 .ava{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--mono);flex-shrink:0}
 .uname{font-size:12px;font-weight:600}
 .urole{font-size:10px;color:var(--txt2);font-family:var(--mono)}
-.pages{flex:1;overflow:hidden;position:relative;isolation:isolate}
-.page{position:absolute;inset:0;display:none;overflow:hidden;pointer-events:none}.page#page-rp{overflow:visible}
+.pages{flex:1;overflow:hidden;min-height:0;position:relative}
+.page{position:absolute;inset:0;display:none;overflow:hidden}.page#page-rp{overflow:visible}
+.page.on{display:flex;pointer-events:auto}
 .page.on{display:flex}
 
 /* ── SURVEY LAYOUT ── */
