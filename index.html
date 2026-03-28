@@ -2038,7 +2038,6 @@ var _dpCarIdx=0;
 var _dpStar=0;
 
 async function openRecById(id, trEl){
-  console.log('openRecById called:', id, 'allRecs:', allRecs.length);
   // Kërko fillimisht në allRecs
   var rec = allRecs.find(function(r){ return String(r.id)===String(id); });
   if(!rec && SB){
@@ -2134,10 +2133,11 @@ function openPanel(b64){
   try{if(rec.doc_urls)docPaths=JSON.parse(rec.doc_urls);}catch(e){}
   renderDocList(docPaths);
 
-  // Hap panelin PARA karuselit (keshtu elementet ekzistojnë)
-  document.getElementById('dpanel').classList.add('open');
-  document.getElementById('dp-overlay').style.display='block';
-  // document.body.style.overflow='hidden'; // Hequr - shkakton probleme me hartën
+  // Hap panelin - JS direct style
+  var dpEl=document.getElementById('dpanel');
+  if(dpEl)dpEl.style.right='0';
+  var ovEl=document.getElementById('dp-overlay');
+  if(ovEl)ovEl.style.display='block';
 
   // Harta mini
   dpInitMap(rec);
@@ -4181,10 +4181,8 @@ function openCompModal(id){
 function closeDp(){
   var dp=document.getElementById('dpanel');
   var ov=document.getElementById('dp-overlay');
-  if(dp)dp.classList.remove('open');
+  if(dp)dp.style.right='-560px';
   if(ov)ov.style.display='none';
-  document.body.style.overflow='';
-  document.body.style.overflowY='';
   if(_dpMapObj){try{_dpMapObj.remove();}catch(e){}; _dpMapObj=null;}
   _dpRec=null;
   // Rifresko hartën e survey pas mbylljes
