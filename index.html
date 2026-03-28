@@ -1815,7 +1815,7 @@ function openRecModal(rec){
       // If extension is unrecognized (e.g. signed URL with no extension), treat as image
       var isImg=imgExts.indexOf(ext)>=0 || (!ext) || ext.length>4;
       if(isImg){
-        return '<img src="'+u+'" style="min-width:100%;max-height:420px;width:100%;object-fit:contain;display:block;background:#0a0e18;flex-shrink:0">';
+        return '<img src="'+u+'" style="min-width:100%;width:100%;max-height:460px;object-fit:contain;display:block;background:#0a0e18;flex-shrink:0">';
       } else {
         var fname=u.split('/').pop().split('?')[0];
         var icons={pdf:'📄',doc:'📝',docx:'📝',xls:'📊',xlsx:'📊'};
@@ -1833,15 +1833,52 @@ function openRecModal(rec){
   } else {if(pb)pb.style.display='none';if(cw)cw.style.display='none';}
   var ts=document.getElementById('rm-tasks-sec'),tl=document.getElementById('rm-tasks-list');
   if(ts&&tl){
-    var rt=(allTasks||[]).filter(function(t){return String(t.survey_record_id)===String(rec.id);});
+    // Filtro detyrat sipas location_id ose company_id (jo survey_record_id)
+    var rt=(allTasks||[]).filter(function(t){
+      if(t.status==='anuluar')return false;
+      if(rec.location_id&&t.location_id&&String(t.location_id)===String(rec.location_id))return true;
+      if(rec.company_id&&t.company_id&&String(t.company_id)===String(rec.company_id))return true;
+      return false;
+    });
     if(rt.length>0){
       ts.style.display='block';
+      var countEl=document.getElementById('rm-tasks-count');
+      if(countEl)countEl.textContent='('+rt.length+')';
       tl.innerHTML=rt.map(function(t){
-        var pc={i_ulet:'#05d9a0',mesem:'#ffaa2e',i_larte:'#ff8c42',kritik:'#ff4d6d'}[t.prioriteti]||'#8da0bb';
-        var dl='';if(t.deadline){var d2=new Date(t.deadline),df=Math.ceil((d2-new Date())/86400000);dl=' - '+(df>0?df+' dite mbetur':'afati kaloi');}
-        return'<div style="background:#07090f;border:1px solid #1c2740;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+pc+'"></div><div style="flex:1"><div style="font-size:12px;color:#dce6f5">'+t.title+'</div><div style="font-size:10px;color:#3d5275;font-family:monospace;margin-top:2px">'+(t.deadline||'Pa afat')+dl+'</div></div><div style="font-size:10px;padding:2px 8px;border-radius:10px;background:'+pc+'22;color:'+pc+';border:1px solid '+pc+'44">'+(t.statusi_detyre||'aktive')+'</div></div>';
+        var risk=calcRisk(t.priority,t.deadline,t.status);
+        var rc={kritik:'#ff4d6d',i_larte:'#ffaa2e',mesem:'#2d8bff',i_ulet:'#05d9a0',perfunduar:'#3d5275'}[risk]||'#8da0bb';
+        var statusLbl={hapur:'Hapur',ne_progres:'Në progres',perfunduar:'Kryer',anuluar:'Anuluar'}[t.status]||t.status;
+        var prioEmoji={kritik:'🔴',i_larte:'🟠',mesem:'🟡',i_ulet:'🟢',perfunduar:'✅'}[risk]||'⚪';
+        var dr=t.deadline?daysRemaining(t.deadline):null;
+        var dlTxt='';
+        if(dr!==null){
+          if(dr<0)dlTxt='<span style="color:#ff4d6d;font-weight:700">⚠ '+Math.abs(dr)+' ditë vonesë</span>';
+          else if(dr===0)dlTxt='<span style="color:#ff4d6d;font-weight:700">🚨 Skadon SOT</span>';
+          else if(dr<=3)dlTxt='<span style="color:#ffaa2e">⏰ '+dr+' ditë</span>';
+          else dlTxt='<span style="color:#3d5275">'+dr+' ditë mbetur</span>';
+        }
+        var assignedTxt=t.assigned_name&&t.assigned_name!=='—'?
+          '<span style="color:#8da0bb">👤 '+t.assigned_name+'</span>':'';
+        var isDone=t.status==='perfunduar'||t.status==='anuluar';
+        return'<div style="background:#07090f;border:1px solid '+(isDone?'#1c2740':rc+'44')+';border-left:3px solid '+(isDone?'#253352':rc)+';border-radius:8px;padding:11px 13px">'+
+          '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">'+
+            '<div style="font-size:12px;font-weight:600;color:'+(isDone?'#3d5275':'#dce6f5')+'">'+(isDone?'<s>':'')+t.title+(isDone?'</s>':'')+'</div>'+
+            '<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:'+rc+'18;color:'+rc+';border:1px solid '+rc+'33;white-space:nowrap">'+prioEmoji+' '+statusLbl+'</span>'+
+          '</div>'+
+          (t.description?'<div style="font-size:11px;color:#5a6d8a;margin-bottom:6px;line-height:1.5">'+t.description.substring(0,100)+(t.description.length>100?'…':'')+'</div>':'')+
+          '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:10px;font-family:monospace">'+
+            (t.deadline?'<span style="color:#5a6d8a">📅 '+t.deadline+'</span>':'')+
+            dlTxt+
+            assignedTxt+
+          '</div>'+
+        '</div>';
       }).join('');
-    } else ts.style.display='none';
+    } else {
+      ts.style.display='block';
+      var countEl2=document.getElementById('rm-tasks-count');
+      if(countEl2)countEl2.textContent='';
+      tl.innerHTML='<div style="font-size:11px;color:#3d5275;font-family:monospace;padding:4px 0">Nuk ka detyra për këtë lokacion.</div>';
+    }
   }
   var ds=document.getElementById('rm-docs-sec'),dl2=document.getElementById('rm-docs-list');
   if(ds&&dl2){
@@ -1870,6 +1907,25 @@ function closeRecModal(){
   document.body.style.overflow='';
   if(_rmMap){try{_rmMap.remove();}catch(e){}_rmMap=null;}
   _rmRec=null;
+}
+function rmOpenNewTask(){
+  if(!_rmRec)return;
+  // Pre-plotëso task modal me kompanine/lokacionin e rekordeve
+  openTaskModal(null);
+  setTimeout(function(){
+    if(_rmRec.company_id){
+      var cs=document.getElementById('tkm-company');
+      if(cs){cs.value=_rmRec.company_id;onTkmCompanyChange(_rmRec.company_id,_rmRec.location_id);}
+    }
+    if(_rmRec.location_id){
+      setTimeout(function(){
+        var ls=document.getElementById('tkm-location');
+        if(ls)ls.value=_rmRec.location_id;
+        updateRiskPreview();
+      },100);
+    }
+  },50);
+  closeRecModal();
 }
 function openEditFromModal(){
   if(!_rmRec)return;_dpRec=_rmRec;closeRecModal();openEditModal();
@@ -5261,8 +5317,8 @@ if(typeof supabase!=='undefined'){
         </div>
       </div>
       <div id="rm-car-wrap" style="display:none;border-radius:10px;overflow:hidden;border:1px solid #1c2740">
-        <div style="position:relative;background:#07090f;min-height:200px;max-height:480px">
-          <div id="rm-slides" style="display:flex;overflow:hidden;transition:transform .3s"></div>
+        <div style="position:relative;background:#07090f;min-height:200px;max-height:480px;overflow:hidden">
+          <div id="rm-slides" style="display:flex;transition:transform .3s;will-change:transform"></div>
           <button onclick="rmCarSlide(-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px">&#8249;</button>
           <button onclick="rmCarSlide(1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px">&#8250;</button>
           <div id="rm-dots" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px"></div>
@@ -5288,7 +5344,10 @@ if(typeof supabase!=='undefined'){
         </div>
       </div>
       <div id="rm-tasks-sec" style="display:none;border:1px solid #1c2740;border-radius:12px;overflow:hidden">
-        <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:10px 16px;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase">Detyrat e lidhura</div>
+        <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:10px 16px;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between">
+          <span>Detyrat e lidhura <span id="rm-tasks-count" style="color:#2d8bff"></span></span>
+          <button onclick="rmOpenNewTask()" style="padding:3px 10px;background:rgba(5,217,160,.1);border:1px solid rgba(5,217,160,.3);border-radius:5px;color:#05d9a0;font-size:10px;cursor:pointer;font-family:monospace">+ Shto detyrë</button>
+        </div>
         <div id="rm-tasks-list" style="padding:12px;display:flex;flex-direction:column;gap:8px"></div>
       </div>
       <div id="rm-docs-sec" style="display:none;border:1px solid #1c2740;border-radius:12px;overflow:hidden">
