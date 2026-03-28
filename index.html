@@ -1443,22 +1443,81 @@ create trigger on_auth_user_created
             <div style="font-size:11px;color:#8da0bb;font-family:monospace" id="tk-sub">Menaxhimi i detyrave</div>
           </div>
           <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
-            <select id="tk-fstatus" onchange="filterTasks()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
-              <option value="">Të gjitha</option>
+            <button onclick="openTaskModal()" style="padding:7px 14px;background:#05d9a0;border:none;border-radius:9px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer">+ Detyrë e re</button>
+          </div>
+        </div>
+
+        <!-- SUB-TABS -->
+        <div style="display:flex;border-bottom:1px solid #1c2740;margin-bottom:12px">
+          <button id="tk-tab-list" onclick="tkSetTab('list')" style="padding:8px 16px;background:transparent;border:none;border-bottom:2px solid #05d9a0;color:#05d9a0;font-family:monospace;font-size:11px;cursor:pointer">📋 Lista</button>
+          <button id="tk-tab-rep" onclick="tkSetTab('rep')" style="padding:8px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:#3d5275;font-family:monospace;font-size:11px;cursor:pointer">📊 Raport</button>
+        </div>
+
+        <!-- FILTRAT — Lista -->
+        <div id="tk-filters-list">
+          <!-- Rreshti 1: kërkim + filtra kryesorë -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center">
+            <input type="text" id="tk-fsearch" placeholder="🔍 Kërko detyrë..." oninput="filterTasks()"
+              style="padding:7px 10px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;width:180px">
+            <select id="tk-fstatus" onchange="filterTasks()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
+              <option value="">Të gjitha statuset</option>
               <option value="hapur">📋 Hapur</option>
               <option value="ne_progres">⚡ Në progres</option>
               <option value="perfunduar">✅ Përfunduar</option>
+              <option value="anuluar">❌ Anuluar</option>
             </select>
-            <select id="tk-frisk" onchange="filterTasks()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
+            <select id="tk-frisk" onchange="filterTasks()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
               <option value="">Të gjitha risqet</option>
               <option value="kritik">🔴 Kritik</option>
               <option value="i_larte">🟠 I lartë</option>
               <option value="mesem">🟡 Mesëm</option>
               <option value="i_ulet">🟢 I ulët</option>
+              <option value="perfunduar">✅ Kryer</option>
             </select>
-            <button onclick="openTaskModal()" style="padding:7px 14px;background:#05d9a0;border:none;border-radius:9px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer">+ Detyrë e re</button>
+          </div>
+          <!-- Rreshti 2: kompani + degë + personi + deadline range -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center">
+            <select id="tk-fcomp" onchange="tkOnCompanyFilter()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;min-width:150px">
+              <option value="">Të gjitha kompanitë</option>
+            </select>
+            <select id="tk-floc" onchange="filterTasks()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;min-width:140px">
+              <option value="">Të gjitha degët</option>
+            </select>
+            <select id="tk-fassigned" onchange="filterTasks()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;min-width:140px">
+              <option value="">Të gjithë personat</option>
+            </select>
+            <div style="display:flex;align-items:center;gap:5px;font-family:monospace;font-size:11px;color:#3d5275">
+              <span>Afati:</span>
+              <input type="date" id="tk-fdate-fr" onchange="filterTasks()" style="padding:6px 8px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
+              <span>—</span>
+              <input type="date" id="tk-fdate-to" onchange="filterTasks()" style="padding:6px 8px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
+            </div>
+            <button onclick="tkClearFilters()" style="padding:6px 10px;background:transparent;border:1px solid #253352;border-radius:8px;color:#3d5275;font-family:monospace;font-size:10px;cursor:pointer">✕ Pastro</button>
           </div>
         </div>
+
+        <!-- FILTRAT — Raport (fshehur fillimisht) -->
+        <div id="tk-filters-rep" style="display:none;margin-bottom:10px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <select id="tk-rep-comp" onchange="tkOnRepCompany()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;min-width:160px">
+              <option value="">Të gjitha kompanitë</option>
+            </select>
+            <select id="tk-rep-loc" onchange="renderTaskReport()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;min-width:140px">
+              <option value="">Të gjitha degët</option>
+            </select>
+            <select id="tk-rep-assigned" onchange="renderTaskReport()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;min-width:140px">
+              <option value="">Të gjithë personat</option>
+            </select>
+            <select id="tk-rep-status" onchange="renderTaskReport()" style="padding:7px 9px;background:#07090f;border:1px solid #1c2740;border-radius:8px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none">
+              <option value="">Të gjitha</option>
+              <option value="hapur">Hapur</option>
+              <option value="ne_progres">Në progres</option>
+              <option value="perfunduar">Përfunduar</option>
+            </select>
+            <button onclick="tkExportReport()" style="padding:6px 12px;background:#07090f;border:1px solid #ffaa2e;border-radius:8px;color:#ffaa2e;font-family:monospace;font-size:11px;cursor:pointer">📥 CSV</button>
+          </div>
+        </div>
+
         <!-- KPI Strip -->
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
           <div id="tk-kpi0" style="padding:6px 14px;background:#07090f;border:1px solid #ff4d6d;border-radius:7px;font-family:monospace;font-size:11px;color:#ff4d6d;cursor:pointer" onclick="setRiskFilter('kritik')">🔴 Kritik: <b id="tk-n-kritik">0</b></div>
@@ -1472,6 +1531,9 @@ create trigger on_auth_user_created
 
       <!-- LISTA -->
       <div id="tk-list" style="flex:1;overflow-y:auto;padding:14px 20px"></div>
+
+      <!-- RAPORT (fshehur fillimisht) -->
+      <div id="tk-report" style="display:none;flex:1;overflow-y:auto;padding:14px 20px"></div>
     </div>
     </div>
 
@@ -4137,20 +4199,289 @@ async function loadTasks(){
     return t;
   });
   filterTasks();
+  tkPopFiltersDropdowns();
   checkTaskNotifications();
   log('ok','Ngarkuar '+allTasks.length+' detyra');
 }
 
+function tkSetTab(tab){
+  var isList=tab==='list';
+  document.getElementById('tk-tab-list').style.borderBottomColor=isList?'#05d9a0':'transparent';
+  document.getElementById('tk-tab-list').style.color=isList?'#05d9a0':'#3d5275';
+  document.getElementById('tk-tab-rep').style.borderBottomColor=isList?'transparent':'#9b5fff';
+  document.getElementById('tk-tab-rep').style.color=isList?'#3d5275':'#9b5fff';
+  document.getElementById('tk-filters-list').style.display=isList?'block':'none';
+  document.getElementById('tk-filters-rep').style.display=isList?'none':'block';
+  document.getElementById('tk-list').style.display=isList?'block':'none';
+  document.getElementById('tk-report').style.display=isList?'none':'block';
+  if(!isList){tkPopRepDropdowns();renderTaskReport();}
+}
+
+function tkPopFiltersDropdowns(){
+  // Kompani dropdown
+  var cs=document.getElementById('tk-fcomp');
+  if(cs&&allCompanies.length){
+    var cv=cs.value;
+    cs.innerHTML='<option value="">Të gjitha kompanitë</option>'+
+      allCompanies.map(function(c){return'<option value="'+c.id+'">'+c.name+'</option>';}).join('');
+    cs.value=cv;
+  }
+  // Personi
+  var as2=document.getElementById('tk-fassigned');
+  if(as2){
+    var av=as2.value;
+    var assignees={};
+    allTasks.forEach(function(t){if(t.assigned_to&&t.assigned_name&&t.assigned_name!=='—')assignees[t.assigned_to]=t.assigned_name;});
+    as2.innerHTML='<option value="">Të gjithë personat</option>'+
+      Object.entries(assignees).map(function(e){return'<option value="'+e[0]+'">'+e[1]+'</option>';}).join('');
+    as2.value=av;
+  }
+}
+
+function tkOnCompanyFilter(){
+  var cid=document.getElementById('tk-fcomp').value;
+  var ls=document.getElementById('tk-floc');
+  if(ls){
+    var locs=cid?allLocs.filter(function(l){return String(l.company_id)===String(cid);}):allLocs;
+    ls.innerHTML='<option value="">Të gjitha degët</option>'+
+      locs.map(function(l){return'<option value="'+l.id+'">'+l.name+'</option>';}).join('');
+  }
+  filterTasks();
+}
+
+function tkClearFilters(){
+  ['tk-fsearch','tk-fstatus','tk-frisk','tk-fcomp','tk-floc','tk-fassigned','tk-fdate-fr','tk-fdate-to'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  var ls=document.getElementById('tk-floc');
+  if(ls)ls.innerHTML='<option value="">Të gjitha degët</option>'+
+    allLocs.map(function(l){return'<option value="'+l.id+'">'+l.name+'</option>';}).join('');
+  filterTasks();
+}
+
 function filterTasks(){
-  var fStatus=document.getElementById('tk-fstatus')?document.getElementById('tk-fstatus').value:'';
-  var fRisk=document.getElementById('tk-frisk')?document.getElementById('tk-frisk').value:'';
+  var fStatus=(document.getElementById('tk-fstatus')||{value:''}).value;
+  var fRisk=(document.getElementById('tk-frisk')||{value:''}).value;
+  var fSearch=((document.getElementById('tk-fsearch')||{value:''}).value||'').toLowerCase();
+  var fComp=(document.getElementById('tk-fcomp')||{value:''}).value;
+  var fLoc=(document.getElementById('tk-floc')||{value:''}).value;
+  var fAssigned=(document.getElementById('tk-fassigned')||{value:''}).value;
+  var fDateFr=(document.getElementById('tk-fdate-fr')||{value:''}).value;
+  var fDateTo=(document.getElementById('tk-fdate-to')||{value:''}).value;
+
   filteredTasks=allTasks.filter(function(t){
     if(fStatus&&t.status!==fStatus) return false;
     if(fRisk&&t.risk_level!==fRisk) return false;
+    if(fComp&&String(t.company_id)!==String(fComp)) return false;
+    if(fLoc&&String(t.location_id)!==String(fLoc)) return false;
+    if(fAssigned&&String(t.assigned_to)!==String(fAssigned)) return false;
+    if(fDateFr&&t.deadline&&t.deadline<fDateFr) return false;
+    if(fDateTo&&t.deadline&&t.deadline>fDateTo) return false;
+    if(fSearch){
+      var hay=(t.title||'')+' '+(t.description||'')+' '+(t.company_name||'')+' '+(t.location_name||'')+' '+(t.assigned_name||'');
+      if(!hay.toLowerCase().includes(fSearch)) return false;
+    }
     return true;
   });
   renderTaskList();
   updateTaskKPIs();
+}
+
+/* ── RAPORT I DETYRAVE ── */
+function tkPopRepDropdowns(){
+  var cs=document.getElementById('tk-rep-comp');
+  if(cs){var cv=cs.value;cs.innerHTML='<option value="">Të gjitha kompanitë</option>'+allCompanies.map(function(c){return'<option value="'+c.id+'">'+c.name+'</option>';}).join('');cs.value=cv;}
+  var as2=document.getElementById('tk-rep-assigned');
+  if(as2){
+    var assignees={};
+    allTasks.forEach(function(t){if(t.assigned_to&&t.assigned_name&&t.assigned_name!=='—')assignees[t.assigned_to]=t.assigned_name;});
+    var av=as2.value;
+    as2.innerHTML='<option value="">Të gjithë personat</option>'+Object.entries(assignees).map(function(e){return'<option value="'+e[0]+'">'+e[1]+'</option>';}).join('');
+    as2.value=av;
+  }
+}
+
+function tkOnRepCompany(){
+  var cid=document.getElementById('tk-rep-comp').value;
+  var ls=document.getElementById('tk-rep-loc');
+  if(ls){
+    var locs=cid?allLocs.filter(function(l){return String(l.company_id)===String(cid);}):allLocs;
+    ls.innerHTML='<option value="">Të gjitha degët</option>'+locs.map(function(l){return'<option value="'+l.id+'">'+l.name+'</option>';}).join('');
+  }
+  renderTaskReport();
+}
+
+function renderTaskReport(){
+  var el=document.getElementById('tk-report');if(!el)return;
+  var fComp=(document.getElementById('tk-rep-comp')||{value:''}).value;
+  var fLoc=(document.getElementById('tk-rep-loc')||{value:''}).value;
+  var fAssigned=(document.getElementById('tk-rep-assigned')||{value:''}).value;
+  var fStatus=(document.getElementById('tk-rep-status')||{value:''}).value;
+
+  var src=allTasks.filter(function(t){
+    if(fComp&&String(t.company_id)!==String(fComp))return false;
+    if(fLoc&&String(t.location_id)!==String(fLoc))return false;
+    if(fAssigned&&String(t.assigned_to)!==String(fAssigned))return false;
+    if(fStatus&&t.status!==fStatus)return false;
+    return true;
+  });
+
+  // KPI cards
+  var active=src.filter(function(t){return t.status!=='perfunduar'&&t.status!=='anuluar';});
+  var done=src.filter(function(t){return t.status==='perfunduar';});
+  var overdue=src.filter(function(t){return t.days_remaining!==null&&t.days_remaining<0&&t.status!=='perfunduar'&&t.status!=='anuluar';});
+  var soon=src.filter(function(t){return t.days_remaining!==null&&t.days_remaining>=0&&t.days_remaining<=7&&t.status!=='perfunduar';});
+  var pct=src.length?Math.round(done.length/src.length*100):0;
+
+  // Group by company
+  var byComp={};
+  src.forEach(function(t){
+    var key=t.company_name||'(Pa kompani)';
+    if(!byComp[key])byComp[key]=[];
+    byComp[key].push(t);
+  });
+
+  // Group by person
+  var byPerson={};
+  src.forEach(function(t){
+    var key=t.assigned_name||'(Pa person)';
+    if(!byPerson[key])byPerson[key]=[];
+    byPerson[key].push(t);
+  });
+
+  var RISK_COL={kritik:'#ff4d6d',i_larte:'#ffaa2e',mesem:'#2d8bff',i_ulet:'#05d9a0',perfunduar:'#3d5275'};
+  var RISK_EM={kritik:'🔴',i_larte:'🟠',mesem:'🟡',i_ulet:'🟢',perfunduar:'✅'};
+
+  var html='';
+
+  // KPI row
+  html+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px">';
+  var kpis=[
+    {l:'TOTALE',v:src.length,c:'#dce6f5'},
+    {l:'AKTIVE',v:active.length,c:'#2d8bff'},
+    {l:'KRYER',v:done.length+' ('+pct+'%)',c:'#05d9a0'},
+    {l:'VONUAR',v:overdue.length,c:'#ff4d6d'},
+    {l:'SKADON 7D',v:soon.length,c:'#ffaa2e'}
+  ];
+  kpis.forEach(function(k){
+    html+='<div style="background:#07090f;border:1px solid #1c2740;border-radius:10px;padding:14px 12px">'+
+      '<div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:6px">'+k.l+'</div>'+
+      '<div style="font-size:24px;font-weight:700;color:'+k.c+'">'+k.v+'</div>'+
+      '</div>';
+  });
+  html+='</div>';
+
+  // Detyrat e vonuara
+  if(overdue.length){
+    html+='<div style="background:rgba(255,77,109,.06);border:1px solid rgba(255,77,109,.25);border-radius:10px;padding:14px;margin-bottom:16px">';
+    html+='<div style="font-size:11px;font-family:monospace;color:#ff4d6d;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">⚠ Detyrat e vonuara ('+overdue.length+')</div>';
+    html+=overdue.sort(function(a,b){return(a.days_remaining||0)-(b.days_remaining||0);}).map(function(t){
+      return'<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid rgba(255,77,109,.1);font-size:12px">'+
+        '<span style="color:#ff4d6d;font-family:monospace;font-size:10px;min-width:70px">'+Math.abs(t.days_remaining||0)+'d vonesë</span>'+
+        '<span style="flex:1;color:#dce6f5">'+t.title+'</span>'+
+        '<span style="color:#8da0bb;font-size:10px;font-family:monospace">'+(t.company_name||'')+(t.location_name?' › '+t.location_name:'')+'</span>'+
+        '<span style="color:#5a6d8a;font-size:10px;font-family:monospace">👤 '+(t.assigned_name||'—')+'</span>'+
+        '</div>';
+    }).join('');
+    html+='</div>';
+  }
+
+  // Detyrat sipas kompanisë
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">';
+
+  // Per kompani
+  html+='<div style="background:#07090f;border:1px solid #1c2740;border-radius:10px;overflow:hidden">';
+  html+='<div style="padding:10px 14px;border-bottom:1px solid #1c2740;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">Sipas kompanisë</div>';
+  html+='<div style="padding:10px">';
+  Object.entries(byComp).sort(function(a,b){return b[1].length-a[1].length;}).forEach(function(e){
+    var actv=e[1].filter(function(t){return t.status!=='perfunduar'&&t.status!=='anuluar';}).length;
+    var tot=e[1].length;
+    var pctc=tot?Math.round(e[1].filter(function(t){return t.status==='perfunduar';}).length/tot*100):0;
+    html+='<div style="margin-bottom:8px">'+
+      '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">'+
+        '<span style="color:#dce6f5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%">'+e[0]+'</span>'+
+        '<span style="color:#3d5275;font-family:monospace;font-size:10px">'+actv+' aktive / '+tot+' total</span>'+
+      '</div>'+
+      '<div style="height:5px;background:#1c2740;border-radius:3px;overflow:hidden">'+
+        '<div style="height:100%;background:#05d9a0;width:'+pctc+'%;border-radius:3px;transition:width .4s"></div>'+
+      '</div>'+
+    '</div>';
+  });
+  html+='</div></div>';
+
+  // Per person
+  html+='<div style="background:#07090f;border:1px solid #1c2740;border-radius:10px;overflow:hidden">';
+  html+='<div style="padding:10px 14px;border-bottom:1px solid #1c2740;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">Sipas personit</div>';
+  html+='<div style="padding:10px">';
+  Object.entries(byPerson).sort(function(a,b){return b[1].length-a[1].length;}).forEach(function(e){
+    var counts={kritik:0,i_larte:0,mesem:0,i_ulet:0,perfunduar:0};
+    e[1].forEach(function(t){counts[t.risk_level]=(counts[t.risk_level]||0)+1;});
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #111820">'+
+      '<span style="flex:1;font-size:12px;color:#dce6f5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e[0]+'</span>'+
+      Object.entries(counts).filter(function(c){return c[1]>0;}).map(function(c){
+        return'<span style="font-size:10px;padding:1px 6px;border-radius:4px;background:'+RISK_COL[c[0]]+'18;color:'+RISK_COL[c[0]]+';border:1px solid '+RISK_COL[c[0]]+'33">'+RISK_EM[c[0]]+c[1]+'</span>';
+      }).join('')+
+    '</div>';
+  });
+  html+='</div></div>';
+  html+='</div>';
+
+  // Tabela e plotë
+  html+='<div style="background:#07090f;border:1px solid #1c2740;border-radius:10px;overflow:hidden">';
+  html+='<div style="padding:10px 14px;border-bottom:1px solid #1c2740;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">Lista e plotë ('+src.length+')</div>';
+  html+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">';
+  html+='<thead><tr style="border-bottom:1px solid #1c2740">';
+  ['Titulli','Kompania / Dega','Personi','Afati','Ditë','Riskl','Statusi'].forEach(function(h){
+    html+='<th style="text-align:left;padding:8px 12px;font-family:monospace;font-size:10px;color:#3d5275;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap">'+h+'</th>';
+  });
+  html+='</tr></thead><tbody>';
+  src.sort(function(a,b){
+    var ord={kritik:0,i_larte:1,mesem:2,i_ulet:3,perfunduar:4};
+    return (ord[a.risk_level]||2)-(ord[b.risk_level]||2);
+  }).forEach(function(t){
+    var rc=RISK_COL[t.risk_level]||'#8da0bb';
+    var dr=t.days_remaining;
+    var drTxt=dr===null?'—':dr<0?'<span style="color:#ff4d6d">'+Math.abs(dr)+'d vonesë</span>':dr===0?'<span style="color:#ff4d6d">SOT</span>':dr+'d';
+    var statC={hapur:'#2d8bff',ne_progres:'#ffaa2e',perfunduar:'#05d9a0',anuluar:'#3d5275'}[t.status]||'#8da0bb';
+    html+='<tr style="border-bottom:1px solid #111820;cursor:pointer" onmouseenter="this.style.background=\'#0d1119\'" onmouseleave="this.style.background=\'\'" onclick="openTaskModal(\''+t.id+'\')">'+
+      '<td style="padding:8px 12px;color:#dce6f5;font-weight:500">'+t.title+'</td>'+
+      '<td style="padding:8px 12px;color:#5a6d8a">'+(t.company_name||'—')+(t.location_name?' <span style="color:#3d5275">› '+t.location_name+'</span>':'')+'</td>'+
+      '<td style="padding:8px 12px;color:#8da0bb;font-family:monospace">'+( t.assigned_name||'—')+'</td>'+
+      '<td style="padding:8px 12px;color:#5a6d8a;font-family:monospace">'+(t.deadline||'—')+'</td>'+
+      '<td style="padding:8px 12px;font-family:monospace">'+drTxt+'</td>'+
+      '<td style="padding:8px 12px"><span style="font-size:10px;padding:2px 7px;border-radius:4px;background:'+rc+'18;color:'+rc+';border:1px solid '+rc+'33">'+RISK_EM[t.risk_level]+' '+(RISK_LABELS[t.risk_level]||{label:'—'}).label+'</span></td>'+
+      '<td style="padding:8px 12px"><span style="font-size:10px;color:'+statC+'">'+({hapur:'Hapur',ne_progres:'Në progres',perfunduar:'Kryer',anuluar:'Anuluar'}[t.status]||t.status)+'</span></td>'+
+    '</tr>';
+  });
+  html+='</tbody></table></div></div>';
+
+  if(!src.length) html='<div style="text-align:center;padding:60px 20px;color:#3d5275;font-family:monospace;font-size:12px">Asnjë detyrë e gjetur me filtrat aktualë</div>';
+  el.innerHTML=html;
+}
+
+function tkExportReport(){
+  var fComp=(document.getElementById('tk-rep-comp')||{value:''}).value;
+  var fLoc=(document.getElementById('tk-rep-loc')||{value:''}).value;
+  var fAssigned=(document.getElementById('tk-rep-assigned')||{value:''}).value;
+  var fStatus=(document.getElementById('tk-rep-status')||{value:''}).value;
+  var src=allTasks.filter(function(t){
+    if(fComp&&String(t.company_id)!==String(fComp))return false;
+    if(fLoc&&String(t.location_id)!==String(fLoc))return false;
+    if(fAssigned&&String(t.assigned_to)!==String(fAssigned))return false;
+    if(fStatus&&t.status!==fStatus)return false;
+    return true;
+  });
+  if(!src.length){toast('warn','Nuk ka të dhëna');return;}
+  var rows=[['Titulli','Kompania','Dega','Personi Përgjegjës','Afati','Ditë Mbetur','Risku','Statusi','Prioriteti','Përshkrimi']];
+  src.forEach(function(t){
+    rows.push([t.title||'',t.company_name||'',t.location_name||'',t.assigned_name||'',t.deadline||'',
+      t.days_remaining!==null?t.days_remaining:'',t.risk_level||'',t.status||'',t.priority||'',t.description||'']);
+  });
+  var csv='\uFEFF'+rows.map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='detyrat_raport_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  toast('ok','CSV eksportuar ('+src.length+' detyra)');
 }
 
 function setRiskFilter(risk){
@@ -4158,8 +4489,6 @@ function setRiskFilter(risk){
   if(sel){sel.value=risk;}
   filterTasks();
 }
-
-function updateTaskKPIs(){
   var active=allTasks.filter(function(t){return t.status!=='perfunduar'&&t.status!=='anuluar';});
   var counts={kritik:0,i_larte:0,mesem:0,i_ulet:0,perfunduar:0};
   allTasks.forEach(function(t){
