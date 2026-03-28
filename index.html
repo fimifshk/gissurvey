@@ -1597,102 +1597,111 @@ create trigger on_auth_user_created
       </div>
 
       <!-- FUSHAT EDITUESHME -->
-      <div style="border:1px solid #1c2740;border-radius:10px;margin-bottom:14px;overflow:hidden">
+            <div style="border:1px solid #1c2740;border-radius:10px;margin-bottom:14px;overflow:hidden">
         <div style="padding:10px 14px;background:#07090f;border-bottom:1px solid #1c2740;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">Informacion i rekordeve</div>
-        <div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+        <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
 
-          <div>
-            <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">QËLLIMI</div>
-            <div id="dp-qellim-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
-            <select id="dp-qellim-edit" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-              <option>Inspektim urban</option><option>Monitorim mjedisi</option>
-              <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
-              <option>Pyje dhe bimësi</option><option>Ujëra dhe hidrologji</option><option>Tjetër</option>
-            </select>
+          <!-- Kompania/Dega -->
+          <div style="background:rgba(5,217,160,.06);border:1px solid rgba(5,217,160,.15);border-radius:8px;padding:10px">
+            <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KOMPANIA / DEGA</div>
+            <div id="dp-company-view" style="font-size:13px;color:#05d9a0;font-weight:600">—</div>
           </div>
 
+          <!-- Qëllimi + Statusi -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KLASIFIKIMI</div>
-              <div id="dp-klasi-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
-              <select id="dp-klasi" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-                <option value="">— Pa klasifikim —</option>
-                <option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
-                <option>Depo / Magazine</option><option>Objekt industrial</option>
-                <option>Infrastrukturë</option><option>Tokë bujqësore</option>
-                <option>Zonë e mbrojtur</option><option>Tjetër</option>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">QËLLIMI</div>
+              <div id="dp-qellim-view" style="font-size:13px;color:#dce6f5"></div>
+              <select id="dp-qellim-edit" style="display:none;width:100%;padding:7px;background:#07090f;border:1px solid #253352;border-radius:6px;color:#dce6f5;font-size:12px;outline:none">
+                <option value="">—</option><option>Inspektim urban</option><option>Monitorim mjedisi</option>
+                <option>Infrastrukturë rrugore</option><option>Kadastër / Pronë</option>
+                <option>Pyje dhe bimësi</option><option>Ujëra dhe hidrologji</option><option>Tjetër</option>
               </select>
             </div>
             <div>
               <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">STATUSI</div>
-              <div id="dp-statusi-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
-              <select id="dp-statusi" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-family:monospace;font-size:12px;outline:none">
-                <option value="aktiv">✅ Aktiv</option>
-                <option value="ne_ndertim">🚧 Në ndërtim</option>
-                <option value="ne_rinovim">🔨 Në rinovim</option>
-                <option value="i_demtuar">⚠️ I dëmtuar</option>
-                <option value="i_braktisur">🚫 I braktisur</option>
-                <option value="i_demoluar">💥 I demoluar</option>
+              <div id="dp-statusi-view" style="font-size:13px;color:#dce6f5"></div>
+              <select id="dp-statusi" style="display:none;width:100%;padding:7px;background:#07090f;border:1px solid #253352;border-radius:6px;color:#dce6f5;font-size:12px;outline:none">
+                <option value="aktiv">✅ Aktiv</option><option value="ne_ndertim">🚧 Në ndërtim</option>
+                <option value="ne_rinovim">🔨 Në rinovim</option><option value="i_demtuar">⚠️ I dëmtuar</option>
+                <option value="i_braktisur">🚫 I braktisur</option><option value="i_demoluar">💥 I demoluar</option>
                 <option value="ne_investigim">🔍 Nën investigim</option>
               </select>
             </div>
           </div>
 
-          <div>
-            <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ADRESA</div>
-            <div id="dp-adresa-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
-            <input type="text" id="dp-adresa" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-size:12px;outline:none;box-sizing:border-box" placeholder="Adresa...">
-          </div>
-
+          <!-- Klasifikimi + Pronësia -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KATET</div>
-              <div id="dp-kate-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
-              <input type="number" id="dp-kate" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-size:12px;outline:none" placeholder="0">
-            </div>
-            <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">LARTËSIA (m)</div>
-              <div id="dp-lartesia-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
-              <input type="number" id="dp-lartesia" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-size:12px;outline:none" placeholder="0">
-            </div>
-          </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SIPËRFAQJA</div>
-              <div id="dp-siperfaqe-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
-            </div>
-            <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">NR. INVENTAR</div>
-              <div id="dp-inventar-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">VITI NDËRTIMIT</div>
-              <div id="dp-viti-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KLASIFIKIMI</div>
+              <div id="dp-klasi-view" style="font-size:13px;color:#dce6f5"></div>
+              <select id="dp-klasi" style="display:none;width:100%;padding:7px;background:#07090f;border:1px solid #253352;border-radius:6px;color:#dce6f5;font-size:12px;outline:none">
+                <option value="">—</option><option>Banesë</option><option>Zyrë</option><option>Dyqan / Treg</option>
+                <option>Depo / Magazine</option><option>Objekt industrial</option><option>Infrastrukturë</option>
+                <option>Tokë bujqësore</option><option>Zonë e mbrojtur</option><option>Tjetër</option>
+              </select>
             </div>
             <div>
               <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">PRONËSIA</div>
-              <div id="dp-pronesia-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+              <div id="dp-pronesia-view" style="font-size:13px;color:#dce6f5"></div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+
+          <!-- Adresa -->
+          <div>
+            <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ADRESA</div>
+            <div id="dp-adresa-view" style="font-size:13px;color:#dce6f5"></div>
+            <input id="dp-adresa" type="text" style="display:none;width:100%;padding:7px;background:#07090f;border:1px solid #253352;border-radius:6px;color:#dce6f5;font-size:12px;outline:none;box-sizing:border-box">
+          </div>
+
+          <!-- Katet + Lartësia + Sipërfaqja -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
             <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ZONA / LAGJA</div>
-              <div id="dp-zona-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KATET</div>
+              <div id="dp-kate-view" style="font-size:13px;color:#dce6f5"></div>
+              <input id="dp-kate" type="number" style="display:none;width:100%;padding:7px;background:#07090f;border:1px solid #253352;border-radius:6px;color:#dce6f5;font-size:12px;outline:none">
             </div>
             <div>
-              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SIGURIA NË PUNË</div>
-              <div id="dp-siguria-view" style="font-size:13px;color:#dce6f5;min-height:20px"></div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">LARTËSIA</div>
+              <div id="dp-lartesia-view" style="font-size:13px;color:#dce6f5"></div>
+              <input id="dp-lartesia" type="number" style="display:none;width:100%;padding:7px;background:#07090f;border:1px solid #253352;border-radius:6px;color:#dce6f5;font-size:12px;outline:none">
+            </div>
+            <div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SIPËRFAQJA</div>
+              <div id="dp-siperfaqe-view" style="font-size:13px;color:#dce6f5"></div>
             </div>
           </div>
+
+          <!-- Nr.Inventar + Viti + Zona -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">NR. INVENTAR</div>
+              <div id="dp-inventar-view" style="font-size:13px;color:#dce6f5"></div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">VITI NDËRTIMIT</div>
+              <div id="dp-viti-view" style="font-size:13px;color:#dce6f5"></div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">ZONA</div>
+              <div id="dp-zona-view" style="font-size:13px;color:#dce6f5"></div>
+            </div>
+          </div>
+
+          <!-- Siguria -->
+          <div>
+            <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">KUSHTET E SIGURISË</div>
+            <div id="dp-siguria-view" style="font-size:13px;color:#dce6f5"></div>
+          </div>
+
+          <!-- Shënime -->
           <div>
             <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:4px">SHËNIME</div>
-            <div id="dp-notes-view" style="font-size:13px;color:#8da0bb;min-height:20px;line-height:1.5"></div>
+            <div id="dp-notes-view" style="font-size:13px;color:#8da0bb;line-height:1.5"></div>
             <textarea id="dp-notes-edit" style="display:none;width:100%;padding:8px;background:#07090f;border:1px solid #253352;border-radius:7px;color:#dce6f5;font-size:12px;outline:none;min-height:70px;resize:vertical;box-sizing:border-box"></textarea>
           </div>
 
+          <!-- Vlerësimi -->
           <div>
             <div style="font-size:9px;color:#3d5275;font-family:monospace;text-transform:uppercase;margin-bottom:6px">VLERËSIMI</div>
             <div id="dp-stars" style="display:flex;gap:4px;font-size:24px;cursor:pointer"></div>
@@ -1700,7 +1709,6 @@ create trigger on_auth_user_created
 
         </div>
       </div>
-
       <!-- DETYRAT E LIDHURA -->
       <div id="dp-tasks-wrap" style="border:1px solid #1c2740;border-radius:10px;margin-bottom:14px;overflow:hidden;display:none">
         <div style="padding:10px 14px;background:#07090f;border-bottom:1px solid #1c2740;font-size:10px;font-family:monospace;color:#3d5275;text-transform:uppercase;letter-spacing:.08em">Detyrat e lidhura</div>
@@ -2193,6 +2201,9 @@ function openPanel(b64){
   document.getElementById('dp-acc').textContent=rec.accuracy?rec.accuracy.toFixed(0)+' m':'—';
 
   // Fushat view
+  // Kompania/Dega
+  var _dco=document.getElementById('dp-company-view');
+  if(_dco)_dco.textContent=rec.location_display||rec.company_name||(rec.location_name?'🏢 '+rec.location_name:'—');
   document.getElementById('dp-qellim-view').textContent=rec.qellim||'—';
   document.getElementById('dp-klasi-view').textContent=rec.klasifikimi||'—';
   document.getElementById('dp-statusi-view').textContent=STATUS_LBL[rec.statusi]||rec.statusi||'—';
@@ -2200,6 +2211,11 @@ function openPanel(b64){
   document.getElementById('dp-kate-view').textContent=rec.kate||'—';
   document.getElementById('dp-lartesia-view').textContent=rec.lartesia?rec.lartesia+' m':'—';
   document.getElementById('dp-notes-view').textContent=rec.notes||'—';
+  // Yjet
+  var dpSt=document.getElementById('dp-stars');
+  if(dpSt){dpSt.innerHTML='';var sv=rec.vleresimi||0;
+  for(var si=1;si<=5;si++){var ss=document.createElement('span');ss.textContent='★';
+  ss.style.color=si<=sv?'#ffaa2e':'#253352';dpSt.appendChild(ss);}}
   var _dsp=document.getElementById('dp-siperfaqe-view');if(_dsp)_dsp.textContent=rec.siperfaqe_m2?rec.siperfaqe_m2+' m²':'—';
   var _din=document.getElementById('dp-inventar-view');if(_din)_din.textContent=rec.nr_inventar||'—';
   var _dvi=document.getElementById('dp-viti-view');if(_dvi)_dvi.textContent=rec.viti_ndertimit||'—';
