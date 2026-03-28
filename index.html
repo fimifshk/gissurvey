@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>GIS Survey Pro</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script>
+/* Early globals - prevent ReferenceError before main script loads */
+window.goSS=function(n){document._pendingGoSS=n;};
+window.clearAuthErr=function(){var e=document.getElementById('auth-alert');if(e)e.classList.add('hidden');};
+</script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -537,8 +542,8 @@ create trigger on_auth_user_created
 
   <!-- LOGIN -->
   <div id="aform-li">
-    <div class="ifield"><label>EMAIL</label><input type="email" id="li-em" placeholder="user@domain.com" oninput="clearAuthErr()"></div>
-    <div class="ifield"><label>FJALËKALIMI</label><input type="password" id="li-pw" placeholder="••••••••" oninput="clearAuthErr()" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="ifield"><label>EMAIL</label><input type="email" id="li-em" placeholder="user@domain.com" oninput="var ae=document.getElementById('auth-alert');if(ae)ae.classList.add('hidden')"></div>
+    <div class="ifield"><label>FJALËKALIMI</label><input type="password" id="li-pw" placeholder="••••••••" oninput="var ae=document.getElementById('auth-alert');if(ae)ae.classList.add('hidden')" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="auth-main" id="li-btn" onclick="doLogin()">Hyr →</button>
     <div style="margin-top:8px;text-align:center">
       <button class="btn xs" style="background:transparent;border:none;color:var(--txt2)" onclick="showForgot()">Harrova fjalëkalimin</button>
@@ -548,10 +553,10 @@ create trigger on_auth_user_created
   <!-- REGISTER -->
   <div id="aform-rg" class="hidden">
     <div class="two" style="gap:10px">
-      <div class="ifield"><label>EMRI I PLOTË</label><input type="text" id="rg-nm" placeholder="Arta Krasniqi" oninput="clearAuthErr()"></div>
-      <div class="ifield"><label>EMAIL</label><input type="email" id="rg-em" placeholder="user@domain.com" oninput="clearAuthErr()"></div>
+      <div class="ifield"><label>EMRI I PLOTË</label><input type="text" id="rg-nm" placeholder="Arta Krasniqi" oninput="var ae=document.getElementById('auth-alert');if(ae)ae.classList.add('hidden')"></div>
+      <div class="ifield"><label>EMAIL</label><input type="email" id="rg-em" placeholder="user@domain.com" oninput="var ae=document.getElementById('auth-alert');if(ae)ae.classList.add('hidden')"></div>
     </div>
-    <div class="ifield"><label>FJALËKALIMI (min. 6 karaktere)</label><input type="password" id="rg-pw" placeholder="••••••••" oninput="clearAuthErr()"></div>
+    <div class="ifield"><label>FJALËKALIMI (min. 6 karaktere)</label><input type="password" id="rg-pw" placeholder="••••••••" oninput="var ae=document.getElementById('auth-alert');if(ae)ae.classList.add('hidden')"></div>
     <div class="ifield"><label>ROLI</label></div>
     <div class="role-grid" id="rcards">
       <div class="rc sel" data-role="field" onclick="pickRole(this)"><div class="rc-name c-field">Field User</div><div class="rc-desc">Krijon rekorde. Sheh vetëm të tijat.</div></div>
@@ -1710,9 +1715,15 @@ create trigger on_auth_user_created
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
+
+
+
+
+
 /* ═══════════════════════════════════════
    GLOBALS
 ═══════════════════════════════════════ */
+function clearAuthErr(){var e=document.getElementById('auth-alert');if(e)e.classList.add('hidden');}
 var SB=null, CU=null, CP=null;
 var allRecs=[], filteredRecs=[], photos=[], shpLay=[];
 var pickMode=false, camStream=null, detMapObj=null, rMapObj=null;
@@ -2045,7 +2056,7 @@ async function doLogout(){
   showAuth();toast('info','U çkyçët');
 }
 function showAAlert(msg){var el=document.getElementById('auth-alert');el.className='alert err';el.textContent=msg;el.classList.remove('hidden')}
-function clearAuthErr(){document.getElementById('auth-alert').classList.add('hidden')}
+
 function showForgot(){
   var em=prompt('Email juaj:');if(!em)return;
   SB.auth.resetPasswordForEmail(em).then(function(){toast('ok','Email-i i rivendosjes u dërgua!')});
