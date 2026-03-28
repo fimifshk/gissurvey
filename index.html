@@ -735,6 +735,47 @@ create trigger on_auth_user_created
               </div>
             </div>
 
+
+            <div class="section" style="padding:0;overflow:hidden;border:1px solid var(--b1);border-radius:10px;margin-bottom:8px">
+              <button onclick="toggleSvAttach()" style="width:100%;padding:11px 16px;background:var(--s2);border:none;color:var(--txt2);font-family:var(--mono);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+                <span>📎 Bashkëngjit skedar (opsionale)</span>
+                <span id="sv-att-arrow" style="transition:transform .2s">▼</span>
+              </button>
+              <div id="sv-att-body" style="display:none;padding:12px;border-top:1px solid var(--b1)">
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px dashed var(--b1);border-radius:8px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--txt3)">
+                  ↑ Klikoni për të zgjedhur skedar (PDF, DOC, XLS, IMG)
+                  <input type="file" id="sv-attach-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="onSvAttachChange(this)" style="display:none">
+                </label>
+                <div id="sv-attach-list" style="margin-top:8px"></div>
+              </div>
+            </div>
+
+            <!-- SHTO DETYRË -->
+            <div class="section" style="padding:0;overflow:hidden;border:1px solid var(--b1);border-radius:10px;margin-bottom:8px">
+              <button onclick="toggleSvTask()" style="width:100%;padding:11px 16px;background:var(--s2);border:none;color:var(--txt2);font-family:var(--mono);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+                <span>✅ Shto detyrë pas survey (opsionale)</span>
+                <span id="sv-task-arrow" style="transition:transform .2s">▼</span>
+              </button>
+              <div id="sv-task-body" style="display:none;padding:14px;border-top:1px solid var(--b1);flex-direction:column;gap:8px">
+                <div class="ifield" style="margin:0"><label>TITULLI I DETYRËS *</label>
+                  <input type="text" id="sv-task-title" class="fi" placeholder="p.sh. Verifikim dokumentesh..." oninput="updateSvTaskPreview()"></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <div class="ifield" style="margin:0"><label>AFATI</label>
+                    <input type="date" id="sv-task-deadline" class="fi" onchange="updateSvTaskPreview()"></div>
+                  <div class="ifield" style="margin:0"><label>PRIORITETI</label>
+                    <select id="sv-task-priority" class="fi">
+                      <option value="i_ulet">🟢 I ulët</option>
+                      <option value="mesem" selected>🟡 Mesëm</option>
+                      <option value="i_larte">🟠 I lartë</option>
+                      <option value="kritik">🔴 Kritik</option>
+                    </select></div>
+                </div>
+                <div class="ifield" style="margin:0"><label>PERSONI PËRGJEGJËS</label>
+                  <select id="sv-task-assigned" class="fi"><option value="">— Zgjidh —</option></select></div>
+                <div id="sv-task-preview" style="display:none;padding:8px 12px;background:rgba(5,217,160,.06);border:1px solid rgba(5,217,160,.2);border-radius:8px;font-family:monospace;font-size:11px;color:#05d9a0"></div>
+              </div>
+            </div>
+
             <div class="section">
               <div class="sec-hd">Veprime</div>
               <div class="brow">
