@@ -2036,10 +2036,27 @@ var _dpDocs=[];
 var _dpCarIdx=0;
 var _dpStar=0;
 
-function openRecById(id, trEl){
-  // Gjej rekord nga allRecs (nuk ka probleme b64 encoding)
+async function openRecById(id, trEl){
+  // Kërko fillimisht në allRecs
   var rec = allRecs.find(function(r){ return String(r.id)===String(id); });
-  if(!rec){ toast('warn','Rekord i pa-gjetur'); return; }
+  if(!rec && SB){
+    // Kërko direkt nga DB
+    var{data,error}=await SB.from('survey_records')
+      .select('*,locations(id,name,company_id,companies(id,name))')
+      .eq('id',id).single();
+    if(!error && data){
+      if(data.locations&&data.locations.name){
+        data.location_name=data.locations.name;
+        if(data.locations.companies&&data.locations.companies.name){
+          data.company_name=data.locations.companies.name;
+          data.location_display=data.company_name+' › '+data.location_name;
+        }
+      }
+      delete data.locations;
+      rec=data;
+    }
+  }
+  if(!rec){ toast('warn','Rekord i pa-gjetur (#'+id+')'); return; }
   var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(rec))));
   openPanel(b64);
 }
@@ -2826,13 +2843,8 @@ function addMkr(rec){
   btn.style.cssText='width:100%;padding:8px;background:var(--acc);border:none;border-radius:6px;color:#021a10;font-family:monospace;font-size:11px;font-weight:600;cursor:pointer;margin-top:6px';
   btn.textContent='📋 Hap detajet →';
   btn.onclick=function(){
-    // Gjej rekord nga allRecs
-    var r=allRecs.find(function(x){return x.id==recId});
-    if(r){
-      var b64=btoa(unescape(encodeURIComponent(JSON.stringify(r))));
-      m.closePopup();
-      openPanel(b64);
-    }
+    m.closePopup();
+    openRecById(recId);
   };
   popupDiv.appendChild(btn);
 
@@ -2939,8 +2951,8 @@ function renderRT(){
       '<td><span class="badge '+(r.photo_count>0?'ok':'')+'">'+(r.photo_count||0)+'</span></td>' +
       '<td>'+(r.synced===false?'<span class="badge warn">offline</span>':'<span class="badge ok">✓ DB</span>')+'</td>' +
       '<td style="white-space:nowrap;text-align:right">' +
-        '<button onclick="event.stopPropagation();openRecById(\''+recId+'\',this)" style="padding:4px 10px;background:#18202e;border:1px solid #253352;border-radius:6px;color:#8da0bb;font-family:monospace;font-size:10px;cursor:pointer">🔍 Detaje</button>' +
-        (CP&&CP.role==='admin'?'<button onclick="event.stopPropagation();delRec(\''+r.id+'\')" style="padding:4px 8px;background:transparent;border:1px solid rgba(255,77,109,.3);border-radius:6px;color:#ff4d6d;font-family:monospace;font-size:10px;cursor:pointer;margin-left:4px">🗑️</button>':'') +
+        '<button onclick="openRecById(\''+recId+'\',this)" style="padding:4px 10px;background:#18202e;border:1px solid #253352;border-radius:6px;color:#8da0bb;font-family:monospace;font-size:10px;cursor:pointer">🔍 Detaje</button>' +
+        (CP&&CP.role==='admin'?'<button onclick="delRec(\''+r.id+'\')" style="padding:4px 8px;background:transparent;border:1px solid rgba(255,77,109,.3);border-radius:6px;color:#ff4d6d;font-family:monospace;font-size:10px;cursor:pointer;margin-left:4px" title="Fshi">🗑️</button>':'') +
       '</td></tr>';
   }).join('');
 
