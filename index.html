@@ -5193,7 +5193,100 @@ function expPDF(){
   w.document.write('<div><div class="kpi"><div class="kpi-l">REKORDE</div><div class="kpi-v">'+_rpRecs.length+'</div></div><div class="kpi"><div class="kpi-l">USERS</div><div class="kpi-v">'+Object.keys(umap).length+'</div></div></div>');
   w.document.write('<h2>Sipas Kategorisë</h2><table><thead><tr><th>Kategoria</th><th>Rekorde</th><th>%</th></tr></thead><tbody>'+catrows+'</tbody></table>');
   w.document.write('<h2>Sipas Përdoruesit</h2><table><thead><tr><th>Email</th><th>Rekorde</th></tr></thead><tbody>'+urows+'</tbody></table>');
-  w.document.write('<br><button class="noprint" onclick="window.print()" style="padding:10px 20px;background:#05d9a0;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨️ Printo / Ruaj PDF</button>
+  w.document.write('<br><button class="noprint" onclick="window.print()" style="padding:10px 20px;background:#05d9a0;border:none;border-radius:6px;cursor:pointer;font-size:14px">Printo / Ruaj PDF</button></body></html>');w.document.close();
+</body></html>';
+  dl(full,'application/vnd.ms-excel;charset=utf-8;','survey_'+dt()+'.xls');
+  toast('ok','Excel eksportuar ('+src.length+' rekorde)');
+}
+function dl(content,mime,fname){
+  var b=new Blob([content],{type:mime});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname;a.click();
+}
+function dt(){return new Date().toISOString().slice(0,10)}
+
+/* ═══════════════════════════════════════
+   CONNECTION TEST
+═══════════════════════════════════════ */
+function testConn(){
+  var on=navigator.onLine;
+  document.getElementById('cdot').className='cdot'+(on?'':' off');
+  document.getElementById('clbl').textContent=on?'online':'offline';
+  var st=document.getElementById('sync-st');
+  st.className='badge '+(on?'ok':'err');st.textContent=on?'✓ online':'✕ offline';
+  log(on?'ok':'warn','Lidhja: '+(on?'online':'offline'));
+  if(on&&SB){
+    SB.from('profiles').select('id').limit(1).then(function(r){
+      if(r.error) log('warn','Supabase ping: '+r.error.message);
+      else log('ok','Supabase ping OK');
+    });
+  }
+}
+
+/* ═══════════════════════════════════════
+   PAGE NAV
+═══════════════════════════════════════ */
+function goPg(nm){
+  closeDp();
+  ['sv','rc','us','rp','tk','lk'].forEach(function(p){
+    var pg=document.getElementById('page-'+p);
+    var nb=document.getElementById('nav-'+p);
+    if(pg)pg.classList.remove('on');
+    if(nb)nb.classList.remove('on');
+  });
+  var pg=document.getElementById('page-'+nm);
+  var nb=document.getElementById('nav-'+nm);
+  if(pg)pg.classList.add('on');
+  if(nb)nb.classList.add('on');
+  // Mbyll panelin nëse është hapur
+  closeDp();
+  if(nm==='sv'){setTimeout(function(){if(typeof leafMap!=='undefined'&&leafMap)leafMap.invalidateSize();},200);}
+  if(nm==='rc')loadRecs(false);
+  if(nm==='us')loadUsers();
+  if(nm==='rp')loadRep();
+  if(nm==='lk')loadLocs();
+  if(nm==='tk')loadTasks();
+}
+function sptab(i){
+  document.querySelectorAll('.ptab').forEach(function(t,j){t.classList.toggle('on',j===i)});
+  document.querySelectorAll('.ptc').forEach(function(c,j){c.classList.toggle('on',j===i)});
+  if(i===3)updSyncCounts();
+}
+
+/* ═══════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════ */
+function v(id){return(document.getElementById(id).value||'').trim()}
+function ls(k,val){if(val===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,val)}
+function lsj(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+function lsjs(k,v2){localStorage.setItem(k,JSON.stringify(v2))}
+function log(type,msg){
+  var box=document.getElementById('dbg');if(!box)return;
+  var n=new Date(),p=function(x){return String(x).padStart(2,'0')};
+  var line=document.createElement('div');line.className='dl '+type;
+  line.textContent='['+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds())+'] '+msg;
+  box.appendChild(line);box.scrollTop=box.scrollHeight;
+}
+function toast(type,msg){
+  var w=document.getElementById('toasts');
+  var t=document.createElement('div');t.className='toast '+type;
+  var ic={ok:'✓',err:'✕',info:'ℹ',warn:'⚠'};
+  t.innerHTML='<span>'+ic[type]+'</span><span>'+msg+'</span>';
+  w.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(14px)';t.style.transition='all .3s';setTimeout(function(){t.remove()},350)},3800);
+}
+function offEvents(){
+  window.addEventListener('online',function(){document.getElementById('cdot').className='cdot';document.getElementById('clbl').textContent='online';toast('ok','Lidhja u restaurua');log('ok','Online')});
+  window.addEventListener('offline',function(){document.getElementById('cdot').className='cdot off';document.getElementById('clbl').textContent='offline';toast('warn','Offline');log('warn','Offline')});
+}
+// Boot — SDK ngarkohet synchronously
+if(typeof supabase!=='undefined'){
+  log('info','Supabase SDK u ngarkua');
+  boot();
+}else{
+  log('err','SDK nuk u ngarkua — kontrolloni internet ose adblocker');
+  setTimeout(function(){if(typeof supabase!=='undefined'){log('ok','SDK retry OK');boot();}},3000);
+}
+</script>
+
 <div id="rec-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);overflow-y:auto;padding:20px">
   <div style="max-width:860px;margin:0 auto;background:#0a0e17;border:1px solid #1c2740;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)">
     <div style="background:#07090f;border-bottom:1px solid #1c2740;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -5544,98 +5637,6 @@ function expXLS(){
     </div>
   </div>
 </div>
-</body></html>';
-  dl(full,'application/vnd.ms-excel;charset=utf-8;','survey_'+dt()+'.xls');
-  toast('ok','Excel eksportuar ('+src.length+' rekorde)');
-}
-function dl(content,mime,fname){
-  var b=new Blob([content],{type:mime});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname;a.click();
-}
-function dt(){return new Date().toISOString().slice(0,10)}
-
-/* ═══════════════════════════════════════
-   CONNECTION TEST
-═══════════════════════════════════════ */
-function testConn(){
-  var on=navigator.onLine;
-  document.getElementById('cdot').className='cdot'+(on?'':' off');
-  document.getElementById('clbl').textContent=on?'online':'offline';
-  var st=document.getElementById('sync-st');
-  st.className='badge '+(on?'ok':'err');st.textContent=on?'✓ online':'✕ offline';
-  log(on?'ok':'warn','Lidhja: '+(on?'online':'offline'));
-  if(on&&SB){
-    SB.from('profiles').select('id').limit(1).then(function(r){
-      if(r.error) log('warn','Supabase ping: '+r.error.message);
-      else log('ok','Supabase ping OK');
-    });
-  }
-}
-
-/* ═══════════════════════════════════════
-   PAGE NAV
-═══════════════════════════════════════ */
-function goPg(nm){
-  closeDp();
-  ['sv','rc','us','rp','tk','lk'].forEach(function(p){
-    var pg=document.getElementById('page-'+p);
-    var nb=document.getElementById('nav-'+p);
-    if(pg)pg.classList.remove('on');
-    if(nb)nb.classList.remove('on');
-  });
-  var pg=document.getElementById('page-'+nm);
-  var nb=document.getElementById('nav-'+nm);
-  if(pg)pg.classList.add('on');
-  if(nb)nb.classList.add('on');
-  // Mbyll panelin nëse është hapur
-  closeDp();
-  if(nm==='sv'){setTimeout(function(){if(typeof leafMap!=='undefined'&&leafMap)leafMap.invalidateSize();},200);}
-  if(nm==='rc')loadRecs(false);
-  if(nm==='us')loadUsers();
-  if(nm==='rp')loadRep();
-  if(nm==='lk')loadLocs();
-  if(nm==='tk')loadTasks();
-}
-function sptab(i){
-  document.querySelectorAll('.ptab').forEach(function(t,j){t.classList.toggle('on',j===i)});
-  document.querySelectorAll('.ptc').forEach(function(c,j){c.classList.toggle('on',j===i)});
-  if(i===3)updSyncCounts();
-}
-
-/* ═══════════════════════════════════════
-   HELPERS
-═══════════════════════════════════════ */
-function v(id){return(document.getElementById(id).value||'').trim()}
-function ls(k,val){if(val===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,val)}
-function lsj(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
-function lsjs(k,v2){localStorage.setItem(k,JSON.stringify(v2))}
-function log(type,msg){
-  var box=document.getElementById('dbg');if(!box)return;
-  var n=new Date(),p=function(x){return String(x).padStart(2,'0')};
-  var line=document.createElement('div');line.className='dl '+type;
-  line.textContent='['+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds())+'] '+msg;
-  box.appendChild(line);box.scrollTop=box.scrollHeight;
-}
-function toast(type,msg){
-  var w=document.getElementById('toasts');
-  var t=document.createElement('div');t.className='toast '+type;
-  var ic={ok:'✓',err:'✕',info:'ℹ',warn:'⚠'};
-  t.innerHTML='<span>'+ic[type]+'</span><span>'+msg+'</span>';
-  w.appendChild(t);
-  setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(14px)';t.style.transition='all .3s';setTimeout(function(){t.remove()},350)},3800);
-}
-function offEvents(){
-  window.addEventListener('online',function(){document.getElementById('cdot').className='cdot';document.getElementById('clbl').textContent='online';toast('ok','Lidhja u restaurua');log('ok','Online')});
-  window.addEventListener('offline',function(){document.getElementById('cdot').className='cdot off';document.getElementById('clbl').textContent='offline';toast('warn','Offline');log('warn','Offline')});
-}
-// Boot — SDK ngarkohet synchronously
-if(typeof supabase!=='undefined'){
-  log('info','Supabase SDK u ngarkua');
-  boot();
-}else{
-  log('err','SDK nuk u ngarkua — kontrolloni internet ose adblocker');
-  setTimeout(function(){if(typeof supabase!=='undefined'){log('ok','SDK retry OK');boot();}},3000);
-}
-</script>
 
 <div id="rec-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);overflow-y:auto;padding:20px">
   <div style="max-width:860px;margin:0 auto;background:#0a0e17;border:1px solid #1c2740;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)">
