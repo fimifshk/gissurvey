@@ -1340,14 +1340,9 @@ create trigger on_auth_user_created
           <button onclick="lkSubTab(1)" id="lkst1" style="padding:8px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:#3d5275;font-family:monospace;font-size:11px;cursor:pointer">📍 Lista e degëve</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 340px;flex:1;overflow:hidden">
-        <div style="position:relative">
-          <div id="lk-map" style="width:100%;height:100%"></div>
-          <div style="position:absolute;top:10px;left:10px;z-index:500;background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:7px 11px;font-family:var(--mono);font-size:10px;color:var(--txt2)">
-            🖱️ Klikoni hartën për koordinata
-          </div>
-        </div>
-        <div style="background:#0d1119;border-left:1px solid #1c2740;overflow-y:auto;display:flex;flex-direction:column">
+      <div style="display:grid;grid-template-columns:360px 1fr;flex:1;overflow:hidden">
+        <!-- PANEL MAJTAS: Hierarkia + Lista -->
+        <div style="background:#0d1119;border-right:1px solid #1c2740;overflow:hidden;display:flex;flex-direction:column">
           <!-- SUB-TAB 0: HIERARKIA -->
           <div id="lksec0" style="flex:1;overflow-y:auto;padding:8px">
             <div style="padding:6px 6px 10px;font-family:monospace;font-size:10px;color:#3d5275;letter-spacing:.08em;text-transform:uppercase">
@@ -1363,6 +1358,13 @@ create trigger on_auth_user_created
               </select>
             </div>
             <div id="lk-list"></div>
+          </div>
+        </div>
+        <!-- HARTA DJATHTAS -->
+        <div style="position:relative">
+          <div id="lk-map" style="width:100%;height:100%"></div>
+          <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(13,17,25,.9);border:1px solid #1c2740;border-radius:8px;padding:6px 12px;font-family:monospace;font-size:10px;color:#8da0bb;white-space:nowrap;pointer-events:none">
+            🖱️ Klikoni hartën për koordinata
           </div>
         </div>
       </div>
