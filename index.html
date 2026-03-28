@@ -674,7 +674,7 @@ create trigger on_auth_user_created
                 <span>📋 Detaje shtesë (opsionale)</span>
                 <span id="sv-det-arrow" style="transition:transform .2s">▼</span>
               </button>
-              <div id="sv-det-body" style="display:none;padding:14px;border-top:1px solid #1c2740;display:flex;flex-direction:column;gap:10px">
+              <div id="sv-det-body" style="display:none;padding:14px;border-top:1px solid #1c2740;flex-direction:column;gap:10px">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
                   <div class="ifield" style="margin:0">
                     <label>KLASIFIKIMI</label>
@@ -2179,6 +2179,7 @@ function dpInitMap(rec){
 
 var _dpEditMode=false;
 function dpStartEdit(){
+  console.log('dpStartEdit called, role:', CP?CP.role:'?');
   _dpEditMode=true;
   var role=CP?CP.role:'field';
 
@@ -4728,7 +4729,7 @@ function updateSvTaskPreview(){
 function toggleSvDetails(){
   var body=document.getElementById('sv-det-body');
   var arrow=document.getElementById('sv-det-arrow');
-  var isOpen=body.style.display!=='none'&&body.style.display!=='';
+  var isOpen=body.style.display==='flex';
   body.style.display=isOpen?'none':'flex';
   if(arrow)arrow.style.transform=isOpen?'':'rotate(180deg)';
 }
@@ -4860,7 +4861,7 @@ function updateSvTaskPreview(){
 function toggleSvDetails(){
   var body=document.getElementById('sv-det-body');
   var arrow=document.getElementById('sv-det-arrow');
-  var isOpen=body.style.display!=='none'&&body.style.display!=='';
+  var isOpen=body.style.display==='flex';
   body.style.display=isOpen?'none':'flex';
   if(arrow)arrow.style.transform=isOpen?'':'rotate(180deg)';
 }
