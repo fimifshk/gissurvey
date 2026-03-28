@@ -931,7 +931,7 @@ create trigger on_auth_user_created
 
       <!-- Filtër -->
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
-        <select id="rp-loccomp" onchange="filterLocRep()"
+        <select id="rp-loccomp" onchange="document.getElementById('rp-locq').value='';filterLocRep()"
           style="padding:7px 9px;background:var(--bg);border:1px solid #1c2740;border-radius:9px;color:#dce6f5;font-family:monospace;font-size:11px;outline:none;min-width:160px">
           <option value="">🏢 Të gjitha kompanitë</option>
         </select>
@@ -2953,7 +2953,7 @@ function renderLocRep(){
 function renderLocRepFiltered(data){
   // KPIs
   var totalVisits=data.reduce(function(s,l){return s+l.visitCount;},0);
-  var activeLocs=data.filter(function(l){return l.visitCount>0;}).length;
+  var activeLocs=data.length; // të gjitha degët
   var avg=activeLocs>0?(totalVisits/activeLocs).toFixed(1):0;
   var top=data[0];
   var el1=document.getElementById('lkv1');if(el1)el1.textContent=activeLocs;
