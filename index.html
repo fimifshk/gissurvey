@@ -5177,9 +5177,7 @@ function expXLS(){
   var tb='<table border="1" style="border-collapse:collapse"><thead><tr>'+k.map(function(f){return'<th style="background:#05d9a0;color:#021a10;padding:6px 10px;font-family:monospace">'+hdrs[f]+'</th>'}).join('')+'</tr></thead><tbody>';
   src.forEach(function(r){tb+='<tr>'+k.map(function(f){return'<td style="padding:5px 9px">'+(r[f]!==undefined?r[f]:'')+'</td>'}).join('')+'</tr>'});
   tb+='</tbody></table>';
-  var full='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>'+tb+'
-
-</body></html>';
+  var full='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>'+tb+'</body></html>';
   dl(full,'application/vnd.ms-excel;charset=utf-8;','survey_'+dt()+'.xls');
   toast('ok','Excel eksportuar ('+src.length+' rekorde)');
 }
